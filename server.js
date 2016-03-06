@@ -38,6 +38,17 @@ function handleUploadedFile(file) {
     var webPath = '/temp/' + filename;
     var target_path = __dirname + webPath; 
     
+    fs.readFile(tmp_path, function (err, data) {
+        fs.writeFile(target_path, data, function (err) {
+            fs.exists(tmp_path,  function (exists) {
+                if(exists) {
+                    fs.unlink(tmp_path, function(err) { if (err) throw err; });
+                }
+             });   
+        });
+    });
+    
+    /*
     fs.rename(tmp_path, target_path, function(err) { 
         if (err)  
             throw err;
@@ -48,6 +59,7 @@ function handleUploadedFile(file) {
             }
         });
     });
+    */
     return webPath;
 }
 
