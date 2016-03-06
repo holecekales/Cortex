@@ -176,8 +176,14 @@ http.createServer(function(req, res) {
             
         res.writeHead(200, {'Content-Type': contentType });
         // stream the file
-        fs.createReadStream(filePath, 'utf-8').pipe(res);
-        });
+        
+        fs.readFile(filePath, function (err, data) {
+            if (err) throw err;
+            res.end(data);
+            // res.end();
+       });
+        // fs.createReadStream(filePath, 'utf-8').pipe(res);
+     });
   }
   else {
      res.writeHead(405, {'Content-Type': 'text/plain' });
