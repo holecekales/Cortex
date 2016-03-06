@@ -23,6 +23,27 @@ var mkdirSync = function (path) {
 }
 
 /**
+ * Convert file to URI
+
+ * @param file path is local file 
+ * @returns the file path addressable by web request 
+ */
+function fileUrl(str) {
+    if (typeof str !== 'string') {
+        throw new Error('Expected a string');
+    }
+
+    var pathName = str.replace(/\\/g, '/');
+
+    // Windows drive letter must be prefixed with a slash
+    if (pathName[0] !== '/') {
+        pathName = '/' + pathName;
+    }
+    return encodeURI(pathName);
+    // return encodeURI('file://'+pathName);
+};
+
+/**
  * Handle file uploading from using multipart forms object
  * Renames (moves) the file which gets created in the temp directory to 
  * a directory of the application  
@@ -30,13 +51,17 @@ var mkdirSync = function (path) {
  * @param file object. files comes from parsing using multiparty
  * @returns the file path addressable by web request 
  */
-function handleUploadedFile(file) {
+function handleUploadedFile(file, folder) {
     
     var filename  = file.originalFilename;
     var tmp_path = file.path;
-    mkdirSync("temp");    
-    var webPath = '/temp/' + filename;
-    var target_path = __dirname + webPath; 
+    
+    // creatw the directory structure
+    mkdirSync("upload");
+    var webPath = path.join('upload', folder);
+    mkdirSync(webPath);   
+    webPath = path.join(webPath, filename);
+    var target_path = path.join(__dirname, webPath); 
     
     fs.readFile(tmp_path, function (err, data) {
         fs.writeFile(target_path, data, function (err) {
@@ -47,20 +72,8 @@ function handleUploadedFile(file) {
              });   
         });
     });
-    
-    /*
-    fs.rename(tmp_path, target_path, function(err) { 
-        if (err)  
-            throw err;
-        // delete the temporary file, so that the explicitly set temporary upload dir does not get filled with unwanted files
-        fs.exists(tmp_path,  function (exists) {
-            if(exists) {
-                fs.unlink(tmp_path, function(err) { if (err) throw err; });
-            }
-        });
-    });
-    */
-    return webPath;
+   
+    return fileUrl(webPath);
 }
 
  
@@ -95,7 +108,7 @@ http.createServer(function(req, res) {
             var len = files.upload.length;
             for(var i = 0; i < len; i++)
             { 
-                var href = handleUploadedFile(files.upload[i]);
+                var href = handleUploadedFile(files.upload[i], fields.date[0]);
                 logStream.write(fields.time + ", " + href + "\n");
                 var ext = path.extname(href);
                 if (ext === '.png' || ext === '.gif' || ext === '.jpg') {
@@ -123,7 +136,8 @@ http.createServer(function(req, res) {
         res.writeHead(200, {'content-type': 'text/html'});
         res.end(
             '<form action="/api/motion" enctype="multipart/form-data" method="post">'+
-            '<input type="text" name="title"><br>'+
+            '<input type="text" name="time"><br>'+
+            '<input type="text" name="date"><br>'+
             '<input type="file" name="upload" multiple="multiple"><br>'+
             '<input type="submit" value="Upload">'+
             '</form>'
