@@ -147,6 +147,7 @@ http.createServer(function(req, res) {
     
     // static (note not safe, use a module for anything serious!!)
     var filePath = path.join(__dirname, action);
+    console.log("request for" + filePath);
     fs.exists(filePath, function (exists) {
         if (!exists) {
             // 404 missing files
