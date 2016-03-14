@@ -1,15 +1,16 @@
 {
-  "name": "homecortex",
+  "name": "homecortex   ",
   "version": "0.1.0",
-  "description": "homecortex service",
+  "description": "test of the express framework",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "ales@outlook.com",
-  "license": "ISC",
+  "author": "ales",
+  "license": "MIT",
   "dependencies": {
+    "express": "~4.13.4",
+    "nedb": "~1.8.0",
     "multiparty": "~4.1.2"
   }
 }

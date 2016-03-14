@@ -1,0 +1,80 @@
+<html>
+    <head>
+        <title>Test upload</title>
+        
+        <script type="text/javascript" language="JavaScript" src="/public/js/displayDate.js"></script>
+        
+         <style type="text/css">
+            body {
+                margin: 0px;
+                padding: 0px;
+                background-color: #aaa;
+                font-family: "Segoe UI", sans-serif, "Segoe MDL2 Assets", "Symbols";
+            }
+            #formContainer {
+                padding: 20px;
+                background-color: #888;
+            }
+            
+            input[type="file"].nofiles {
+               color: transparent; 
+               font-family: "Segoe UI", sans-serif, "Segoe MDL2 Assets", "Symbols";
+            }
+            
+            input[type="file"].filesselected {
+               color: black;
+               font-family: "Segoe UI", sans-serif, "Segoe MDL2 Assets", "Symbols";
+            }
+            
+            .inputField {
+                margin-top: 10px;
+            }
+        </style>
+        
+        <script  type="text/javascript" language="JavaScript">
+            if (document.addEventListener) document.addEventListener("DOMContentLoaded", initPage, false);
+            else window.onload=initPage;
+           
+           // initalize the page
+           function initPage() {
+               
+               // register docs handlers
+               document.getElementById('file').addEventListener('change', function(e) {
+                  removeClass(this, 'nofiles');
+                  addClass(this, 'filesselected');
+               });
+               
+               // prefill the form
+               document.getElementById("time").value = DateUtils.HHMMSS();
+               document.getElementById("date").value = DateUtils.yyyymmdd();
+           }
+           
+           function hasClass(ele,cls) {
+                return ele.className.match(new RegExp('(\\s|^)'+cls+'(\\s|$)'));
+            }
+            
+            function addClass(ele,cls) {
+                    if (!this.hasClass(ele,cls)) ele.className += " "+cls;
+            }
+            
+            function removeClass(ele,cls) {
+                if (hasClass(ele,cls)) {
+                    var reg = new RegExp('(\\s|^)'+cls+'(\\s|$)');
+                    ele.className=ele.className.replace(reg,' ');
+                }
+            }
+            
+        </script>
+        
+    </head>
+    <body>
+        <div id="formContainer">
+            <form action="/api/motion" enctype="multipart/form-data" method="post">
+                Time: <input id="time" type="text" name="time"> <BR>
+                Date: <input id="date" type="text" name="date"> <BR>
+                <input id="file" class="inputField nofiles" type="file" name="upload" multiple="multiple"> <BR>
+                <input class="inputField " type="submit" value="Upload">
+            </form>
+        </div>
+    </body>
+</html>
