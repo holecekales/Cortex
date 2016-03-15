@@ -129,16 +129,23 @@ router.get('/fetch/:id?', function (req, res) {
 });
 
 router.get('/', function(req, res) {
-    // i need to deal with the query here    
-    var t = req.query.time || -1;
-    var d = req.query.date || new Date();
-    
-    // db.find({}).skip(0).limit(10).exec(function (err, docs) {
-    db.find({}).skip(0).exec(function (err, docs) {    
-      res.json(docs);
-      res.end();
+
+    // pick the last date
+    db.find({}).sort({ date: -1 }).exec(function(err, docs) {
+        var hist = {};
+        docs.forEach(function(item) {
+            hist[item.date] = hist[item.date]+1 || 1;
+        });
+        var ok = Object.keys(hist);
+       
+        // sort by time (name) descending
+        db.find({date: ok[0]}).sort({name: -1}).exec(function (err, docs) {    
+            res.json(docs);
+            res.end();
+        });
+       
     });
 });
 
-
+// export router
 module.exports = router;
