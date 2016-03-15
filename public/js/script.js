@@ -23,14 +23,14 @@ WinJS.Namespace.define("Sample.ListView", {
     itemCount: itemArray.length,
     eh: {
         footerVisibility: WinJS.UI.eventHandler(function (ev) {
-            var visible = ev.detail.visible;
-            if (visible) {
-                WinJS.Utilities.removeClass(Sample.ListView.progress, "hide");
-                 WinJS.UI.Animation.fadeIn(Sample.ListView.status);
-                 // getData();
-            } else {
-                WinJS.Utilities.addClass(Sample.ListView.progress, "hide");
-            }
+            // var visible = ev.detail.visible;
+            // if (visible) {
+            //     WinJS.Utilities.removeClass(Sample.ListView.progress, "hide");
+            //      WinJS.UI.Animation.fadeIn(Sample.ListView.status);
+            //      // getData();
+            // } else {
+            //     WinJS.Utilities.addClass(Sample.ListView.progress, "hide");
+            // }
         })
     }
 });
