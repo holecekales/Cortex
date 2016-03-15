@@ -27,15 +27,13 @@ WinJS.Namespace.define("Sample.ListView", {
             if (visible) {
                 WinJS.Utilities.removeClass(Sample.ListView.progress, "hide");
                  WinJS.UI.Animation.fadeIn(Sample.ListView.status);
-                getData();
-                
+                 // getData();
             } else {
                 WinJS.Utilities.addClass(Sample.ListView.progress, "hide");
             }
         })
     }
 });
-
 
 WinJS.UI.processAll().done(function () {
         // Cache ListView and Header elements

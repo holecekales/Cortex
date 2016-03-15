@@ -81,32 +81,25 @@ function handleUploadedFile(file, folder) {
 
 // routes
 router.post('/', function(req, res, next) {
-        
      var form = new multiparty.Form();
-        form.request = req;
-
-        form.parse(req, function(err, fields, files) {
+    form.request = req;
+    form.parse(req, function(err, fields, files) {
+        
+        var len = files.upload.length;
+        
+        for(var i = 0; i < len; i++) { 
+            var href = handleUploadedFile(files.upload[i], fields.date[0]);
+            var rec = { 
+                name: files.upload[i].originalFilename,
+                date: fields.date[0],
+                time: fields.time[0],
+                path: href
+            };
             
-            var len = files.upload.length;
-            
-            for(var i = 0; i < len; i++) { 
-                
-                console.log("uploaded file: " + i);
-                
-                var href = handleUploadedFile(files.upload[i], fields.date[0]);
-                
-                var rec = { 
-                    name: files.upload[i].originalFilename,
-                    date: fields.date[0],
-                    time: fields.time[0],
-                    path: href
-                };
-                
-                db.insert(rec, function (err, newDoc) { }); // emptry callback - manip the doc
-            }
-           
-           res.sendStatus(200);
-        });
+            db.insert(rec, function (err, newDoc) { }); // emptry callback - manip the doc
+        }
+        res.sendStatus(200);
+    });
  });
  
 
@@ -140,7 +133,8 @@ router.get('/', function(req, res) {
     var t = req.query.time || -1;
     var d = req.query.date || new Date();
     
-    db.find({}).skip(0).limit(10).exec(function (err, docs) {
+    // db.find({}).skip(0).limit(10).exec(function (err, docs) {
+    db.find({}).skip(0).exec(function (err, docs) {    
       res.json(docs);
       res.end();
     });
