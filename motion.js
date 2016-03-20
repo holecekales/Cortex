@@ -106,9 +106,9 @@ router.post('/', function(req, res, next) {
 // this just for testing 
 router.use('/test', express.static(__dirname + '/public/test.html'));
 
-router.get('/fetch/:id?', function (req, res) {
+router.get('/fetch/:date?', function (req, res) {
     
-    if(req.params.id === undefined) {
+    if(req.params.date === undefined) {
          // return to the client which dates we have available - (and trim??)
         db.find({}).sort({ date: -1 }).exec(function(err, docs) {
             var hist = {};
@@ -121,10 +121,20 @@ router.get('/fetch/:id?', function (req, res) {
         });
     }
     else {
-        db.find({date: req.params.id}).skip(0).exec(function (err, docs) {
-            res.json(docs);
-            res.end();
-        }); 
+        // pagination
+        if(req.query.start !== undefined && req.query.count !== undefined)
+        {
+            db.find({date: req.params.date}).skip(parseInt(req.query.start)).limit(parseInt(req.query.count)).exec(function (err, docs) {
+                res.json(docs);
+                res.end();
+            });
+        }
+        else { // return all for that dat
+            db.find({date: req.params.date}, function (err, docs) {
+                res.json(docs);
+                res.end();
+            });
+        }
     }
 });
 
