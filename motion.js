@@ -140,7 +140,7 @@ router.get('/fetch/:date?', function (req, res) {
     }
 });
 
-router.get('/', function(req, res) {
+router.get('/:id?', function(req, res) {
 
     // pick the last date
     db.find({}).sort({ date: -1 }).exec(function(err, docs) {
@@ -150,12 +150,15 @@ router.get('/', function(req, res) {
         });
         var ok = Object.keys(hist);
        
+        var idx = 0;
+        if(req.params.id !== undefined)
+            idx = parseInt(req.params.id);
+            
         // sort by time (name) descending
-        db.find({date: ok[0]}).sort({name: -1}).exec(function (err, docs) {    
+        db.find({date: ok[idx]}).sort({name: -1}).exec(function (err, docs) {    
             res.json(docs);
             res.end();
         });
-       
     });
 });
 
