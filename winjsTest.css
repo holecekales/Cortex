@@ -1,0 +1,77 @@
+/* Add your CSS here */
+.content, #app {
+    height: calc(100% - 72px);
+}
+
+#app .win-splitviewpanetoggle {
+    float: left;
+}
+
+    /* SplitView pane content style*/
+#app .header {
+    white-space: nowrap;
+}
+
+#app .title {
+    font-size: 25px;
+    left: 50px;
+    margin-top: 6px;
+    vertical-align: middle;
+    display: inline-block;
+}
+
+#app .nav-commands {
+    margin-top: 20px;
+}
+
+.win-splitviewcommand-button {
+    background-color: transparent;
+}
+
+#app .win-splitview-pane-closed .win-splitviewcommand-label {
+    /*  Make sure pane content doesn't scroll if 
+    SplitViewCommand label receives focus while pane is closed.
+    */
+    visibility: hidden;
+}
+
+    /*SplitView pane style for different screen sizes*/
+#app.large .splitView {
+    width: 100%;
+}
+
+#app.large .win-splitview-content .win-splitviewpanetoggle {
+    display: none;
+}
+
+#app.medium .splitView {
+    width: 80%
+}
+
+#app.medium .win-splitview-content .win-splitviewpanetoggle {
+    display: none;
+}
+
+#app.small .splitView {
+    width: 60%;
+}
+
+#contenthost {
+    width: 100%;
+    height: 100%;
+  /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#c8c8c8+0,0e0e0e+100 */
+    background: #c8c8c8; /* Old browsers */
+    background: -moz-linear-gradient(top,  #c8c8c8 0%, #0e0e0e 100%); /* FF3.6-15 */
+    background: -webkit-linear-gradient(top,  #c8c8c8 0%,#0e0e0e 100%); /* Chrome10-25,Safari5.1-6 */
+    background: linear-gradient(to bottom,  #c8c8c8 0%,#0e0e0e 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+}
+
+/*SplitView content style*/
+#app .win-splitview-content {
+    background-color: rgb(200,200,200); 
+}
+
+#app .contenttext {
+    margin-left: 20px;
+    margin-top: 6px;
+}

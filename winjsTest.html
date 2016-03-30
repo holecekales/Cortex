@@ -1,0 +1,63 @@
+<html>
+    <head>
+        <title>HomeCortex - sPi</title>
+      
+        <!-- WinJS coming from CDN -->
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/winjs/4.4.0/css/ui-light.css" rel="stylesheet" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/winjs/4.4.0/js/base.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/winjs/4.4.0/js/ui.js"></script>
+        
+        
+        <link href="winjsTest.css" rel="stylesheet" />
+        <script src="winjSTest.js"></script>
+
+        <script>
+            
+        </script>
+    </head>   
+     
+    <body>
+        <div id="app" class="small">
+            <div class="radiodiv">
+                <label><h3 class="win-h3">Window sizes:</h3></label>
+                <input class="win-radio" type="radio" name="placement" value="large"  id="largescreen" data-win-bind="onclick: radioChanged" /><label for="largescreen">Large screen</label>
+                <input class="win-radio" type="radio" name="placement" value="medium" id="mediumscreen" data-win-bind="onclick: radioChanged" /><label for="mediumscreen">Medium screen</label>
+                <input class="win-radio" type="radio" name="placement" value="small" checked="checked" id="smallscreen" data-win-bind="onclick: radioChanged" /><label for="smallscreen">Small screen</label>
+            </div>
+
+            <div class="splitView" data-win-control="WinJS.UI.SplitView" data-win-options="{
+                    openedDisplayMode: 'overlay',
+                    closedDisplayMode: 'none'
+                }">
+                <!-- Pane area -->
+                <div>
+                    <div class="header">
+                        <button
+                            class="win-splitviewpanetoggle"
+                            data-win-control="WinJS.UI.SplitViewPaneToggle"
+                            data-win-options="{ splitView: select('.splitView') }"
+                        ></button>
+                        <div class="title">Dates</div>
+                    </div>
+
+                    <div class="nav-commands">
+                        <div data-win-control="WinJS.UI.SplitViewCommand" data-win-options="{ label: '2016-03-15', oninvoked: MotionPi.dateSelection}"></div>
+                        <div data-win-control="WinJS.UI.SplitViewCommand" data-win-options="{ label: '2016-03-14', oninvoked: MotionPi.dateSelection}"></div>
+                    </div>
+                </div>
+
+                <!-- Content area -->
+                <button
+                    class="win-splitviewpanetoggle"
+                    data-win-control="WinJS.UI.SplitViewPaneToggle"
+                    data-win-options="{ splitView: select('.splitView') }"
+                ></button>
+                <div class="contenttext"><h2 class="win-h2">March 27th 2016</h2> </div>
+                <div id="contenthost" class="contentholder">
+                    
+                    
+                </div>
+            </div> 
+        </div>
+    </body>    
+</html>
