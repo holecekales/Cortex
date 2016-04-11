@@ -6,6 +6,8 @@ var app = express();
 var port = process.env.PORT || 8080;
 
 app.use(express.static('public'));
+
+
 app.use('/upload', express.static('upload'));
 
 app.use('/public/', express.static('public'));
