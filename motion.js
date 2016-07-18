@@ -110,12 +110,21 @@ router.get('/fetch/:date?', function (req, res) {
     if(req.params.date === undefined) {
          // return to the client which dates are available
         db.find({}).sort({ date: -1 }).exec(function(err, docs) {
-            var hist = {};
+            var hist = {};  // hash table based on day string
             docs.forEach(function(item) {
                 hist[item.date] = hist[item.date]+1 || 1;
             });
-            var ok = Object.keys(hist);
-            res.json(ok);
+
+            // AH - I found that Siena had bunch of issues handling just array of values (dates)
+            // although i think it is valid JSON array.
+            // So instead of dumping just dates, i will return histogram object {"date": "2016-05-29", "count": # of Pix}
+            var objectKeys = Object.keys(hist);
+            var jsonResp = [];
+            for (var idx = 0;  idx < objectKeys.length; idx++)
+            {
+                jsonResp[idx] = {"date": objectKeys[idx], "count": hist[objectKeys[idx]]};        
+            }
+            res.json(jsonResp);
             res.end();
         });
     }
