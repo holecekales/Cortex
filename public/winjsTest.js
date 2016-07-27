@@ -25,10 +25,11 @@
         
         dateSelection: WinJS.UI.eventHandler(function (ev) {
             var date = event.target.innerText.trim();
-            var base = 'http://localhost:8080';
+            var base = ''; //http://localhost:8080';
             var url = base+'/api/motion/fetch/' + date;
-            return WinJS.xhr({ url: url }).then(function(res) {
-                var data = res;
+            return WinJS.xhr({ url: url, responseType: 'json' }).then(function(res) {
+                var data = res.response;
+                
                 // var data = …; // processing the request
                 // return data;
             });

@@ -53,9 +53,32 @@
                     data-win-options="{ splitView: select('.splitView') }"
                 ></button>
                 <div class="contenttext"><h2 class="win-h2">March 27th 2016</h2> </div>
+                
+                    <!-- Simple template for the ListView instantiation  -->
+                    <div class="imgTemplate" data-win-control="WinJS.Binding.Template" style="display: none">
+                        <div class="imgItemTemplate">
+                            <!--
+                            <img src="#" class="smallListIconTextItem-Image" data-win-bind="src: picture" />
+                            -->
+                            <div class="imgItemTemplateDetail">
+                                <h4 class="win-h4" data-win-bind="textContent: name"></h4>
+                                <h6 class="win-h6" data-win-bind="textContent: time"></h6>
+                            </div>
+                        </div>
+                    </div>
+                
                 <div id="contenthost" class="contentholder">
-                    
-                    
+                    <div id="listView"
+                        class="win-selectionstylefilled"
+                        data-win-control="WinJS.UI.ListView"
+                        data-win-options="{
+                            itemDataSource: Sample.ListView.data.dataSource,
+                            itemTemplate: select('.smallListIconTextTemplate'),
+                            selectionMode: 'none',
+                            tapBehavior: 'none',
+                            layout: { type: WinJS.UI.ListLayout } 
+                         }">
+                    </div>
                 </div>
             </div> 
         </div>
