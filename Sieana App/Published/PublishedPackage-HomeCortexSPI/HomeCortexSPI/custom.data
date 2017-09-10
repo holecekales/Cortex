@@ -1,8 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<SienaSettings xmlns="Microsoft.Siena">
-  <Application p2:Name="HomeCortexSPI" xmlns:p2="Microsoft.Siena" />
-  <LogoImage p2:Src="images\default_icon.png" xmlns:p2="Microsoft.Siena" />
-  <ImageAttributes p2:BackgroundColor="RGBA(0, 176, 240, 1)" p2:OffsetXSquare="50" p2:OffsetYSquare="50" p2:OffsetXWide="210" p2:OffsetYWide="50" p2:MaxSize="200" xmlns:p2="Microsoft.Siena" />
-  <Telemetry p2:DocumentID="50e6660c-b1b1-41c6-a46c-ef61a93ee829" p2:DocumentVersionID="bd4877d6-06e2-4666-a376-26fb6738f224" p2:ContainsO365Connector="false" xmlns:p2="Microsoft.Siena" />
-  <Version p2:OriginatingVersion="1.113" xmlns:p2="Microsoft.Siena" />
-</SienaSettings>
