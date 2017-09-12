@@ -1,83 +1,26 @@
 <html>
-    <head>
-        <title>HomeCortex - sPi</title>
-      
-        <!-- WinJS coming from CDN -->
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/winjs/4.4.0/css/ui-light.css" rel="stylesheet" />
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/winjs/4.4.0/js/base.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/winjs/4.4.0/js/ui.js"></script> 
-        
-        <!-- scripts -->
-        <script src="js/displayDate.js"></script>
-        <script src="js/script.js"></script>
-        <!-- styles -->
-        <link rel="stylesheet" type="text/css" href="css/styles.css" />
-        
-    </head>    
-    <body>
-        <div id="app">
-            <div class="splitView" data-win-control="WinJS.UI.SplitView">
-                <!-- Pane area -->
-                <div>
-                    <div class="viewheader">
-                        <button
-                            class="win-splitviewpanetoggle"
-                            data-win-control="WinJS.UI.SplitViewPaneToggle"
-                            data-win-options="{ splitView: select('.splitView') }"
-                        ></button>
-                        <div class="title">
-                            <span>SplitView Pane area</span>
-                        </div>
-                    </div>
 
-                    <div class="nav-commands">
-                        <div data-win-control="WinJS.UI.SplitViewCommand" data-win-options="{ label: 'Home', icon: 'home'}"></div>
-                        <div data-win-control="WinJS.UI.SplitViewCommand" data-win-options="{ label: 'Favorite', icon: 'favorite'}"></div>
-                        <div data-win-control="WinJS.UI.SplitViewCommand" data-win-options="{ label: 'Settings', icon: 'settings'}"></div>
-                    </div>
-                </div>
+<head>
+  <title>HomeCortex</title>
+  <!-- styles -->
+  <link rel="stylesheet" type="text/css" href="css/index.css" />
 
-                <!-- Content area -->
-                <div class="contenttext">
-                    <h2 class="win-h2">Content <span data-win-bind="textContent: itemCount" id="counter"></span> </h2> 
-                </div>
-                    <!-- Simple template for the ListView instantiation  -->
-                    <div class="smallListIconTextTemplate" data-win-control="WinJS.Binding.Template" style="display: none">
-                        <div class="smallListIconTextItem">
-                            <!--
-                            <div class="smallListIconTextItem-Detail">
-                                <h4 class="win-h4" data-win-bind="textContent: date"></h4>
-                                <h6 class="win-h6" data-win-bind="textContent: time"></h6>
-                            </div>
-                            -->
-                              <img src="#" class="smallListIconTextItem-Image" data-win-bind="src: path" />
-                        </div>
-                    </div>
+  <!-- scripts -->
+  <script src="js/index.js"></script>
 
-                    <!-- Elements used for header and footer elements for ListView -->
-                    <div class="headerFooterPlaceholder">
-                        <div class="footer">
-                            <div class="status">
-                                <button>Load more </button>
-                                <progress class="progress hide"></progress>
-                            </div>
-                        </div>
-                    </div>
+</head>
 
-                    <div id="listView" class="listView win-selectionstylefilled"
-                        data-win-control="WinJS.UI.ListView"
-                        data-win-options="{
-                                itemDataSource: Sample.ListView.data.dataSource,
-                                itemTemplate: select('.smallListIconTextTemplate'),
-                                footer: select('.footer'),
-                                onfootervisibilitychanged: Sample.ListView.eh.footerVisibility,
-                                selectionMode: 'none',
-                                tapBehavior: 'none',
-                                layout: { type: WinJS.UI.ListLayout }
-                            }">
-                    </div>
-                </div> <!-- content -->
-            </div> 
-        </div>
-    </body>    
+<body>
+  <div id='container'>
+    <div id='header'>
+      <ul>
+        <li > <a class='active' href="#"> Pump </a> </li>
+        <li> <a href="#"> SPi </a>  </li>
+        <li> <a href="#"> Test </a>  </li>
+        <li> <a href="#"> About </a>  </li>
+      </ul>
+    </div>
+    <div id='content'>content</div>
+  </div>
+</body>
 </html>
