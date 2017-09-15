@@ -139,7 +139,7 @@ class Pump {
   }
 
   close() {
-    
+
   }
 
   // -------------------------------------------------------------------------
@@ -151,8 +151,6 @@ class Pump {
       if (!obj.time || !obj.temperature) {
         return;
       }
-
-      // console.log(obj.time);
 
       this.timeData.push(obj.time);
       this.temperatureData.push(obj.temperature);

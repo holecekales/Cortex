@@ -44,32 +44,27 @@ class NavBar {
   }
 
   // ---------------------------------------------------------
-  activateButton(n: number) {
-    let buttons = document.querySelectorAll('#header li a');
-    if (n < buttons.length) {
-      let ca = $(this.id + ' li a.active');
-      if (ca)
-        (<HTMLElement>(ca)).classList.remove('active');
+  switchPage(target? : HTMLElement) {
+    let ca = $(this.id + ' li a.active');
+    let t = target || null; 
 
-      let target: HTMLElement = <HTMLElement>(buttons[n]);
-      target.classList.add('active');
-      // add it to the one which is getting clicked
-      this.loadPage(target.getAttribute('url'), $('#content'), target.getAttribute('view'));
-    }
+    if(t && ca == t)
+      return;
+
+    if (ca && t && ca != t) 
+      (<HTMLElement>(ca)).classList.remove('active');
+
+    if(t == null) 
+      t = ca;
+
+    t.classList.add('active');
+    // add it to the one which is getting clicked
+    this.loadPage(t.getAttribute('url'), $('#content'), t.getAttribute('view'));
   }
 
   // ---------------------------------------------------------
   handleClick(e) {
-    // remove the active style from the current element
-    let ca = $(this.id + ' li a.active');
-    if (ca)
-      (<HTMLElement>(ca)).classList.remove('active');
-
-    let target: HTMLElement = <HTMLElement>(e.target);
-    target.classList.add('active');
-    // add it to the one which is getting clicked
+    this.switchPage(e.target);
     e.preventDefault();
-    console.log(target.getAttribute('url'));
-    this.loadPage(target.getAttribute('url'), $('#content'), target.getAttribute('view'));
   }
 }

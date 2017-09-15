@@ -38,30 +38,23 @@ var NavBar = (function () {
         xhr.send();
     };
     // ---------------------------------------------------------
-    NavBar.prototype.activateButton = function (n) {
-        var buttons = document.querySelectorAll('#header li a');
-        if (n < buttons.length) {
-            var ca = $(this.id + ' li a.active');
-            if (ca)
-                (ca).classList.remove('active');
-            var target = (buttons[n]);
-            target.classList.add('active');
-            // add it to the one which is getting clicked
-            this.loadPage(target.getAttribute('url'), $('#content'), target.getAttribute('view'));
-        }
+    NavBar.prototype.switchPage = function (target) {
+        var ca = $(this.id + ' li a.active');
+        var t = target || null;
+        if (t && ca == t)
+            return;
+        if (ca && t && ca != t)
+            (ca).classList.remove('active');
+        if (t == null)
+            t = ca;
+        t.classList.add('active');
+        // add it to the one which is getting clicked
+        this.loadPage(t.getAttribute('url'), $('#content'), t.getAttribute('view'));
     };
     // ---------------------------------------------------------
     NavBar.prototype.handleClick = function (e) {
-        // remove the active style from the current element
-        var ca = $(this.id + ' li a.active');
-        if (ca)
-            (ca).classList.remove('active');
-        var target = (e.target);
-        target.classList.add('active');
-        // add it to the one which is getting clicked
+        this.switchPage(e.target);
         e.preventDefault();
-        console.log(target.getAttribute('url'));
-        this.loadPage(target.getAttribute('url'), $('#content'), target.getAttribute('view'));
     };
     return NavBar;
 }());

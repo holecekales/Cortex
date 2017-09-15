@@ -9,6 +9,6 @@ function $(id: string): HTMLElement {
 (function () {
   document.addEventListener("DOMContentLoaded", (e) => {
     nav = new NavBar('#header');
-    nav.activateButton(0);
+    nav.switchPage();
   });
 })();
