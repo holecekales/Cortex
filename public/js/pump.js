@@ -124,6 +124,8 @@ var Pump = (function () {
         this.simulateData(200);
         this.handlePause();
     };
+    Pump.prototype.close = function () {
+    };
     // -------------------------------------------------------------------------
     // parseData new for the chart
     // -------------------------------------------------------------------------
@@ -132,7 +134,7 @@ var Pump = (function () {
             if (!obj.time || !obj.temperature) {
                 return;
             }
-            console.log(obj.time);
+            // console.log(obj.time);
             this.timeData.push(obj.time);
             this.temperatureData.push(obj.temperature);
             // only keep no more than 50 points in the line chart

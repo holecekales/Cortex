@@ -16,14 +16,21 @@ var NavBar = (function () {
     }
     NavBar.prototype.getView = function () { return this.view; };
     // ---------------------------------------------------------
-    NavBar.prototype.loadPage = function (url, elem) {
+    NavBar.prototype.loadPage = function (url, elem, viewConstructor) {
         var _this = this;
         var xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function (e) {
             if (xhr.readyState == 4 && xhr.status == 200) {
                 elem.innerHTML = xhr.responseText;
-                _this.view = new Pump();
-                _this.view.init();
+                console.log('load finished: ' + url);
+                if (_this.view !== null) {
+                    _this.view.close();
+                    _this.view = null;
+                }
+                if (viewConstructor) {
+                    _this.view = new window[viewConstructor]();
+                    _this.view.init();
+                }
             }
         };
         xhr.open("GET", url, true);
@@ -40,7 +47,7 @@ var NavBar = (function () {
             var target = (buttons[n]);
             target.classList.add('active');
             // add it to the one which is getting clicked
-            this.loadPage(target.getAttribute('url'), $('#content'));
+            this.loadPage(target.getAttribute('url'), $('#content'), target.getAttribute('view'));
         }
     };
     // ---------------------------------------------------------
@@ -54,7 +61,7 @@ var NavBar = (function () {
         // add it to the one which is getting clicked
         e.preventDefault();
         console.log(target.getAttribute('url'));
-        this.loadPage(target.getAttribute('url'), $('#content'));
+        this.loadPage(target.getAttribute('url'), $('#content'), target.getAttribute('view'));
     };
     return NavBar;
 }());

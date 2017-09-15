@@ -138,6 +138,10 @@ class Pump {
     this.handlePause();
   }
 
+  close() {
+    
+  }
+
   // -------------------------------------------------------------------------
   // parseData new for the chart
   // -------------------------------------------------------------------------
@@ -148,7 +152,7 @@ class Pump {
         return;
       }
 
-      console.log(obj.time);
+      // console.log(obj.time);
 
       this.timeData.push(obj.time);
       this.temperatureData.push(obj.temperature);

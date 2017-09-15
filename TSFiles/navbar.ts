@@ -20,13 +20,22 @@ class NavBar {
   getView() { return this.view; }
 
   // ---------------------------------------------------------
-  loadPage(url: string, elem: HTMLElement) {
+  loadPage(url: string, elem: HTMLElement, viewConstructor) {
     let xhr = new XMLHttpRequest();
     xhr.onreadystatechange =  (e) => {
       if (xhr.readyState == 4 && xhr.status == 200) {
         elem.innerHTML = xhr.responseText;
-        this.view = new Pump();
-        this.view.init();
+        console.log('load finished: ' + url);
+
+        if(this.view !== null) {
+          this.view.close();
+          this.view = null;
+        }
+
+        if(viewConstructor) {
+          this.view = new window[viewConstructor]();
+          this.view.init();
+        }
       }
     }
     xhr.open("GET", url, true);
@@ -45,7 +54,7 @@ class NavBar {
       let target: HTMLElement = <HTMLElement>(buttons[n]);
       target.classList.add('active');
       // add it to the one which is getting clicked
-      this.loadPage(target.getAttribute('url'), $('#content'));
+      this.loadPage(target.getAttribute('url'), $('#content'), target.getAttribute('view'));
     }
   }
 
@@ -61,6 +70,6 @@ class NavBar {
     // add it to the one which is getting clicked
     e.preventDefault();
     console.log(target.getAttribute('url'));
-    this.loadPage(target.getAttribute('url'), $('#content'));
+    this.loadPage(target.getAttribute('url'), $('#content'), target.getAttribute('view'));
   }
 }
