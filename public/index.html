@@ -1,26 +1,37 @@
+<!DOCTYPE html>
 <html>
-
 <head>
   <title>HomeCortex</title>
   <!-- styles -->
-  <link rel="stylesheet" type="text/css" href="css/index.css" />
+  <link type="text/css" rel="stylesheet" href="css/index.css" />
+  <link type="text/css" rel="stylesheet" href="css/pump.css"/>
 
   <!-- scripts -->
-  <script src="js/index.js"></script>
 
+  <!-- pump -->
+  <script src="js/moment.min.js" type="text/javascript" charset="utf-8"></script>
+  <script src="js/Chart.min.js" type="text/javascript" charset="utf-8"></script>   
+  <script src="js/pump.js" type="text/javascript" charset="utf-8"></script>
+
+  <!-- navbar -->
+  <script type="text/javascript" charset="utf-8" src="js/navbar.js"></script>
+  
+  <!-- index -->
+  <script type="text/javascript" charset="utf-8" src="js/index.js"></script>
 </head>
 
 <body>
   <div id='container'>
     <div id='header'>
       <ul>
-        <li > <a class='active' href="#"> Pump </a> </li>
-        <li> <a href="#"> SPi </a>  </li>
-        <li> <a href="#"> Test </a>  </li>
-        <li> <a href="#"> About </a>  </li>
+        <li> <a class='active' url="pump.html" href="#">Pump</a> </li>
+        <li> <a href="#" url="camera.html">SPi</a> </li>
+        <li> <a href="#" url="test.html">Test</a> </li>
+        <li> <a href="#">About</a> </li>
       </ul>
     </div>
     <div id='content'>content</div>
   </div>
 </body>
+
 </html>

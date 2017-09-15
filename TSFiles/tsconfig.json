@@ -5,6 +5,6 @@
         "noImplicitAny": false,
         "sourceMap": false,
         "watch": true,
-        "outDir": "../public/"
+        "outDir": "../public/js"
     }
 }
