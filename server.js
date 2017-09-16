@@ -3,8 +3,8 @@ const http = require('http');
 const WebSocket = require('ws');
 const moment = require('moment');
 const path = require('path');
-var sPi = require('./motion');
-var iotHubClient = require('./IoTHub/iot-hub');
+var sPi = require('./service/motion');
+var iotHubClient = require('./service/IoTHub/iot-hub');
 
 var app = express();
 
