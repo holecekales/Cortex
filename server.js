@@ -7,7 +7,7 @@ var sPi = require('./motion');
 
 var app = express();
 
-var port = process.env.PORT || 8080;
+
 
 app.use(express.static('public'));
 
@@ -23,6 +23,30 @@ app.use('/api', function(req, res, next) {
     res.send('this API is not supported yet');
 });
 
-app.listen(port, function () {
-  console.log('Listening on port %d', port);
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server });
+
+wss.on('connection', function connection(ws, req) {
+  console.log('socket connection');
+});
+
+// Broadcast to all.
+wss.broadcast = function broadcast(data) {
+  wss.clients.forEach(function each(client) {
+    if (client.readyState === WebSocket.OPEN) {
+      try {
+        console.log('sending data ' + data);
+        client.send(data);
+      } catch (e) {
+        console.error('This' + e);
+      }
+    }
+  });
+};
+
+
+var port = process.env.PORT || 8080;
+
+server.listen(port, function () {
+  console.log('Listening on port %d', server.address().port);
 });

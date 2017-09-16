@@ -133,7 +133,7 @@ class Pump {
 
   init() {
     this.initChart();
-    // this.initSocket();
+    this.initSocket();
     this.simulateData(200);
     this.handlePause();
   }

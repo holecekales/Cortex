@@ -120,7 +120,7 @@ var Pump = (function () {
     };
     Pump.prototype.init = function () {
         this.initChart();
-        // this.initSocket();
+        this.initSocket();
         this.simulateData(200);
         this.handlePause();
     };
