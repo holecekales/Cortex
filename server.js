@@ -5,6 +5,7 @@ const moment = require('moment');
 const path = require('path');
 var sPi = require('./service/motion');
 var iotHubClient = require('./service/IoTHub/iot-hub');
+var pump = require('./service/IoTHub/iot-hub');
 
 var app = express();
 
