@@ -9,6 +9,7 @@
   "author": "ales",
   "license": "MIT",
   "dependencies": {
+    "azure-event-hubs": "0.0.8",
     "express": "~4.13.4",
     "http": "0.0.0",
     "moment": "^2.18.1",

@@ -4,6 +4,7 @@ const WebSocket = require('ws');
 const moment = require('moment');
 const path = require('path');
 var sPi = require('./motion');
+var iotHubClient = require('./IoTHub/iot-hub');
 
 var app = express();
 
@@ -43,6 +44,25 @@ wss.broadcast = function broadcast(data) {
     }
   });
 };
+
+// open the Event Hub
+var connectionString = 'HostName=IoTpump.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=NgVcqeqxlrecmyehSEDp0ghE6tPhQzjjzx7qpfDdsq0=';
+var consumerGroup = 'eventdatagroup'; 
+
+// var iotHubReader = new iotHubClient(process.env['Azure.IoT.IoTHub.ConnectionString'], process.env['Azure.IoT.IoTHub.ConsumerGroup']);
+var iotHubReader = new iotHubClient(connectionString, consumerGroup);
+iotHubReader.startReadMessage(function (obj, date) {
+  try {
+    date = date || Date.now();
+    let msg = JSON.stringify(Object.assign(obj, { time: moment.utc(date).format('YYYY:MM:DD[T]hh:mm:ss') }));
+    console.log('socket msg: ' + msg);
+    wss.broadcast(msg);
+  } catch (err) {
+    console.log('Error pushing message out');
+    console.log(obj);
+    console.error(err);
+  }
+});
 
 
 var port = process.env.PORT || 8080;

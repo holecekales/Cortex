@@ -2,9 +2,12 @@
   padding: 50px;
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
   margin: 0;
+  display: block;
+  position: relative;
 }
 
 #pump button {
   color: #2053AB;
   margin-left: 5px;
 }
+
