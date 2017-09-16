@@ -10,7 +10,11 @@
   "license": "MIT",
   "dependencies": {
     "express": "~4.13.4",
+    "http": "0.0.0",
+    "moment": "^2.18.1",
+    "multiparty": "~4.1.2",
     "nedb": "~1.8.0",
-    "multiparty": "~4.1.2"
+    "path": "^0.12.7",
+    "ws": "^3.2.0"
   }
 }
