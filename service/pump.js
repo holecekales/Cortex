@@ -1,1 +1,3 @@
-var x = 10;
+var express = require('express');
+var router = express.Router();
+module.exports = router;

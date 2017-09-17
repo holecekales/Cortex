@@ -5,6 +5,9 @@
         "noImplicitAny": false,
         "sourceMap": false,
         "watch": true,
-        "outDir": "../service/"
+        "outDir": "../service/",
+        "exclude": [
+            "node_modules"
+        ]  
     }
 }

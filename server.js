@@ -68,6 +68,13 @@ iotHubReader.startReadMessage(function (obj, date) {
 
 var port = process.env.PORT || 8080;
 
-server.listen(port, function () {
+server.listen(normalizePort(port), function () {
   console.log('Listening on port %d', server.address().port);
 });
+
+function normalizePort(val) {
+  var port = parseInt(val, 10);
+  if (isNaN(port)) { return val; }
+  if (port >= 0) { return port; }
+  return false;
+}
