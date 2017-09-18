@@ -20,7 +20,7 @@ class NavBar {
   getView() { return this.view; }
 
   // ---------------------------------------------------------
-  loadPage(url: string, elem: HTMLElement, viewConstructor) {
+  loadPage(url: string, elem: HTMLElement, viewConstructor: string) {
     let xhr = new XMLHttpRequest();
     xhr.onreadystatechange =  (e) => {
       if (xhr.readyState == 4 && xhr.status == 200) {

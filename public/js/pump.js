@@ -4,12 +4,12 @@
 var globaleventCount = 0; // $$$ this should go away 
 var Pump = (function () {
     function Pump() {
-        this.maxLen = 500;
+        this.maxLen = 300;
         this.timeoutHandle = null;
         this.timeData = [];
-        this.temperatureData = [];
-        this.humidityData = [];
-        this.myLineChart = null;
+        this.level = [];
+        this.state = [];
+        this.chart = null;
         this.ws = null;
     }
     ;
@@ -24,7 +24,7 @@ var Pump = (function () {
         };
         this.ws.onmessage = function (message) {
             console.log('receive message' + message.data);
-            _this.addData(JSON.parse(message.data), true);
+            _this.addData(JSON.parse(message.data), false);
         };
     };
     // -------------------------------------------------------------------------
@@ -43,7 +43,7 @@ var Pump = (function () {
                     backgroundColor: "rgba(255, 204, 0, 0.4)",
                     pointHoverBackgroundColor: "rgba(255, 204, 0, 1)",
                     pointHoverBorderColor: "rgba(255, 204, 0, 1)",
-                    data: this.temperatureData,
+                    data: this.level,
                     lineTension: 0
                 },
                 {
@@ -55,7 +55,7 @@ var Pump = (function () {
                     backgroundColor: "rgba(24, 120, 240, 0.4)",
                     pointHoverBackgroundColor: "rgba(24, 120, 240, 1)",
                     pointHoverBorderColor: "rgba(24, 120, 240, 1)",
-                    data: this.humidityData,
+                    data: this.state,
                     lineTension: 0
                 }
             ]
@@ -112,7 +112,7 @@ var Pump = (function () {
         Chart.defaults.global.elements.point.radius = 0;
         Chart.defaults.global.elements.point.hitRadius = 3;
         Chart.defaults.global.elements.line.borderWidth = 1;
-        this.myLineChart = new Chart(this.ctx, {
+        this.chart = new Chart(this.ctx, {
             type: 'line',
             data: data,
             options: basicOption
@@ -120,62 +120,105 @@ var Pump = (function () {
     };
     Pump.prototype.init = function () {
         this.initChart();
+        this.getBaseData();
         this.initSocket();
-        this.simulateData(200);
-        this.handlePause();
     };
+    // -------------------------------------------------------------------------
+    // close the session()
+    // -------------------------------------------------------------------------
     Pump.prototype.close = function () {
+        this.reset();
+    };
+    Pump.prototype.reset = function () {
+        this.timeData.splice(0, this.timeData.length);
+        this.level.splice(0, this.level.length);
+        this.state.splice(0, this.state.length);
     };
     // -------------------------------------------------------------------------
-    // parseData new for the chart
+    // addData - adds one or more records
     // -------------------------------------------------------------------------
-    Pump.prototype.addData = function (obj, update) {
-        try {
-            if (!obj.time || !obj.temperature) {
-                return;
+    Pump.prototype.addData = function (obj, reset) {
+        if (reset)
+            this.reset();
+        if (obj.constructor === Array) {
+            for (var i = 0; i < obj.length; i++) {
+                this.addRecord(obj[i]);
             }
-            this.timeData.push(obj.time);
-            this.temperatureData.push(obj.temperature);
+            this.chart.update();
+        }
+        else {
+            this.addRecord(obj);
+            this.chart.update();
+        }
+    };
+    // -------------------------------------------------------------------------
+    // add one record
+    // -------------------------------------------------------------------------
+    Pump.prototype.addRecord = function (obj) {
+        try {
+            this.timeData.push(obj.t);
+            this.level.push(obj.l);
             // only keep no more than 50 points in the line chart
             var len = this.timeData.length;
             if (len > this.maxLen) {
                 this.timeData.shift();
-                this.temperatureData.shift();
+                this.level.shift();
             }
-            if (obj.humidity) {
-                this.humidityData.push(obj.humidity);
+            if (obj.s) {
+                this.state.push(obj.s);
             }
-            if (this.humidityData.length > this.maxLen) {
-                this.humidityData.shift();
+            if (this.state.length > this.maxLen) {
+                this.state.shift();
             }
-            if (update)
-                this.myLineChart.update();
         }
         catch (err) {
             console.error(err);
         }
     };
+    // -------------------------------------------------------------------------
+    // getBaseData
+    // -------------------------------------------------------------------------
+    Pump.prototype.getBaseData = function () {
+        var _this = this;
+        var url = '/api/pump';
+        console.log(url);
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function (e) {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                var obj = JSON.parse(xhr.responseText);
+                _this.addData(obj, true);
+                // start recieving updates
+                _this.initSocket();
+            }
+        };
+        xhr.open("GET", url, true);
+        xhr.setRequestHeader('Content-type', 'json');
+        xhr.send();
+    };
+    // -------------------------------------------------------------------------
+    // simulate data
+    // -------------------------------------------------------------------------
     Pump.prototype.simulateData = function (count) {
         var onState = false;
-        var d = { "messageId": 0, "deviceId": "pumpMonitor", "temperature": 0, "humidity": 0, "time": Date.now() };
         var mt = count > 1 ? moment().subtract(count * 15, 's') : moment();
+        var a = new Array();
         for (var i = 0; i < count; i++) {
-            d.messageId = globaleventCount;
-            d.temperature = (globaleventCount % 40) * 0.75;
-            d.humidity = onState ? 1 : 0.1;
+            var d = {};
+            d['l'] = (globaleventCount % 40) * 0.75;
+            d['s'] = onState ? 1 : 0;
             if ((globaleventCount % 40) == 0)
                 onState = !onState;
-            d.time = mt.toDate();
+            d['t'] = mt.toDate().valueOf();
             mt.add(15, 's');
-            this.addData(d, (i == count - 1));
+            a.push(d);
+            // this.addRecord(d);
             globaleventCount++;
         }
+        this.addData(a, count > 1);
+        this.chart.update();
     };
     Pump.prototype.handSim = function () {
         this.simulateData(this.maxLen + 10);
-        this.timeoutHandle = setInterval(function () {
-            this.simulateData(1);
-        }, 1000);
     };
     Pump.prototype.handlePause = function () {
         var _this = this;

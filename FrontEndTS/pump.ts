@@ -5,12 +5,12 @@ var globaleventCount = 0; // $$$ this should go away
 
 class Pump {
 
-  readonly maxLen: number = 500;
+  readonly maxLen: number = 300;
   private timeoutHandle = null;
   private timeData = [];
-  private temperatureData = [];
-  private humidityData = [];
-  private myLineChart = null;
+  private level = [];
+  private state = [];
+  private chart = null;
   private ws: WebSocket = null;
 
   private ctx: CanvasRenderingContext2D;
@@ -27,7 +27,7 @@ class Pump {
     }
     this.ws.onmessage = (message) => {
       console.log('receive message' + message.data);
-      this.addData(JSON.parse(message.data), true);
+      this.addData(JSON.parse(message.data), false);
     }
   }
 
@@ -47,7 +47,7 @@ class Pump {
           backgroundColor: "rgba(255, 204, 0, 0.4)",
           pointHoverBackgroundColor: "rgba(255, 204, 0, 1)",
           pointHoverBorderColor: "rgba(255, 204, 0, 1)",
-          data: this.temperatureData,
+          data: this.level,
           lineTension: 0
         },
         {
@@ -59,7 +59,7 @@ class Pump {
           backgroundColor: "rgba(24, 120, 240, 0.4)",
           pointHoverBackgroundColor: "rgba(24, 120, 240, 1)",
           pointHoverBorderColor: "rgba(24, 120, 240, 1)",
-          data: this.humidityData,
+          data: this.state,
           lineTension: 0
         }
       ]
@@ -124,7 +124,7 @@ class Pump {
     Chart.defaults.global.elements.line.borderWidth = 1;
 
 
-    this.myLineChart = new Chart(this.ctx, {
+    this.chart = new Chart(this.ctx, {
       type: 'line',
       data: data,
       options: basicOption
@@ -133,78 +133,120 @@ class Pump {
 
   init() {
     this.initChart();
-    this.getBatchData();
+    this.getBaseData();
     this.initSocket();
-//    this.simulateData(200);
-//     this.handlePause();
   }
 
+
+  // -------------------------------------------------------------------------
+  // close the session()
+  // -------------------------------------------------------------------------
   close() {
+    this.reset();
+  }
 
+  reset() {
+    this.timeData.splice(0, this.timeData.length);
+    this.level.splice(0, this.level.length);
+    this.state.splice(0, this.state.length);
   }
 
   // -------------------------------------------------------------------------
-  // parseData new for the chart
+  // addData - adds one or more records
   // -------------------------------------------------------------------------
-  addData(obj, update) {
-    try {
+  addData(obj, reset: boolean) {
 
-      if (!obj.time || !obj.temperature) {
-        return;
+    if (reset)
+      this.reset();
+
+    if (obj.constructor === Array) {
+      for (let i = 0; i < obj.length; i++) {
+        this.addRecord(obj[i]);
       }
+      this.chart.update();
+    }
+    else {
+      this.addRecord(obj);
+      this.chart.update();
+    }
+  }
 
-      this.timeData.push(obj.time);
-      this.temperatureData.push(obj.temperature);
+  // -------------------------------------------------------------------------
+  // add one record
+  // -------------------------------------------------------------------------
+  addRecord(obj) {
+    try {
+      this.timeData.push(obj.t);
+      this.level.push(obj.l);
       // only keep no more than 50 points in the line chart
       let len = this.timeData.length;
       if (len > this.maxLen) {
         this.timeData.shift();
-        this.temperatureData.shift();
+        this.level.shift();
       }
 
-      if (obj.humidity) {
-        this.humidityData.push(obj.humidity);
+      if (obj.s) {
+        this.state.push(obj.s);
       }
-      if (this.humidityData.length > this.maxLen) {
-        this.humidityData.shift();
+      if (this.state.length > this.maxLen) {
+        this.state.shift();
       }
 
-      if (update)
-        this.myLineChart.update();
     } catch (err) {
       console.error(err);
     }
   }
 
+  // -------------------------------------------------------------------------
+  // getBaseData
+  // -------------------------------------------------------------------------
+  getBaseData() {
+    let url = '/api/pump';
+    console.log(url);
+    let xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = (e) => {
+      if (xhr.readyState == 4 && xhr.status == 200) {
+        let obj = JSON.parse(xhr.responseText);
+        this.addData(obj, true);
+        // start recieving updates
+        this.initSocket();
+      }
+    }
+    xhr.open("GET", url, true);
+    xhr.setRequestHeader('Content-type', 'json');
+    xhr.send();
+  }
 
+  // -------------------------------------------------------------------------
+  // simulate data
+  // -------------------------------------------------------------------------
   simulateData(count) {
 
     let onState = false;
-
-    let d = { "messageId": 0, "deviceId": "pumpMonitor", "temperature": 0, "humidity": 0, "time": Date.now() };
-
     let mt = count > 1 ? moment().subtract(count * 15, 's') : moment();
 
+    let a = new Array();
+
     for (let i = 0; i < count; i++) {
-      d.messageId = globaleventCount;
-      d.temperature = (globaleventCount % 40) * 0.75;
-      d.humidity = onState ? 1 : 0.1;
+      let d = {};
+      d['l'] = (globaleventCount % 40) * 0.75;
+      d['s'] = onState ? 1 : 0;
       if ((globaleventCount % 40) == 0) onState = !onState;
 
-      d.time = mt.toDate();
+      d['t'] = mt.toDate().valueOf();
       mt.add(15, 's');
 
-      this.addData(d, (i == count - 1));
+      a.push(d);
+      // this.addRecord(d);
       globaleventCount++;
     }
 
+    this.addData(a, count > 1);
+    this.chart.update();
   }
 
   handSim() {
     this.simulateData(this.maxLen + 10);
-    this.timeoutHandle = setInterval(function () {
-      this.simulateData(1);
-    }, 1000);
   }
 
   handlePause() {

@@ -5,6 +5,8 @@
         "noImplicitAny": false,
         "sourceMap": false,
         "watch": true,
-        "outDir": "../public/js"
-    }
+        "outDir": "../public/js",
+        "lib": ["es2016", "dom"] //or es6 instead of es2016(es7)        
+    },
+    "exclude": [ "node_modules" ]
 }
