@@ -5,7 +5,9 @@ const moment = require('moment');
 let router = express.Router();
 
 
-let sampleData = [
+var sampleData = []; 
+/*
+[
   {"l":0,"s":0,"t":1505708875702},
   {"l":0.75,"s":1,"t":1505708890702},
   {"l":1.5,"s":1,"t":1505708905702},
@@ -207,7 +209,7 @@ let sampleData = [
   {"l":28.5,"s":1,"t":1505711845702},
   {"l":29.25,"s":1,"t":1505711860702}
 ];
-
+*/
 
 // routes
 router.use('/', function (req, res, next) {
@@ -237,8 +239,12 @@ class Pump {
     this.iotHubReader = new iotHubClient(this.connectionString, this.consumerGroup);
     this.iotHubReader.startReadMessage((obj, date) => {
       try {
-        date = date || Date.now();
-        obj["time"] = moment.utc(date).format('YYYY:MM:DD[T]hh:mm:ss');
+        if(obj.time == undefined) { 
+          obj["time"] = Date.now();
+        }
+        
+        sampleData.push(obj);
+        
         let msg = JSON.stringify(obj);
         console.log('socket msg: ' + msg);
 
