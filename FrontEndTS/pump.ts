@@ -133,9 +133,10 @@ class Pump {
 
   init() {
     this.initChart();
+    this.getBatchData();
     this.initSocket();
-    this.simulateData(200);
-    this.handlePause();
+//    this.simulateData(200);
+//     this.handlePause();
   }
 
   close() {
@@ -198,8 +199,6 @@ class Pump {
     }
 
   }
-
-
 
   handSim() {
     this.simulateData(this.maxLen + 10);

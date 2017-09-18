@@ -4,6 +4,7 @@
   "description": "test of the express framework",
   "main": "server.js",
   "scripts": {
+    "start": "node server",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "ales",

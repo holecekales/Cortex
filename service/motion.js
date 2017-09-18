@@ -165,7 +165,7 @@ router.get('/:id?', function(req, res) {
             
         // sort by time (name) descending
         db.find({date: ok[idx]}).sort({name: -1}).exec(function (err, docs) {    
-            res.json(docs);
+            res.json(docs);           
             res.end();
         });
     });
