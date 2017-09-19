@@ -5,9 +5,14 @@ var router = express.Router();
 var sampleData = [];
 
 // routes
-router.use('/', function (req, res, next) {
+router.get('/', function (req, res, next) {
     res.status(200).json(sampleData);
 });
+
+router.put('/', function (req, res, next) {
+    res.sendStatus(200);
+});
+
 // ------------------------------------------------------------------------------------
 // Pump
 // ------------------------------------------------------------------------------------
