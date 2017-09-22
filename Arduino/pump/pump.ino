@@ -9,6 +9,7 @@
 
 #include <ESP8266WiFi.h>
 #include <ESP8266WiFiMulti.h>
+#include <WifiUDP.h>
 
 #include <WebSocketsClient.h>
 
