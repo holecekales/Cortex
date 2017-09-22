@@ -24,6 +24,11 @@ WebSocketsClient webSocket;
 
 #define USE_SERIAL Serial	
 
+
+
+// ------------------------------------------------------------------------------------------
+// webSocket event handler
+// ------------------------------------------------------------------------------------------
 void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
 
 	switch(type) {
@@ -32,7 +37,6 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
 			break;
 		case WStype_CONNECTED: {
 			USE_SERIAL.printf("[WSc] Connected to url: %s\n", payload);
-
 			// send message to server when Connected
 			webSocket.sendTXT("Connected");
 		}
@@ -54,6 +58,9 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
 
 }
 
+// ------------------------------------------------------------------------------------------
+// setup()
+// ------------------------------------------------------------------------------------------
 void setup() {
 	// USE_SERIAL.begin(921600);
 	USE_SERIAL.begin(115200);
@@ -89,6 +96,52 @@ void setup() {
 
 }
 
+// ------------------------------------------------------------------------------------------
+// uploadSensors()
+// ------------------------------------------------------------------------------------------
+uint32_t timer  = millis();
+#define SENSOR_READ 	1000
+int level = 0;
+int levelInc = 1;
+int state = 0;
+int t = 0;
+
+// {"l":29.25,"s":1,"t":1505711860702}
+const char* msgFormat = "{\"l\":%d, \"s\":%d, \"t\":%d}";
+
+char buffer[256];
+
+void uploadSensors() {
+	if (timer > millis())  timer = millis();
+	
+		if((millis() - timer) > SENSOR_READ) {
+			timer = millis(); // reset the timer
+
+			sprintf(buffer, msgFormat, level, state, t);
+
+			level += levelInc;
+			
+			if(level > 40) { 
+				levelInc = -2;
+				state = 1;
+			}
+			
+			if(level <= 0) { 
+				levelInc = 1;
+				state = 0;
+			}
+
+			t +=1;
+
+			webSocket.sendTXT(buffer);
+		}
+
+}
+
+// ------------------------------------------------------------------------------------------
+// loop()
+// ------------------------------------------------------------------------------------------
 void loop() {
 	webSocket.loop();
+	uploadSensors();
 }

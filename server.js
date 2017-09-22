@@ -30,7 +30,12 @@ pump.setSocket(wss);
 
 wss.on('connection', function connection(ws, req) {
   console.log('socket connection');
+  ws.on('message', function(msg) {
+    pump.rcvData(msg);
+  });
+  
 });
+
 
 // Broadcast to all.
 wss.broadcast = function broadcast(data) {

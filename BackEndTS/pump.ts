@@ -225,8 +225,6 @@ class Pump {
   private socket = null;
   private iotHubReader = null;
 
-
-
   // open the Event Hub
   readonly connectionString: string = 'HostName=IoTpump.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=NgVcqeqxlrecmyehSEDp0ghE6tPhQzjjzx7qpfDdsq0=';
   readonly consumerGroup: string = 'eventdatagroup';
@@ -244,7 +242,7 @@ class Pump {
         }
         
         sampleData.push(obj);
-        
+
         let msg = JSON.stringify(obj);
         console.log('socket msg: ' + msg);
 
@@ -263,9 +261,19 @@ class Pump {
   // set socket
   setSocket(s) { this.socket = s; }
 
-
-
-
+  // recieve data from socket
+  rcvData(data : string) {
+    try {
+    let obj = JSON.parse(data);
+    sampleData.push(obj);
+    this.socket.broadcast(data);
+    }
+    catch(err) {
+      console.log('Error pushing message out');
+      console.log(data);
+      console.error(err);
+    }
+  }
 }
 
 module.exports = { "router": router, "pump": new Pump() };
