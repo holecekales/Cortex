@@ -38,11 +38,11 @@ var Pump = (function () {
                     fill: -1,
                     label: 'Water Level',
                     yAxisID: 'waterlevel',
-                    borderColor: "rgba(255, 204, 0, 1)",
-                    pointBoarderColor: "rgba(255, 204, 0, 1)",
-                    backgroundColor: "rgba(255, 204, 0, 0.4)",
-                    pointHoverBackgroundColor: "rgba(255, 204, 0, 1)",
-                    pointHoverBorderColor: "rgba(255, 204, 0, 1)",
+                    borderColor: "rgba(24, 120, 240, 1)",
+                    pointBoarderColor: "rgba(24, 120, 240, 1)",
+                    backgroundColor: "rgba(24, 120, 240, 0.4)",
+                    pointHoverBackgroundColor: "rgba(24, 120, 240, 1)",
+                    pointHoverBorderColor: "rgba(24, 120, 240, 1)",
                     data: this.level,
                     lineTension: 0
                 },
@@ -50,11 +50,11 @@ var Pump = (function () {
                     fill: false,
                     label: 'Pump State',
                     yAxisID: 'running',
-                    borderColor: "rgba(24, 120, 240, 1)",
-                    pointBoarderColor: "rgba(24, 120, 240, 1)",
-                    backgroundColor: "rgba(24, 120, 240, 0.4)",
-                    pointHoverBackgroundColor: "rgba(24, 120, 240, 1)",
-                    pointHoverBorderColor: "rgba(24, 120, 240, 1)",
+                    borderColor: "rgba(255, 204, 0, 1)",
+                    pointBoarderColor: "rgba(255, 204, 0, 1)",
+                    backgroundColor: "rgba(255, 204, 0, 0.4)",
+                    pointHoverBackgroundColor: "rgba(255, 204, 0, 1)",
+                    pointHoverBorderColor: "rgba(255, 204, 0, 1)",
                     data: this.state,
                     lineTension: 0
                 }
@@ -64,7 +64,7 @@ var Pump = (function () {
             maintainAspectRatio: true,
             title: {
                 display: true,
-                text: 'Sump Pump Real-time Data',
+                text: 'Sump Pump Monitor',
                 fontSize: 36
             },
             scales: {
@@ -86,8 +86,13 @@ var Pump = (function () {
                         id: 'waterlevel',
                         type: 'linear',
                         scaleLabel: {
-                            labelString: 'Water Level (mm)',
+                            labelString: 'Water Level (cm)',
                             display: true
+                        },
+                        ticks: {
+                            min: 4,
+                            max: 40,
+                            stepSize: 2
                         },
                         position: 'left',
                     }, {

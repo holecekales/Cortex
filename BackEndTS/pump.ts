@@ -31,6 +31,7 @@ class Pump {
 
       if (obj.m == "d") {
         delete obj.m;
+        obj.l = 55 - obj.l; // the bucket is 55cm deep
         sampleData.push(obj);
         this.socket.broadcast(JSON.stringify(obj));
       }
