@@ -167,7 +167,7 @@ time_t getNTPTime()
 			const unsigned long _70Years = 2208988800UL;
 			unsigned long timeOut = seconds1990 - _70Years; //Set to subtract 70 years
 			USE_SERIAL.println(timeOut);
-			return timeOut + timeZone * SECS_PER_HOUR;
+			return timeOut; // + timeZone * SECS_PER_HOUR;
 		}
 	}
 	USE_SERIAL.print("No packets recieved");

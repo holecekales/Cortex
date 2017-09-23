@@ -170,7 +170,7 @@ class Pump {
   // -------------------------------------------------------------------------
   addRecord(obj) {
     try {
-      this.timeData.push(obj.t);
+      this.timeData.push(obj.t*1000);
       this.level.push(obj.l);
       // only keep no more than 50 points in the line chart
       let len = this.timeData.length;

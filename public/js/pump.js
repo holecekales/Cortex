@@ -152,7 +152,7 @@ var Pump = (function () {
     // -------------------------------------------------------------------------
     Pump.prototype.addRecord = function (obj) {
         try {
-            this.timeData.push(obj.t);
+            this.timeData.push(obj.t * 1000);
             this.level.push(obj.l);
             // only keep no more than 50 points in the line chart
             var len = this.timeData.length;
