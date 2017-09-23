@@ -78,7 +78,6 @@ NewPing sonar(trigPin, echoPin, 500); // NewPing setup of pins and maximum dista
 // ------------------------------------------------------------------------------------------
 unsigned long sendNTPpacket(IPAddress &address) //Sending NTP req to the time server
 {
-	USE_SERIAL.println("Syn NTP Pckets: ");
 	memset(packetBuffer, 0, NTP_PACKET_SIZE); // Set bytes to buffer turn 0
 
 	// Initializing the required values form NTP request
@@ -143,14 +142,8 @@ time_t getNTPTime()
 	{
 
 		int npkts = udp.parsePacket();
-		if (!npkts)
+		if (npkts)
 		{
-			
-		}
-		else
-		{
-			USE_SERIAL.print("Packets received length = ");
-			USE_SERIAL.println(npkts);
 			udp.read(packetBuffer, NTP_PACKET_SIZE); // set to read packets from buffer
 
 			/*Timestamp starting at byte 40 at the RX packet @ 4 bytes - 2 words long then extract the 2 words*/
@@ -159,8 +152,6 @@ time_t getNTPTime()
 
 			/* Merging 4bytes - 2words into long integer */
 			unsigned long seconds1990 = hWord << 16 | lwWord;
-			USE_SERIAL.print("Seconds since Jan 1 1900 = ");
-			USE_SERIAL.println(seconds1990);
 
 			/* now convert NTP time into everyday time:, UNIX time start on JAN 1 1970 in seconds will be 2208988800 */
 			USE_SERIAL.print("UNIX TIME = ");
@@ -213,21 +204,14 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
 void setup()
 {
 	USE_SERIAL.begin(115200);
-	USE_SERIAL.setDebugOutput(true);
-
-	for (uint8_t t = 4; t > 0; t--)
-	{
-		USE_SERIAL.printf("[SETUP] BOOT WAIT %d...\n", t);
-		USE_SERIAL.flush();
-		delay(1000);
-	}
+	USE_SERIAL.setDebugOutput(false);
 
 	USE_SERIAL.println("Starting....");
 	delay(200);
 	USE_SERIAL.println("Initializing...");
 	delay(200);
 	USE_SERIAL.print("Connecting >: ");
-	USE_SERIAL.println(ssid);
+	USE_SERIAL.print(ssid);
 	WiFiMulti.addAP(ssid, password);
 
 	while (WiFi.status() != WL_CONNECTED)
@@ -235,17 +219,18 @@ void setup()
 		delay(600);
 		USE_SERIAL.print("...");
 	}
-	USE_SERIAL.println("Connected");
+	USE_SERIAL.println(" Connected");
 	USE_SERIAL.print("IP address: ");
 	USE_SERIAL.println(WiFi.localIP());
 
 	USE_SERIAL.println("Initializing UDP...");
 	udp.begin(localPort);
-	USE_SERIAL.print("PORT: ");
+	USE_SERIAL.print("port: ");
 	USE_SERIAL.println(udp.localPort());
 
 	setSyncProvider(getNTPTime);
-	setSyncInterval(2);
+	setSyncInterval(3600); // re-sync time every hour
+
 
 	// server address, port and URL
 	webSocket.begin(cortex, port, "/");
@@ -265,9 +250,9 @@ long readDistance()
 	unsigned long duration = sonar.ping_median(3); // Send ping, get distance in cm and print result (0 = outside set distance range)
 	long dist = NewPing::convert_cm(duration);
 
-	USE_SERIAL.print("Ping: ");
-	USE_SERIAL.print(dist);
-	USE_SERIAL.println("cm");
+	// USE_SERIAL.print("Ping: ");
+	// USE_SERIAL.print(dist);
+	// USE_SERIAL.println("cm");
 
 	return dist;
 }
@@ -290,7 +275,7 @@ void uploadSensors()
 		if (timeStatus() != timeNotSet)
 		{
 			level = readDistance();
-			digitalClockDisplay();
+			// digitalClockDisplay();
 			sprintf(buffer, msgFormat, level, state, now());
 			webSocket.sendTXT(buffer);
 		}
