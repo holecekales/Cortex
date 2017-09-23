@@ -1,5 +1,4 @@
 var express = require('express');
-var iotHubClient = require('./IoTHub/iot-hub');
 const moment = require('moment');
 
 let router = express.Router();
@@ -18,40 +17,9 @@ router.use('/', function (req, res, next) {
 class Pump {
 
   private socket = null;
-  private iotHubReader = null;
 
-  // open the Event Hub
-  readonly connectionString: string = 'HostName=IoTpump.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=NgVcqeqxlrecmyehSEDp0ghE6tPhQzjjzx7qpfDdsq0=';
-  readonly consumerGroup: string = 'eventdatagroup';
-
-
-  // ------------------------------------------------------------------------------------
   // constructor
-  // ------------------------------------------------------------------------------------
-  constructor() {
-    this.iotHubReader = new iotHubClient(this.connectionString, this.consumerGroup);
-    this.iotHubReader.startReadMessage((obj, date) => {
-      try {
-        if (obj.time == undefined) {
-          obj["time"] = Date.now();
-        }
-
-        sampleData.push(obj);
-
-        let msg = JSON.stringify(obj);
-        console.log('socket msg: ' + msg);
-
-        if (this.socket) {
-          this.socket.broadcast(msg);
-        }
-      }
-      catch (err) {
-        console.log('Error pushing message out');
-        console.log(obj);
-        console.error(err);
-      }
-    });
-  }
+  constructor() {}
 
   // set socket
   setSocket(s) { this.socket = s; }
