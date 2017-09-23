@@ -5,7 +5,7 @@ const moment = require('moment');
 let router = express.Router();
 
 
-var sampleData = []; 
+var sampleData = [];
 /*
 [
   {"l":0,"s":0,"t":1505708875702},
@@ -237,10 +237,10 @@ class Pump {
     this.iotHubReader = new iotHubClient(this.connectionString, this.consumerGroup);
     this.iotHubReader.startReadMessage((obj, date) => {
       try {
-        if(obj.time == undefined) { 
+        if (obj.time == undefined) {
           obj["time"] = Date.now();
         }
-        
+
         sampleData.push(obj);
 
         let msg = JSON.stringify(obj);
@@ -262,13 +262,17 @@ class Pump {
   setSocket(s) { this.socket = s; }
 
   // recieve data from socket
-  rcvData(data : string) {
+  rcvData(data: string) {
     try {
-    let obj = JSON.parse(data);
-    sampleData.push(obj);
-    this.socket.broadcast(data);
+      let obj = JSON.parse(data);
+
+      if (obj.m == "d") {
+        delete obj.m;
+        sampleData.push(obj);
+        this.socket.broadcast(JSON.stringify(obj));
+      }
     }
-    catch(err) {
+    catch (err) {
       console.log('Error pushing message out');
       console.log(data);
       console.error(err);

@@ -251,8 +251,11 @@ var Pump = (function () {
     Pump.prototype.rcvData = function (data) {
         try {
             var obj = JSON.parse(data);
-            sampleData.push(obj);
-            this.socket.broadcast(data);
+            if (obj.m == "d") {
+                delete obj.m;
+                sampleData.push(obj);
+                this.socket.broadcast(JSON.stringify(obj));
+            }
         }
         catch (err) {
             console.log('Error pushing message out');

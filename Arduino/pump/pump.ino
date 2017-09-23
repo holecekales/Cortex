@@ -1,8 +1,14 @@
 /*
  * Pump.ino
- *
- * reports the depth of the water for the pump
- *
+ * 
+ * Wiring:
+ *  
+ *  ESP8266 | HC-SR04
+ *  05      | Trig
+ *  04      | Echo
+ *  5v      | VCC
+ *  GND     | GND
+ *  
  */
 
 #include <Arduino.h>
@@ -13,6 +19,8 @@
 
 #include <WebSocketsClient.h>
 
+#include <NewPing.h>
+
 #include <Hash.h>
 
 const char *ssid 			= "Holecek_home";
@@ -20,12 +28,25 @@ const char *password 	= "blue1234";
 const char *cortex 		= "10.0.0.108";
 const int port 				= 8080;
 
+const int trigPin = 5;
+const int echoPin = 4;
+
+long howOften = 2000; 			//How often to take reading in milliseconds
+unsigned long lastReading = 0; 	//Keep track of when the last reading was taken
+
+long level = 0;
+
+// simulator
+int levelInc = 1;
+int state = 0;
+int t = 0;
+
 ESP8266WiFiMulti WiFiMulti;
 WebSocketsClient webSocket;
 
+NewPing sonar(trigPin, echoPin, 500); // NewPing setup of pins and maximum distance.
+
 #define USE_SERIAL Serial	
-
-
 
 // ------------------------------------------------------------------------------------------
 // webSocket event handler
@@ -39,7 +60,7 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
 		case WStype_CONNECTED: {
 			USE_SERIAL.printf("[WSc] Connected to url: %s\n", payload);
 			// send message to server when Connected
-			webSocket.sendTXT("Connected");
+			webSocket.sendTXT("{\"m\": \"i\", \"v\": \"connected\"}");
 		}
 			break;
 		case WStype_TEXT:
@@ -63,15 +84,10 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
 // setup()
 // ------------------------------------------------------------------------------------------
 void setup() {
-	// USE_SERIAL.begin(921600);
 	USE_SERIAL.begin(115200);
 
 	//Serial.setDebugOutput(true);
 	USE_SERIAL.setDebugOutput(true);
-
-	USE_SERIAL.println();
-	USE_SERIAL.println();
-	USE_SERIAL.println();
 
 	for(uint8_t t = 4; t > 0; t--) {
 		USE_SERIAL.printf("[SETUP] BOOT WAIT %d...\n", t);
@@ -98,34 +114,32 @@ void setup() {
 }
 
 // ------------------------------------------------------------------------------------------
-// readSensors()
+// readSensors
 // ------------------------------------------------------------------------------------------
-void readSensors() {
-	
+long readDistance() {
+	unsigned long duration = sonar.ping_median(3); // Send ping, get distance in cm and print result (0 = outside set distance range)
+	long dist = NewPing::convert_cm(duration);
+
+	USE_SERIAL.print("Ping: ");
+	USE_SERIAL.print(dist);
+	USE_SERIAL.println("cm");
+
+	return dist;
 }
 
 // ------------------------------------------------------------------------------------------
 // uploadSensors()
 // ------------------------------------------------------------------------------------------
-uint32_t timer  = millis();
-#define SENSOR_READ 	1000
-int level = 0;
-int levelInc = 1;
-int state = 0;
-int t = 0;
-
 // {"l":29.25,"s":1,"t":1505711860702}
-const char* msgFormat = "{\"l\":%d, \"s\":%d, \"t\":%d}";
+const char* msgFormat = "{\"m\":\"d\", \"l\":%d, \"s\":%d, \"t\":%d}";
 
 char buffer[256];
 
 void uploadSensors() {
-	if (timer > millis())  timer = millis();
+	if (lastReading > millis())  lastReading = millis();
 	
-		if((millis() - timer) > SENSOR_READ) {
-			timer = millis(); // reset the timer
-
-			readSensors();
+		if((millis() - lastReading) > howOften) {
+			level = readDistance();
 			
 			sprintf(buffer, msgFormat, level, state, t);
 
@@ -144,6 +158,8 @@ void uploadSensors() {
 			t +=1;
 
 			webSocket.sendTXT(buffer);
+
+			lastReading = millis(); // reset the timer
 		}
 
 }
@@ -155,3 +171,10 @@ void loop() {
 	webSocket.loop();
 	uploadSensors();
 }
+ 
+ 
+
+ 
+ 
+ 
+ 
