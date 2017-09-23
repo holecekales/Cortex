@@ -27,7 +27,7 @@ class Pump {
     }
     this.ws.onmessage = (message) => {
       console.log('receive message' + message.data);
-      this.addData(JSON.parse(message.data), false);
+      this.addData(JSON.parse(message.data));
     }
   }
 
@@ -134,7 +134,6 @@ class Pump {
   init() {
     this.initChart();
     this.getBaseData();
-    this.initSocket();
   }
 
 
@@ -154,21 +153,16 @@ class Pump {
   // -------------------------------------------------------------------------
   // addData - adds one or more records
   // -------------------------------------------------------------------------
-  addData(obj, reset: boolean) {
-
-    if (reset)
-      this.reset();
-
+  addData(obj) {
     if (obj.constructor === Array) {
       for (let i = 0; i < obj.length; i++) {
         this.addRecord(obj[i]);
       }
-      this.chart.update();
     }
     else {
       this.addRecord(obj);
-      this.chart.update();
     }
+    this.chart.update();
   }
 
   // -------------------------------------------------------------------------
@@ -207,7 +201,8 @@ class Pump {
     xhr.onreadystatechange = (e) => {
       if (xhr.readyState == 4 && xhr.status == 200) {
         let obj = JSON.parse(xhr.responseText);
-        this.addData(obj, true);
+        this.reset();
+        this.addData(obj);
         // start recieving updates
         this.initSocket();
       }
@@ -217,50 +212,6 @@ class Pump {
     xhr.send();
   }
 
-  // -------------------------------------------------------------------------
-  // simulate data
-  // -------------------------------------------------------------------------
-  simulateData(count) {
-
-    let onState = false;
-    let mt = count > 1 ? moment().subtract(count * 15, 's') : moment();
-
-    let a = new Array();
-
-    for (let i = 0; i < count; i++) {
-      let d = {};
-      d['l'] = (globaleventCount % 40) * 0.75;
-      d['s'] = onState ? 1 : 0;
-      if ((globaleventCount % 40) == 0) onState = !onState;
-
-      d['t'] = mt.toDate().valueOf();
-      mt.add(15, 's');
-
-      a.push(d);
-      // this.addRecord(d);
-      globaleventCount++;
-    }
-
-    this.addData(a, count > 1);
-    this.chart.update();
-  }
-
-  handSim() {
-    this.simulateData(this.maxLen + 10);
-  }
-
-  handlePause() {
-    if (this.timeoutHandle) {
-      clearInterval(this.timeoutHandle);
-      this.timeoutHandle = null;
-    }
-    else {
-      this.timeoutHandle = setInterval(() => {
-        this.simulateData(1);
-      }, 1000);
-
-    }
-  }
 }
 
 

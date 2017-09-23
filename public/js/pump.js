@@ -24,7 +24,7 @@ var Pump = (function () {
         };
         this.ws.onmessage = function (message) {
             console.log('receive message' + message.data);
-            _this.addData(JSON.parse(message.data), false);
+            _this.addData(JSON.parse(message.data));
         };
     };
     // -------------------------------------------------------------------------
@@ -121,7 +121,6 @@ var Pump = (function () {
     Pump.prototype.init = function () {
         this.initChart();
         this.getBaseData();
-        this.initSocket();
     };
     // -------------------------------------------------------------------------
     // close the session()
@@ -137,19 +136,16 @@ var Pump = (function () {
     // -------------------------------------------------------------------------
     // addData - adds one or more records
     // -------------------------------------------------------------------------
-    Pump.prototype.addData = function (obj, reset) {
-        if (reset)
-            this.reset();
+    Pump.prototype.addData = function (obj) {
         if (obj.constructor === Array) {
             for (var i = 0; i < obj.length; i++) {
                 this.addRecord(obj[i]);
             }
-            this.chart.update();
         }
         else {
             this.addRecord(obj);
-            this.chart.update();
         }
+        this.chart.update();
     };
     // -------------------------------------------------------------------------
     // add one record
@@ -186,7 +182,8 @@ var Pump = (function () {
         xhr.onreadystatechange = function (e) {
             if (xhr.readyState == 4 && xhr.status == 200) {
                 var obj = JSON.parse(xhr.responseText);
-                _this.addData(obj, true);
+                _this.reset();
+                _this.addData(obj);
                 // start recieving updates
                 _this.initSocket();
             }
@@ -194,43 +191,6 @@ var Pump = (function () {
         xhr.open("GET", url, true);
         xhr.setRequestHeader('Content-type', 'json');
         xhr.send();
-    };
-    // -------------------------------------------------------------------------
-    // simulate data
-    // -------------------------------------------------------------------------
-    Pump.prototype.simulateData = function (count) {
-        var onState = false;
-        var mt = count > 1 ? moment().subtract(count * 15, 's') : moment();
-        var a = new Array();
-        for (var i = 0; i < count; i++) {
-            var d = {};
-            d['l'] = (globaleventCount % 40) * 0.75;
-            d['s'] = onState ? 1 : 0;
-            if ((globaleventCount % 40) == 0)
-                onState = !onState;
-            d['t'] = mt.toDate().valueOf();
-            mt.add(15, 's');
-            a.push(d);
-            // this.addRecord(d);
-            globaleventCount++;
-        }
-        this.addData(a, count > 1);
-        this.chart.update();
-    };
-    Pump.prototype.handSim = function () {
-        this.simulateData(this.maxLen + 10);
-    };
-    Pump.prototype.handlePause = function () {
-        var _this = this;
-        if (this.timeoutHandle) {
-            clearInterval(this.timeoutHandle);
-            this.timeoutHandle = null;
-        }
-        else {
-            this.timeoutHandle = setInterval(function () {
-                _this.simulateData(1);
-            }, 1000);
-        }
     };
     return Pump;
 }());
