@@ -1,5 +1,5 @@
 var express = require('express');
-const Socket = require('ws');
+const WSSocket = require('ws');
 
 // ------------------------------------------------------------------------------------
 // Pump
@@ -20,7 +20,7 @@ class Pump {
     });
 
     // create socket
-    this.socket = new Socket.Server(server);
+    this.socket = new WSSocket.Server(server);
     this.socket.on('connection', (ws, req) => {
       console.log('socket connection');
       let p = this;
@@ -39,7 +39,7 @@ class Pump {
         delete obj.m;
         obj.l = 55 - obj.l; // the bucket is 55cm deep
         this.sampleData.push(obj);
-        this.broadcast(JSON.stringify(obj));
+        this.broadcast(JSON.stringify(obj), 'chart-protocol');
       }
     }
     catch (err) {
@@ -50,12 +50,14 @@ class Pump {
   }
 
   // Broadcast to all.
-  broadcast(data) {
+  broadcast(data, protocol? :string) {
     this.socket.clients.forEach(function each(client) {
-      if (client.readyState === WebSocket.OPEN) {
+      if (client.readyState === WSSocket.OPEN) {
         try {
           // console.log('sending data ' + data);
-          client.send(data);
+          if(protocol === undefined || client.protocol == protocol) {
+            client.send(data);
+          }
         } catch (e) {
           console.error('This' + e);
         }

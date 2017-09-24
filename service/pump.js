@@ -33,7 +33,7 @@ var Pump = (function () {
                 delete obj.m;
                 obj.l = 55 - obj.l; // the bucket is 55cm deep
                 this.sampleData.push(obj);
-                this.broadcast(JSON.stringify(obj));
+                this.broadcast(JSON.stringify(obj), 'chart-protocol');
             }
         }
         catch (err) {
@@ -43,12 +43,14 @@ var Pump = (function () {
         }
     };
     // Broadcast to all.
-    Pump.prototype.broadcast = function (data) {
+    Pump.prototype.broadcast = function (data, protocol) {
         this.socket.clients.forEach(function each(client) {
             if (client.readyState === WSSocket.OPEN) {
                 try {
                     // console.log('sending data ' + data);
-                    client.send(data);
+                    if (protocol === undefined || client.protocol == protocol) {
+                        client.send(data);
+                    }
                 }
                 catch (e) {
                     console.error('This' + e);

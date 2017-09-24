@@ -18,7 +18,7 @@ class Pump {
   // Init Chart function
   // -------------------------------------------------------------------------
   initSocket() {
-    this.ws = new WebSocket('ws://' + location.host);
+    this.ws = new WebSocket('ws://' + location.host, 'chart-protocol');
     this.ws.onopen = function () {
       console.log('Successfully connect WebSocket');
     }
