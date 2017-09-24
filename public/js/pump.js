@@ -21,7 +21,7 @@ var Pump = (function () {
             console.log('Successfully connect WebSocket');
         };
         this.ws.onmessage = function (message) {
-            console.log('receive message' + message.data);
+            // console.log('receive message' + message.data);
             _this.addData(JSON.parse(message.data));
         };
     };

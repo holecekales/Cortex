@@ -23,7 +23,7 @@ class Pump {
       console.log('Successfully connect WebSocket');
     }
     this.ws.onmessage = (message) => {
-      console.log('receive message' + message.data);
+      // console.log('receive message' + message.data);
       this.addData(JSON.parse(message.data));
     }
   }
