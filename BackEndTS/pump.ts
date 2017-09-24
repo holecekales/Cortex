@@ -22,7 +22,7 @@ class Pump {
     // create socket
     this.socket = new WSSocket.Server(server);
     this.socket.on('connection', (ws, req) => {
-      console.log('socket connection');
+      console.log('socket connection: ' + ws.protocol);
       let p = this;
       ws.on('message', function(msg) {
         p.rcvData(msg);

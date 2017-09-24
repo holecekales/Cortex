@@ -18,7 +18,7 @@ var Pump = (function () {
         // create socket
         this.socket = new WSSocket.Server(server);
         this.socket.on('connection', function (ws, req) {
-            console.log('socket connection');
+            console.log('socket connection: ' + ws.protocol);
             var p = _this;
             ws.on('message', function (msg) {
                 p.rcvData(msg);
