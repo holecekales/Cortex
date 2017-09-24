@@ -4,8 +4,8 @@
  * Wiring:
  *  
  *  ESP8266 | HC-SR04
- *  05      | Trig
- *  04      | Echo
+ *  GPIO05  | Trig
+ *  GPIO04  | Echo
  *  5v      | VCC
  *  GND     | GND
  *  
