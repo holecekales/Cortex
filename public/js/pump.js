@@ -1,11 +1,9 @@
 // -------------------------------------------------------------------------
-// Globals
+// class Pump
 // -------------------------------------------------------------------------
-var globaleventCount = 0; // $$$ this should go away 
 var Pump = (function () {
     function Pump() {
         this.maxLen = 3000;
-        this.timeoutHandle = null;
         this.timeData = [];
         this.level = [];
         this.state = [];

@@ -1,15 +1,5 @@
 var express = require('express');
-const moment = require('moment');
-
-let router = express.Router();
-
-var sampleData = [];
-
-// routes
-router.use('/', function (req, res, next) {
-  res.status(200).json(sampleData);
-});
-
+const Socket = require('ws');
 
 // ------------------------------------------------------------------------------------
 // Pump
@@ -17,12 +7,28 @@ router.use('/', function (req, res, next) {
 class Pump {
 
   private socket = null;
+  private router = null;
+  private sampleData = [];
 
   // constructor
-  constructor() {}
+  constructor(server) {
 
-  // set socket
-  setSocket(s) { this.socket = s; }
+    // create and defined routes
+    this.router = express.Router();
+    this.router.use('/', (req, res, next) => {
+      res.status(200).json(this.sampleData);
+    });
+
+    // create socket
+    this.socket = new Socket.Server(server);
+    this.socket.on('connection', (ws, req) => {
+      console.log('socket connection');
+      let p = this;
+      ws.on('message', function(msg) {
+        p.rcvData(msg);
+      });
+    });
+  }
 
   // recieve data from socket
   rcvData(data: string) {
@@ -32,8 +38,8 @@ class Pump {
       if (obj.m == "d") {
         delete obj.m;
         obj.l = 55 - obj.l; // the bucket is 55cm deep
-        sampleData.push(obj);
-        this.socket.broadcast(JSON.stringify(obj));
+        this.sampleData.push(obj);
+        this.broadcast(JSON.stringify(obj));
       }
     }
     catch (err) {
@@ -42,8 +48,27 @@ class Pump {
       console.error(err);
     }
   }
+
+  // Broadcast to all.
+  broadcast(data) {
+    this.socket.clients.forEach(function each(client) {
+      if (client.readyState === WebSocket.OPEN) {
+        try {
+          // console.log('sending data ' + data);
+          client.send(data);
+        } catch (e) {
+          console.error('This' + e);
+        }
+      }
+    });
+  };
+
+  routes() { return this.router; }
+
 }
 
-module.exports = { "router": router, "pump": new Pump() };
+// module.exports = { "router": router, "pump": new Pump() };
+
+module.exports = (server) => { return new Pump(server); }
 
 

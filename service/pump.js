@@ -1,21 +1,30 @@
 var express = require('express');
-var moment = require('moment');
-var router = express.Router();
-var sampleData = [];
-// routes
-router.use('/', function (req, res, next) {
-    res.status(200).json(sampleData);
-});
+var WSSocket = require('ws');
 // ------------------------------------------------------------------------------------
 // Pump
 // ------------------------------------------------------------------------------------
 var Pump = (function () {
     // constructor
-    function Pump() {
+    function Pump(server) {
+        var _this = this;
         this.socket = null;
+        this.router = null;
+        this.sampleData = [];
+        // create and defined routes
+        this.router = express.Router();
+        this.router.use('/', function (req, res, next) {
+            res.status(200).json(_this.sampleData);
+        });
+        // create socket
+        this.socket = new WSSocket.Server(server);
+        this.socket.on('connection', function (ws, req) {
+            console.log('socket connection');
+            var p = _this;
+            ws.on('message', function (msg) {
+                p.rcvData(msg);
+            });
+        });
     }
-    // set socket
-    Pump.prototype.setSocket = function (s) { this.socket = s; };
     // recieve data from socket
     Pump.prototype.rcvData = function (data) {
         try {
@@ -23,8 +32,8 @@ var Pump = (function () {
             if (obj.m == "d") {
                 delete obj.m;
                 obj.l = 55 - obj.l; // the bucket is 55cm deep
-                sampleData.push(obj);
-                this.socket.broadcast(JSON.stringify(obj));
+                this.sampleData.push(obj);
+                this.broadcast(JSON.stringify(obj));
             }
         }
         catch (err) {
@@ -33,6 +42,23 @@ var Pump = (function () {
             console.error(err);
         }
     };
+    // Broadcast to all.
+    Pump.prototype.broadcast = function (data) {
+        this.socket.clients.forEach(function each(client) {
+            if (client.readyState === WSSocket.OPEN) {
+                try {
+                    // console.log('sending data ' + data);
+                    client.send(data);
+                }
+                catch (e) {
+                    console.error('This' + e);
+                }
+            }
+        });
+    };
+    ;
+    Pump.prototype.routes = function () { return this.router; };
     return Pump;
 }());
-module.exports = { "router": router, "pump": new Pump() };
+// module.exports = { "router": router, "pump": new Pump() };
+module.exports = function (server) { return new Pump(server); };

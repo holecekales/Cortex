@@ -1,12 +1,9 @@
 // -------------------------------------------------------------------------
-// Globals
+// class Pump
 // -------------------------------------------------------------------------
-var globaleventCount = 0; // $$$ this should go away 
-
 class Pump {
 
   readonly maxLen: number = 3000;
-  private timeoutHandle = null;
   private timeData = [];
   private level = [];
   private state = [];
