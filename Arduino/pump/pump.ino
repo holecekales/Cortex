@@ -33,43 +33,39 @@ const int port = 8080;
 unsigned int localPort = 123; //Set local port listen to UDP
 IPAddress timeSRV;
 
+// PIN DEFINITION
+#define TRIG 05
+#define ECHO 04
+#define ALRM 16
+
 // NTP Servers:
 static const char srvName[] = "us.pool.ntp.org";
 //static const char srvName[] = "time.nist.gov";
 //static const char srvName[] = "time-a.timefreq.bldrdoc.gov";
 //static const char srvName[] = "time-b.timefreq.bldrdoc.gov";
 //static const char srvName[] = "time-c.timefreq.bldrdoc.gov";
-//static const char srvName[] = "3.pool.ntp.org"; 
+//static const char srvName[] = "3.pool.ntp.org";
 
 // Timezones
 //const int timeZone = 1;   // Central European Time
 //const int timeZone = -5;  // Eastern Standard Time (USA)
 //const int timeZone = -4;  // Eastern Daylight Time (USA)
 //const int timeZone = -8;  // Pacific Standard Time (USA)
-const int timeZone = -7; 	// Pacific Daylight Time (USA)
+const int timeZone = -7; // Pacific Daylight Time (USA)
 
 // UDP
 const int NTP_PACKET_SIZE = 48;			// NTP time stamp is in the first 48 bytes of the message
 byte packetBuffer[NTP_PACKET_SIZE]; //buffer to hold incoming and outgoing packets
 WiFiUDP udp;												// Set to send and receive packets via UDP
 
-// Sensor
-const int trigPin = 5;
-const int echoPin = 4;
+// Sensor timer
 long howOften = 2000;					 //How often to take reading in milliseconds
 unsigned long lastReading = 0; //Keep track of when the last reading was taken
-
-long level = 0;
-
-// simulator
-int levelInc = 1;
-int state = 0;
-int t = 0;
 
 ESP8266WiFiMulti WiFiMulti;
 WebSocketsClient webSocket;
 
-NewPing sonar(trigPin, echoPin, 500); // NewPing setup of pins and maximum distance.
+NewPing sonar(TRIG, ECHO, 60); // NewPing setup of pins and maximum distance.
 
 #define USE_SERIAL Serial
 
@@ -90,7 +86,6 @@ unsigned long sendNTPpacket(IPAddress &address) //Sending NTP req to the time se
 	packetBuffer[13] = 0x4E;			// 8bytes of 0
 	packetBuffer[14] = 49;				// 8bytes of 0
 	packetBuffer[15] = 52;				// 8bytes of 0
-	/*All NTP fields has been given values its time to send a packets that request a timestamp*/
 	//Set NTP requests to port 123
 	udp.beginPacket(address, 123);
 	udp.write(packetBuffer, NTP_PACKET_SIZE);
@@ -102,28 +97,27 @@ unsigned long sendNTPpacket(IPAddress &address) //Sending NTP req to the time se
 // ------------------------------------------------------------------------------------------
 void printDigits(int digits)
 {
-  Serial.print(":");
-  if (digits < 10)
-    Serial.print('0');
-  Serial.print(digits);
+	Serial.print(":");
+	if (digits < 10)
+		Serial.print('0');
+	Serial.print(digits);
 }
-
 
 // ------------------------------------------------------------------------------------------
 // digitalClockDisplay
 // ------------------------------------------------------------------------------------------
 void digitalClockDisplay()
 {
-  USE_SERIAL.print(hour());
-  printDigits(minute());
-  printDigits(second());
-  USE_SERIAL.print(" ");
-  USE_SERIAL.print(month());
-  USE_SERIAL.print(".");
-  USE_SERIAL.print(day());
-  USE_SERIAL.print(".");
-  USE_SERIAL.print(year());
-  USE_SERIAL.println();
+	USE_SERIAL.print(hour());
+	printDigits(minute());
+	printDigits(second());
+	USE_SERIAL.print(" ");
+	USE_SERIAL.print(month());
+	USE_SERIAL.print(".");
+	USE_SERIAL.print(day());
+	USE_SERIAL.print(".");
+	USE_SERIAL.print(year());
+	USE_SERIAL.println();
 }
 
 // ------------------------------------------------------------------------------------------
@@ -203,6 +197,10 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
 // ------------------------------------------------------------------------------------------
 void setup()
 {
+
+	pinMode(ALRM, OUTPUT);
+	digitalWrite(ALRM, LOW);
+
 	USE_SERIAL.begin(115200);
 	USE_SERIAL.setDebugOutput(false);
 
@@ -230,7 +228,6 @@ void setup()
 
 	setSyncProvider(getNTPTime);
 	setSyncInterval(3600); // re-sync time every hour
-
 
 	// server address, port and URL
 	webSocket.begin(cortex, port, "/");
@@ -274,7 +271,8 @@ void uploadSensors()
 	{
 		if (timeStatus() != timeNotSet)
 		{
-			level = readDistance();
+			long level = readDistance();
+			long state = 0;
 			// digitalClockDisplay();
 			sprintf(buffer, msgFormat, level, state, now());
 			webSocket.sendTXT(buffer);
@@ -285,10 +283,31 @@ void uploadSensors()
 }
 
 // ------------------------------------------------------------------------------------------
+// evalAlarm()
+// ------------------------------------------------------------------------------------------
+void evalAlarm()
+{
+  return;
+	const int alarmCheckFrequency = 2000;
+	static long lastAlarmCheck = 0;
+
+	if (lastAlarmCheck > millis())
+		lastAlarmCheck = millis();
+
+	if ((millis() - lastAlarmCheck) > alarmCheckFrequency)
+	{
+		int val = digitalRead(ALRM);
+		digitalWrite(ALRM, (val == LOW ? HIGH : LOW));
+		lastAlarmCheck = millis(); // reset the timer
+	}
+}
+
+// ------------------------------------------------------------------------------------------
 // loop()
 // ------------------------------------------------------------------------------------------
 void loop()
 {
 	webSocket.loop();
 	uploadSensors();
+	evalAlarm();
 }
