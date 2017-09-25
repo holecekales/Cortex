@@ -39,6 +39,8 @@ class Pump {
         delete obj.m;
         obj.l = 55 - obj.l; // the bucket is 55cm deep
         this.sampleData.push(obj);
+        if(this.sampleData.length > 86400)
+          this.sampleData.shift();          // keep only a day worth of data
         this.broadcast(JSON.stringify(obj), 'chart-protocol');
       }
     }

@@ -93,9 +93,9 @@ class Pump {
             display: true
           },
           ticks: {
-            min: 4,
-            max: 40,
-            stepSize: 2
+            min: 15,
+            max: 30,
+            stepSize: 1
           },
           position: 'left',
 

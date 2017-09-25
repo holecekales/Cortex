@@ -25,10 +25,10 @@
 
 #include <Hash.h>
 
-const char *ssid = "Holecek_home";		// wifi creds (uff) - all bad
-const char *password = "blue1234";		
-const char *cortex = "10.0.0.108";		// address of the brain
-const int port = 8080;
+const char *ssid = SSID;		// wifi creds (uff) - all bad
+const char *password = PASSWORD;		
+const char *cortex = "homecortex.azurewebsites.net";		// address of the brain
+const int port = 80; // 8080
 
 unsigned int localPort = 123; //Set local port listen to UDP
 IPAddress timeSRV;
