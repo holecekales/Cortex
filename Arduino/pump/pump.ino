@@ -25,9 +25,9 @@
 
 #include <Hash.h>
 
-const char *ssid = "Holecek_home";
-const char *password = "blue1234";
-const char *cortex = "10.0.0.108";
+const char *ssid = "Holecek_home";		// wifi creds (uff) - all bad
+const char *password = "blue1234";		
+const char *cortex = "10.0.0.108";		// address of the brain
 const int port = 8080;
 
 unsigned int localPort = 123; //Set local port listen to UDP
@@ -163,7 +163,6 @@ time_t getNTPTime()
 // ------------------------------------------------------------------------------------------
 void webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
 {
-
 	switch (type)
 	{
 	case WStype_DISCONNECTED:
@@ -178,14 +177,12 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
 	break;
 	case WStype_TEXT:
 		// USE_SERIAL.printf("[WSc] get text: %s\n", payload);
-
 		// send message to server
 		// webSocket.sendTXT("message here");
 		break;
 	case WStype_BIN:
 		USE_SERIAL.printf("[WSc] get binary length: %u\n", length);
 		hexdump(payload, length);
-
 		// send data to server
 		// webSocket.sendBIN(payload, length);
 		break;
@@ -230,7 +227,7 @@ void setup()
 	setSyncInterval(3600); // re-sync time every hour
 
 	// server address, port and URL
-	webSocket.begin(cortex, port, "/");
+	webSocket.begin(cortex, port, "/", "pump-sensor");
 
 	// event handler
 	webSocket.onEvent(webSocketEvent);
@@ -244,7 +241,7 @@ void setup()
 // ------------------------------------------------------------------------------------------
 long readDistance()
 {
-	unsigned long duration = sonar.ping_median(3); // Send ping, get distance in cm and print result (0 = outside set distance range)
+	unsigned long duration = sonar.ping_median(5); // Send ping, get distance in cm and print result (0 = outside set distance range)
 	long dist = NewPing::convert_cm(duration);
 
 	// USE_SERIAL.print("Ping: ");
@@ -287,7 +284,7 @@ void uploadSensors()
 // ------------------------------------------------------------------------------------------
 void evalAlarm()
 {
-  return;
+	return;
 	const int alarmCheckFrequency = 2000;
 	static long lastAlarmCheck = 0;
 
