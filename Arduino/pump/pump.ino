@@ -227,7 +227,7 @@ void setup()
 	setSyncInterval(3600); // re-sync time every hour
 
 	// server address, port and URL
-	webSocket.begin(cortex, port, "/", "pump-sensor");
+	webSocket.begin(cortex, port, "/", "arduino");
 
 	// event handler
 	webSocket.onEvent(webSocketEvent);
