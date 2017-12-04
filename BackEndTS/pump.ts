@@ -7,6 +7,10 @@ const WSSocket = require('ws');
 class Pump {
 
   private socket = null;
+
+
+  private proxysocket = null; 
+
   private router = null;
   private sampleData = [];
 
@@ -28,6 +32,17 @@ class Pump {
         p.rcvData(msg);
       });
     });
+
+    // this is only for internal debugging
+    this.proxysocket = new WSSocket('ws://homecortex.azurewebsites.net', 'chart-protocol');
+    this.proxysocket.on('message', (data) => {
+      console.log(data);
+      this.rcvData(data);
+    });
+    this.proxysocket.on('open', function open() {
+      console.log("homecoretex opened");
+    });
+    
   }
 
   // recieve data from socket
