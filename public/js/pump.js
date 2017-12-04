@@ -9,6 +9,8 @@ var Pump = (function () {
         this.state = [];
         this.chart = null;
         this.ws = null;
+        this.diagramReady = false;
+        this.lastLevel = 0;
     }
     ;
     // -------------------------------------------------------------------------
@@ -24,6 +26,23 @@ var Pump = (function () {
             // console.log('receive message' + message.data);
             _this.addData(JSON.parse(message.data));
         };
+    };
+    // -------------------------------------------------------------------------
+    // initDiagram
+    // -------------------------------------------------------------------------
+    Pump.prototype.initDiagram = function () {
+        var _this = this;
+        //Get the context of the canvas element we want to select
+        this.diagramImage = new Image();
+        this.diagramImage.onload = function () {
+            var c = document.getElementById("diagram");
+            c.width = _this.diagramImage.width;
+            c.height = _this.diagramImage.height;
+            _this.diagCtx = c.getContext("2d");
+            _this.diagramReady = true;
+            _this.updateDiagram(0);
+        };
+        this.diagramImage.src = '/public/images/sump.png';
     };
     // -------------------------------------------------------------------------
     // Init Chart function
@@ -88,8 +107,8 @@ var Pump = (function () {
                             display: true
                         },
                         ticks: {
-                            min: 15,
-                            max: 30,
+                            min: 13,
+                            max: 27,
                             stepSize: 1
                         },
                         position: 'left',
@@ -121,8 +140,12 @@ var Pump = (function () {
             options: basicOption
         });
     };
+    // -------------------------------------------------------------------------
+    // init
+    // -------------------------------------------------------------------------
     Pump.prototype.init = function () {
         this.initChart();
+        this.initDiagram();
         this.getBaseData();
     };
     // -------------------------------------------------------------------------
@@ -135,6 +158,30 @@ var Pump = (function () {
         this.timeData.splice(0, this.timeData.length);
         this.level.splice(0, this.level.length);
         this.state.splice(0, this.state.length);
+    };
+    // -------------------------------------------------------------------------
+    // updateDiagram
+    // -------------------------------------------------------------------------
+    Pump.prototype.updateDiagram = function (wh) {
+        if (this.diagramReady === false)
+            return;
+        if (this.lastLevel == wh)
+            return;
+        this.lastLevel = wh;
+        this.diagCtx.drawImage(this.diagramImage, 0, 0);
+        this.diagCtx.globalAlpha = 0.4;
+        this.diagCtx.fillStyle = 'rgb(24, 120, 240)';
+        var top = 177; // top of the bucket on the diagrams in px
+        var bot = 398; // bottom of the bucket on the diagram in px
+        var depthInPixels = 398 - 177; // depth in pixels
+        var depth = 55.0; // depth in cm
+        wh = 55 - wh;
+        wh = 53.3 - wh;
+        var pixelperCm = depthInPixels / depth;
+        var h = wh * pixelperCm;
+        var y = 398 - h;
+        this.diagCtx.fillRect(115, y, 134, h);
+        this.diagCtx.globalAlpha = 1.0;
     };
     // -------------------------------------------------------------------------
     // addData - adds one or more records
@@ -157,6 +204,7 @@ var Pump = (function () {
         try {
             this.timeData.push(obj.t * 1000);
             this.level.push(obj.l);
+            this.updateDiagram(obj.l);
             // only keep no more than 50 points in the line chart
             var len = this.timeData.length;
             if (len > this.maxLen) {

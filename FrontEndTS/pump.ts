@@ -11,6 +11,11 @@ class Pump {
   private ws: WebSocket = null;
 
   private ctx: CanvasRenderingContext2D;
+  
+  private diagramImage : HTMLImageElement;
+  private diagCtx: CanvasRenderingContext2D;
+  private diagramReady : boolean = false;
+  private lastLevel : number = 0;
 
   constructor() { };
 
@@ -26,6 +31,28 @@ class Pump {
       // console.log('receive message' + message.data);
       this.addData(JSON.parse(message.data));
     }
+  }
+
+  // -------------------------------------------------------------------------
+  // initDiagram
+  // -------------------------------------------------------------------------
+  initDiagram() {
+    //Get the context of the canvas element we want to select
+    this.diagramImage = new Image();
+
+    this.diagramImage.onload = () => {
+
+      let c = <HTMLCanvasElement>document.getElementById("diagram");
+      c.width = this.diagramImage.width;
+      c.height = this.diagramImage.height;
+
+      this.diagCtx = c.getContext("2d");
+     
+      this.diagramReady = true;  
+      this.updateDiagram(0); 
+    };
+    
+    this.diagramImage.src = '/public/images/sump.png';
   }
 
   // -------------------------------------------------------------------------
@@ -93,8 +120,8 @@ class Pump {
             display: true
           },
           ticks: {
-            min: 15,
-            max: 30,
+            min: 13,
+            max: 27,
             stepSize: 1
           },
           position: 'left',
@@ -133,11 +160,14 @@ class Pump {
     });
   }
 
+  // -------------------------------------------------------------------------
+  // init
+  // -------------------------------------------------------------------------
   init() {
     this.initChart();
+    this.initDiagram();
     this.getBaseData();
   }
-
 
   // -------------------------------------------------------------------------
   // close the session()
@@ -150,6 +180,40 @@ class Pump {
     this.timeData.splice(0, this.timeData.length);
     this.level.splice(0, this.level.length);
     this.state.splice(0, this.state.length);
+  }
+
+  // -------------------------------------------------------------------------
+  // updateDiagram
+  // -------------------------------------------------------------------------
+  updateDiagram(wh : number) {
+    if(this.diagramReady === false)
+      return;
+
+    if(this.lastLevel == wh)
+      return;
+    
+    this.lastLevel = wh;
+
+    this.diagCtx.drawImage(this.diagramImage, 0,0);
+    this.diagCtx.globalAlpha = 0.4;
+    this.diagCtx.fillStyle = 'rgb(24, 120, 240)';
+
+
+    const top = 177; // top of the bucket on the diagrams in px
+    const bot = 398; // bottom of the bucket on the diagram in px
+    const depthInPixels = 398-177; // depth in pixels
+    const depth = 55.0;  // depth in cm
+
+    wh = 55 - wh;
+    wh = 53.3 - wh;
+
+    let pixelperCm = depthInPixels / depth;
+
+    let h = wh * pixelperCm;
+    let y = 398-h;  
+    this.diagCtx.fillRect(115,y, 134, h);
+    this.diagCtx.globalAlpha = 1.0;
+
   }
 
   // -------------------------------------------------------------------------
@@ -174,6 +238,7 @@ class Pump {
     try {
       this.timeData.push(obj.t*1000);
       this.level.push(obj.l);
+      this.updateDiagram(obj.l);
       // only keep no more than 50 points in the line chart
       let len = this.timeData.length;
       if (len > this.maxLen) {
