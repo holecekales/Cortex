@@ -34,6 +34,7 @@ class Pump {
     });
 
     // this is only for internal debugging
+    /*
     this.proxysocket = new WSSocket('ws://homecortex.azurewebsites.net', 'chart-protocol');
     this.proxysocket.on('message', (data) => {
       console.log(data);
@@ -42,6 +43,7 @@ class Pump {
     this.proxysocket.on('open', function open() {
       console.log("homecoretex opened");
     });
+    */
     
   }
 
