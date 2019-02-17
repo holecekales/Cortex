@@ -99,11 +99,11 @@
 }
 
 .tile.blue .header {
-  background: linear-gradient(to bottom right, #1f6abb, #4f9cf2);
+  background: linear-gradient(to bottom right, #2c66a5, #4f9cf2);
 }
 
 .tile.blue .body {
-  color: #1f6abb;
+  color: #2c66a5;
 }
 
 .tile.lightgreen .header {
