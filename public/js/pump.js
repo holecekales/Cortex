@@ -10,6 +10,7 @@ var Pump = (function () {
         this.level = [];
         this.state = [];
         this.chart = null;
+        this.lastUpdateTime = 0;
         this.ws = null;
         this.diagramReady = false;
         this.lastLevel = 0.1;
@@ -146,9 +147,12 @@ var Pump = (function () {
     // init
     // -------------------------------------------------------------------------
     Pump.prototype.init = function () {
+        var _this = this;
         this.initDiagram();
         this.initChart();
         this.getBaseData();
+        // register timer 
+        setInterval(function () { _this.luTile(); }, 1000);
     };
     // -------------------------------------------------------------------------
     // close the session()
@@ -186,18 +190,64 @@ var Pump = (function () {
         this.diagCtx.globalAlpha = 1.0;
     };
     // -------------------------------------------------------------------------
+    // luTile - Fix the last updated tile
+    // -------------------------------------------------------------------------
+    Pump.prototype.luTile = function () {
+        // timeouts for green and yellow tile
+        var g = 4; // i can miss 2 cycles to be green
+        var y = 10; // i can miss 5 cycles to be yello
+        // otherwise i turn red 
+        // get the DOM elements for the text and the tile
+        var tile = document.getElementById("lastUpdateTile");
+        var tileValue = document.getElementById("lastUpdateValue");
+        // current time in seconds;
+        var ct = Math.floor(Date.now() / 1000);
+        // the diff since we saw last update
+        var diff = ct - this.lastUpdateTime;
+        if (diff <= g) {
+            // all is OK
+            tile.classList.remove("orange", "red");
+            tile.classList.add("green");
+        }
+        else if (diff > g && diff <= y) {
+            // we did not get an update for some time
+            // go check the pump
+            tile.classList.remove("green", "red");
+            tile.classList.add("orange");
+        }
+        else {
+            // we did not get an update for some time
+            // alarm
+            tile.classList.remove("green", "orange");
+            tile.classList.add("red");
+        }
+        // update the text in the tile
+        tileValue.innerText = diff.toString();
+    };
+    // -------------------------------------------------------------------------
     // addData - adds one or more records
     // -------------------------------------------------------------------------
     Pump.prototype.addData = function (obj) {
+        var last;
         if (obj.constructor === Array) {
+            // we will stop one short of the end
+            // with the last one we're going to update the dashboard
             for (var i = 0; i < obj.length; i++) {
                 this.addRecord(obj[i]);
             }
+            last = obj[obj.length - 1];
         }
         else {
             this.addRecord(obj);
+            last = obj;
         }
+        // update the dashboard elements
+        // update the real-time monitor
         this.chart.update();
+        // update the diagram
+        this.updateDiagram(last.l);
+        // update last updated tile
+        this.lastUpdateTime = last.t;
     };
     // -------------------------------------------------------------------------
     // add one record
@@ -206,7 +256,6 @@ var Pump = (function () {
         try {
             this.timeData.push(obj.t * 1000);
             this.level.push(obj.l);
-            this.updateDiagram(obj.l);
             // only keep no more than 50 points in the line chart
             var len = this.timeData.length;
             if (len > this.maxLen) {

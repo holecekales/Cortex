@@ -11,6 +11,7 @@ class Pump {
   private level = [];
   private state = [];
   private chart = null;
+  private lastUpdateTime = 0;
   private ws: WebSocket = null;
 
   private ctx: CanvasRenderingContext2D;
@@ -170,6 +171,8 @@ class Pump {
     this.initDiagram();
     this.initChart();
     this.getBaseData();
+    // register timer 
+    setInterval(() => {this.luTile(); } ,1000);
   }
 
   // -------------------------------------------------------------------------
@@ -191,6 +194,7 @@ class Pump {
   updateDiagram(wh : number) {
     if(this.diagramReady === false)
       return;
+
 
     if(this.lastLevel == wh)
       return;
@@ -216,22 +220,81 @@ class Pump {
     let y = 398-h;  
     this.diagCtx.fillRect(115,y, 134, h);
     this.diagCtx.globalAlpha = 1.0;
+  }
 
+  // -------------------------------------------------------------------------
+  // luTile - Fix the last updated tile
+  // -------------------------------------------------------------------------
+  luTile()
+  {
+    // timeouts for green and yellow tile
+    const g = 4;  // i can miss 2 cycles to be green
+    const y = 10; // i can miss 5 cycles to be yello
+    // otherwise i turn red 
+
+    // get the DOM elements for the text and the tile
+    let tile = document.getElementById("lastUpdateTile");
+    let tileValue = document.getElementById("lastUpdateValue");
+    
+    // current time in seconds;
+    let ct = Math.floor(Date.now() / 1000);
+
+    // the diff since we saw last update
+    let diff = ct - this.lastUpdateTime;
+
+    if(diff <= g)
+    {
+      // all is OK
+      tile.classList.remove("orange", "red");
+      tile.classList.add("green");
+    }
+    else if(diff > g && diff <= y)
+    {
+      // we did not get an update for some time
+      // go check the pump
+      tile.classList.remove("green", "red");
+      tile.classList.add("orange");
+    }
+    else 
+    {
+      // we did not get an update for some time
+      // alarm
+      tile.classList.remove("green", "orange");
+      tile.classList.add("red");
+    }
+
+    // update the text in the tile
+    tileValue.innerText = diff.toString();
   }
 
   // -------------------------------------------------------------------------
   // addData - adds one or more records
   // -------------------------------------------------------------------------
   addData(obj) {
+
+    var last : any;
+
     if (obj.constructor === Array) {
+      // we will stop one short of the end
+      // with the last one we're going to update the dashboard
       for (let i = 0; i < obj.length; i++) {
         this.addRecord(obj[i]);
       }
+
+      last = obj[obj.length-1];
     }
     else {
       this.addRecord(obj);
+      last = obj;
     }
+
+    // update the dashboard elements
+    // update the real-time monitor
     this.chart.update();
+    // update the diagram
+    this.updateDiagram(last.l);
+    // update last updated tile
+    this.lastUpdateTime = last.t; 
   }
 
   // -------------------------------------------------------------------------
@@ -241,7 +304,6 @@ class Pump {
     try {
       this.timeData.push(obj.t*1000);
       this.level.push(obj.l);
-      this.updateDiagram(obj.l);
       // only keep no more than 50 points in the line chart
       let len = this.timeData.length;
       if (len > this.maxLen) {
