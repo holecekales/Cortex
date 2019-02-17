@@ -1,6 +1,7 @@
 var express = require('express');
 const WSSocket = require('ws');
 
+
 // ------------------------------------------------------------------------------------
 // Pump
 // ------------------------------------------------------------------------------------
@@ -34,17 +35,20 @@ class Pump {
     });
 
     // this is only for internal debugging
-    /*
-    this.proxysocket = new WSSocket('ws://homecortex.azurewebsites.net', 'chart-protocol');
-    this.proxysocket.on('message', (data) => {
-      console.log(data);
-      this.rcvData(data);
-    });
-    this.proxysocket.on('open', function open() {
-      console.log("homecoretex opened");
-    });
-    */
-    
+    // (Hacky) Workaround for environment variable
+    if((process.env as any).COMPUTERNAME == "BLUEBIRD")
+    {
+      console.log("BLUEBIRD");
+      this.proxysocket = new WSSocket('ws://homecortex.azurewebsites.net', 'chart-protocol');
+      this.proxysocket.on('message', (data) => {
+        console.log(data);
+        this.rcvData(data);
+      });
+      this.proxysocket.on('open', function open() {
+        console.log("homecoretex opened");
+      });
+    }
+
   }
 
   // recieve data from socket
