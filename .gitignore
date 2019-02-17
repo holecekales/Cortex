@@ -2,3 +2,4 @@ upload/
 log.txt
 datafile.db
 .vscode/
+npm-debug.log
