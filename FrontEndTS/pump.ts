@@ -96,8 +96,8 @@ class Pump {
       maintainAspectRatio: true,
       title: {
         display: true,
-        text: 'Sump Pump Monitor',
-        fontSize: 36
+        text: 'Realtime Monitor',
+        fontSize: 24
       },
       scales: {
         xAxes: [{
@@ -124,7 +124,7 @@ class Pump {
           },
           ticks: {
             min: 13,
-            max: 27,
+            max: 25,
             stepSize: 1
           },
           position: 'left',
@@ -134,7 +134,7 @@ class Pump {
           type: 'linear',
           scaleLabel: {
             labelString: 'Pump On',
-            display: true
+            display: false
           },
           position: 'right',
           ticks: {

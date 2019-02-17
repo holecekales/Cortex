@@ -83,8 +83,8 @@ var Pump = (function () {
             maintainAspectRatio: true,
             title: {
                 display: true,
-                text: 'Sump Pump Monitor',
-                fontSize: 36
+                text: 'Realtime Monitor',
+                fontSize: 24
             },
             scales: {
                 xAxes: [{
@@ -110,7 +110,7 @@ var Pump = (function () {
                         },
                         ticks: {
                             min: 13,
-                            max: 27,
+                            max: 25,
                             stepSize: 1
                         },
                         position: 'left',
@@ -119,7 +119,7 @@ var Pump = (function () {
                         type: 'linear',
                         scaleLabel: {
                             labelString: 'Pump On',
-                            display: true
+                            display: false
                         },
                         position: 'right',
                         ticks: {
