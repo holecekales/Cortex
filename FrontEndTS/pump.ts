@@ -1,3 +1,6 @@
+// (hack)
+// let Chart: any;
+
 // -------------------------------------------------------------------------
 // class Pump
 // -------------------------------------------------------------------------
@@ -15,7 +18,7 @@ class Pump {
   private diagramImage : HTMLImageElement;
   private diagCtx: CanvasRenderingContext2D;
   private diagramReady : boolean = false;
-  private lastLevel : number = 0;
+  private lastLevel : number = 0.1;
 
   constructor() { };
 
@@ -164,8 +167,8 @@ class Pump {
   // init
   // -------------------------------------------------------------------------
   init() {
-    this.initChart();
     this.initDiagram();
+    this.initChart();
     this.getBaseData();
   }
 

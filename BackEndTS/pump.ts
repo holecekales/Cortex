@@ -35,7 +35,8 @@ class Pump {
     });
 
     // this is only for internal debugging
-    // (Hacky) Workaround for environment variable
+    // (Hacky) Workaround for environment variable for debugging
+    // this is totally not awesome!!!
     if((process.env as any).COMPUTERNAME == "BLUEBIRD")
     {
       console.log("BLUEBIRD");
@@ -56,14 +57,16 @@ class Pump {
     try {
       let obj = JSON.parse(data);
 
-      if (obj.m == "d") {
-        delete obj.m;
-        obj.l = 55 - obj.l; // the bucket is 55cm deep
-        this.sampleData.push(obj);
-        if(this.sampleData.length > 86400)
-          this.sampleData.shift();          // keep only a day worth of data
-        this.broadcast(JSON.stringify(obj), 'chart-protocol');
+      if (obj.m == "d") 
+      {
+        delete obj.m; // the source was device and we'll now get rid of it.
+        obj.l = 55 - obj.l; // the bucket is 55cm deep -> converstion from device
       }
+       
+      this.sampleData.push(obj);
+      if(this.sampleData.length > 86400)
+        this.sampleData.shift();          // keep only a 2 days worth of data (sending every 2s)
+      this.broadcast(JSON.stringify(obj), 'chart-protocol');
     }
     catch (err) {
       console.log('Error pushing message out');
