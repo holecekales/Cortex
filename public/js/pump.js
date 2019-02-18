@@ -77,12 +77,12 @@ var Pump = (function () {
             ]
         };
         var basicOption = {
-            maintainAspectRatio: true,
+            maintainAspectRatio: false,
             legend: {
                 display: false
             },
             title: {
-                display: true,
+                display: false,
                 text: 'Realtime Monitor',
                 fontSize: 20
             },
@@ -99,7 +99,7 @@ var Pump = (function () {
                             stepSize: 600,
                         },
                         scaleLabel: {
-                            display: true,
+                            display: false,
                             labelString: 'Time'
                         }
                     }],
@@ -108,12 +108,12 @@ var Pump = (function () {
                         type: 'linear',
                         scaleLabel: {
                             labelString: 'Water Level (cm)',
-                            display: true
+                            display: false
                         },
                         ticks: {
                             min: 13,
                             max: 25,
-                            stepSize: 1
+                            stepSize: 3
                         },
                         position: 'left',
                     },

@@ -117,12 +117,12 @@ class Pump {
     }
 
     let basicOption = {
-      maintainAspectRatio: true,
+      maintainAspectRatio: false,
       legend: {
         display: false
       },
       title: {
-        display: true,
+        display: false,
         text: 'Realtime Monitor',
         fontSize: 20
       },
@@ -141,7 +141,7 @@ class Pump {
             stepSize: 600,
           },
           scaleLabel: {
-            display: true,
+            display: false,
             labelString: 'Time'
           }
         }],
@@ -150,12 +150,12 @@ class Pump {
           type: 'linear',
           scaleLabel: {
             labelString: 'Water Level (cm)',
-            display: true
+            display: false
           },
           ticks: {
             min: 13,
             max: 25,
-            stepSize: 1
+            stepSize: 3
           },
           position: 'left',
 

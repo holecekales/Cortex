@@ -10,6 +10,10 @@
   position: relative;
 }
 
+#myChart {
+  padding-top: 10px;
+}
+
 #diagramContainer {
   float: left;
   margin-top: 8px;
@@ -123,4 +127,12 @@
 
 .tile.red  .body {
   color: #fc1212;
+}
+
+.tile.chartGray .header {
+  background: linear-gradient(to bottom right, #eeeeee, #d1d1d1);
+}
+
+.tile.chartGray  .body {
+  color: #868686;
 }
