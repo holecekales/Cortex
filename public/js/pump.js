@@ -1,16 +1,25 @@
 // (hack)
-// let Chart: any;
+var Chart;
 // -------------------------------------------------------------------------
 // class Pump
 // -------------------------------------------------------------------------
 var Pump = (function () {
     function Pump() {
-        this.maxLen = 3000;
+        // data rentention 
+        this.hoursOfData = 2; // hours worh of data that we'll be displaying
+        // hoursOfData * minutes/hour * seconds/minute (but i sample only every 2 seconds so must devide by 2)  
+        this.maxLen = this.hoursOfData * 60 * 60 / 2; // 3600
+        // pumping cadance 
+        this.prevPumpTime = 0; // when the  
+        // time series
         this.timeData = [];
         this.level = [];
         this.state = [];
         this.chart = null;
+        // pump monitoring
         this.lastUpdateTime = 0;
+        this.updateWatchdog = 0;
+        // Socket
         this.ws = null;
         this.diagramReady = false;
         this.lastLevel = 0.1;
@@ -120,7 +129,7 @@ var Pump = (function () {
                         type: 'linear',
                         scaleLabel: {
                             labelString: 'Pump On',
-                            display: false
+                            display: true
                         },
                         position: 'right',
                         ticks: {
@@ -152,7 +161,7 @@ var Pump = (function () {
         this.initChart();
         this.getBaseData();
         // register timer 
-        setInterval(function () { _this.luTile(); }, 1000);
+        this.updateWatchdog = window.setInterval(function () { _this.luTile(); }, 1000);
     };
     // -------------------------------------------------------------------------
     // close the session()
@@ -164,6 +173,7 @@ var Pump = (function () {
         this.timeData.splice(0, this.timeData.length);
         this.level.splice(0, this.level.length);
         this.state.splice(0, this.state.length);
+        window.clearInterval(this.updateWatchdog);
     };
     // -------------------------------------------------------------------------
     // updateDiagram
@@ -225,6 +235,20 @@ var Pump = (function () {
         tileValue.innerText = diff.toString();
     };
     // -------------------------------------------------------------------------
+    // Update cadence tile with the right number
+    // -------------------------------------------------------------------------
+    Pump.prototype.updateCadence = function (time) {
+        var cadence = 0;
+        if (this.prevPumpTime > 0) {
+            cadence = Math.round((time - this.prevPumpTime) / 60);
+        }
+        this.prevPumpTime = time;
+        var tileValue = document.getElementById("cadenceValue");
+        // update the text in the tile
+        // let n = parseInt(tileValue.innerText);
+        tileValue.innerText = (cadence).toString();
+    };
+    // -------------------------------------------------------------------------
     // addData - adds one or more records
     // -------------------------------------------------------------------------
     Pump.prototype.addData = function (obj) {
@@ -254,17 +278,51 @@ var Pump = (function () {
     // -------------------------------------------------------------------------
     Pump.prototype.addRecord = function (obj) {
         try {
+            // convert obj.t from Unix based time to Javascript based
+            // Javascript is in milliseconds while Unix is seconds
+            // and push it into the array
             this.timeData.push(obj.t * 1000);
+            // store the level of water in the bucket
             this.level.push(obj.l);
-            // only keep no more than 50 points in the line chart
             var len = this.timeData.length;
+            // --------------------------------------------------------------------------
+            // $$$ This needs to move to the server!
+            // calculate if the pump kicked in
+            // we look across 15 samples
+            var pumpOn = 0;
+            if (len >= 15) {
+                var rangeFirst = len - 15;
+                // 24 is the level where we typically start pumping
+                // if we're at that level (or higher) and if we saw a dip going down, 
+                // let's see if we went through pumping
+                if (this.level[rangeFirst] >= 24 && this.level[rangeFirst + 1] < this.level[rangeFirst]) {
+                    var minRangeLevel = 30;
+                    var maxRangeLevel = 0;
+                    // calculate min and max over our range
+                    for (var i = rangeFirst; i < len; i++) {
+                        minRangeLevel = Math.min(minRangeLevel, this.level[i]);
+                        maxRangeLevel = Math.max(maxRangeLevel, this.level[i]);
+                    }
+                    // if within this range the values exceeded max (24) and min (16)
+                    // than the pump was pumping 
+                    if (minRangeLevel <= 16 && maxRangeLevel >= 24) {
+                        pumpOn = 1;
+                        this.updateCadence(obj.t);
+                    }
+                }
+            }
+            this.state.push(pumpOn);
+            // --------------------------------------------------------------------------
+            // limit the number of points 
             if (len > this.maxLen) {
                 this.timeData.shift();
                 this.level.shift();
             }
-            if (obj.s) {
-                this.state.push(obj.s);
-            }
+            // $$$ this needs to be reenabled 
+            // if (obj.s) 
+            // {
+            //   this.state.push(obj.s);
+            // }
             if (this.state.length > this.maxLen) {
                 this.state.shift();
             }
