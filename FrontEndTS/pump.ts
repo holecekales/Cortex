@@ -306,7 +306,7 @@ class Pump {
   // -------------------------------------------------------------------------
   updateCadence(time : number) 
   {
-    let cadence : number = 1;
+    let cadence : number = 0;
 
     if(this.prevPumpTime > 0)
     {
@@ -316,25 +316,30 @@ class Pump {
     }
     
     this.prevPumpTime = time;
-    let tileValue = document.getElementById("cadenceValue");
-    // update the text in the tile
-    // let n = parseInt(tileValue.innerText);
-    tileValue.innerText = (cadence).toString();
+    
+    // update cadence only if we have successfuly calculated
+    // we have to have at least 2x empty the bucket (pumping)
+    if(cadence > 0)
+    {
+      let tileValue = document.getElementById("cadenceValue");
+      // update the text in the tile
+      tileValue.innerText = (cadence).toString();
 
-    // calculate how many gallons a day 
-    let pumpsPerDay = (60 / cadence) * 24;
-    const pumpDepth : number = 0.10; // in meters
-    const bucketR : number = 0.43/2;  // in meters
-    const volume : number    = bucketR * bucketR * pumpDepth * 3.14; // in m^3
-    let liters : number = volume * 1000 * pumpsPerDay;
-    let gallons : number = volume * 264.172 * pumpsPerDay;
+      // calculate how many gallons a day 
+      let pumpsPerDay = (60 / cadence) * 24;
+      const pumpDepth : number = 0.10; // in meters
+      const bucketR : number = 0.43/2;  // in meters
+      const volume : number    = bucketR * bucketR * pumpDepth * 3.14; // in m^3
+      let liters : number = volume * 1000 * pumpsPerDay;
+      let gallons : number = volume * 264.172 * pumpsPerDay;
 
-    // i am using floor, since the bucket is not cylinder anyway
-    let litPerDayValue  = document.getElementById("litersPerDay");
-    litPerDayValue.innerText = (Math.floor(liters)).toString();
+      // i am using floor, since the bucket is not cylinder anyway
+      let litPerDayValue  = document.getElementById("litersPerDay");
+      litPerDayValue.innerText = (Math.floor(liters)).toString();
 
-    let galPerDayValue  = document.getElementById("gallonsPerDay");
-    galPerDayValue.innerText = (Math.floor(gallons)).toString();
+      let galPerDayValue  = document.getElementById("gallonsPerDay");
+      galPerDayValue.innerText = (Math.floor(gallons)).toString();
+    }
   }
 
   

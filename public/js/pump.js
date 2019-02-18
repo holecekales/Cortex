@@ -216,29 +216,32 @@ var Pump = (function () {
     // Update cadence tile with the right number
     // -------------------------------------------------------------------------
     Pump.prototype.updateCadence = function (time) {
-        var cadence = 1;
+        var cadence = 0;
         if (this.prevPumpTime > 0) {
             // i am rounding up to compensate for the bucket not
             // being cylinder
             cadence = Math.round((time - this.prevPumpTime) / 60 + 0.5);
         }
         this.prevPumpTime = time;
-        var tileValue = document.getElementById("cadenceValue");
-        // update the text in the tile
-        // let n = parseInt(tileValue.innerText);
-        tileValue.innerText = (cadence).toString();
-        // calculate how many gallons a day 
-        var pumpsPerDay = (60 / cadence) * 24;
-        var pumpDepth = 0.10; // in meters
-        var bucketR = 0.43 / 2; // in meters
-        var volume = bucketR * bucketR * pumpDepth * 3.14; // in m^3
-        var liters = volume * 1000 * pumpsPerDay;
-        var gallons = volume * 264.172 * pumpsPerDay;
-        // i am using floor, since the bucket is not cylinder anyway
-        var litPerDayValue = document.getElementById("litersPerDay");
-        litPerDayValue.innerText = (Math.floor(liters)).toString();
-        var galPerDayValue = document.getElementById("gallonsPerDay");
-        galPerDayValue.innerText = (Math.floor(gallons)).toString();
+        // update cadence only if we have successfuly calculated
+        // we have to have at least 2x empty the bucket (pumping)
+        if (cadence > 0) {
+            var tileValue = document.getElementById("cadenceValue");
+            // update the text in the tile
+            tileValue.innerText = (cadence).toString();
+            // calculate how many gallons a day 
+            var pumpsPerDay = (60 / cadence) * 24;
+            var pumpDepth = 0.10; // in meters
+            var bucketR = 0.43 / 2; // in meters
+            var volume = bucketR * bucketR * pumpDepth * 3.14; // in m^3
+            var liters = volume * 1000 * pumpsPerDay;
+            var gallons = volume * 264.172 * pumpsPerDay;
+            // i am using floor, since the bucket is not cylinder anyway
+            var litPerDayValue = document.getElementById("litersPerDay");
+            litPerDayValue.innerText = (Math.floor(liters)).toString();
+            var galPerDayValue = document.getElementById("gallonsPerDay");
+            galPerDayValue.innerText = (Math.floor(gallons)).toString();
+        }
     };
     // -------------------------------------------------------------------------
     // addData - adds one or more records
