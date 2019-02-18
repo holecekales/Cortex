@@ -259,7 +259,7 @@ var Pump = (function () {
         }
         // update the dashboard elements
         // update the real-time monitor
-        // this.chart.update();
+        this.chart.update();
         // update the diagram
         this.updateDiagram(last.l);
         // update last updated tile
