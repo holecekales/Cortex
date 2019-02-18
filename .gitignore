@@ -1,5 +1,6 @@
 upload/
 log.txt
 datafile.db
+data.json
 .vscode/
 npm-debug.log
