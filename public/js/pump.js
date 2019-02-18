@@ -74,18 +74,6 @@ var Pump = (function () {
                     pointHoverBorderColor: "rgba(24, 120, 240, 1)",
                     data: this.level,
                     lineTension: 0
-                },
-                {
-                    fill: false,
-                    label: 'Pump State',
-                    yAxisID: 'running',
-                    borderColor: "rgba(255, 204, 0, 1)",
-                    pointBoarderColor: "rgba(255, 204, 0, 1)",
-                    backgroundColor: "rgba(255, 204, 0, 0.4)",
-                    pointHoverBackgroundColor: "rgba(255, 204, 0, 1)",
-                    pointHoverBorderColor: "rgba(255, 204, 0, 1)",
-                    data: this.state,
-                    lineTension: 0
                 }
             ]
         };
@@ -124,21 +112,8 @@ var Pump = (function () {
                             stepSize: 1
                         },
                         position: 'left',
-                    }, {
-                        id: 'running',
-                        type: 'linear',
-                        scaleLabel: {
-                            labelString: 'Pump On',
-                            display: true
-                        },
-                        position: 'right',
-                        ticks: {
-                            min: 0,
-                            max: 1,
-                            stepSize: 1
-                        },
-                    }]
-            }
+                    },
+                ] }
         };
         //Get the context of the canvas element we want to select
         this.ctx = document.getElementById("myChart").getContext("2d");
@@ -240,13 +215,27 @@ var Pump = (function () {
     Pump.prototype.updateCadence = function (time) {
         var cadence = 0;
         if (this.prevPumpTime > 0) {
-            cadence = Math.round((time - this.prevPumpTime) / 60);
+            // i am rounding up to compensate for the bucket not
+            // being cylinder
+            cadence = Math.round((time - this.prevPumpTime) / 60 + 0.5);
         }
         this.prevPumpTime = time;
         var tileValue = document.getElementById("cadenceValue");
         // update the text in the tile
         // let n = parseInt(tileValue.innerText);
         tileValue.innerText = (cadence).toString();
+        // calculate how many gallons a day 
+        var pumpsPerDay = (60 / cadence) * 24;
+        var pumpDepth = 0.10; // in meters
+        var bucketR = 0.43 / 2; // in meters
+        var volume = bucketR * bucketR * pumpDepth * 3.14; // in m^3
+        var liters = volume * 1000 * pumpsPerDay;
+        var gallons = volume * 264.172 * pumpsPerDay;
+        // i am using floor, since the bucket is not cylinder anyway
+        var litPerDayValue = document.getElementById("litersPerDay");
+        litPerDayValue.innerText = (Math.floor(liters)).toString();
+        var galPerDayValue = document.getElementById("gallonsPerDay");
+        galPerDayValue.innerText = (Math.floor(gallons)).toString();
     };
     // -------------------------------------------------------------------------
     // addData - adds one or more records

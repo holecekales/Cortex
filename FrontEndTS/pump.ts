@@ -99,7 +99,8 @@ class Pump {
           pointHoverBorderColor: "rgba(24, 120, 240, 1)",
           data: this.level,
           lineTension: 0
-        },
+        }
+        /*,
         {
           fill: false,
           label: 'Pump State',
@@ -110,8 +111,9 @@ class Pump {
           pointHoverBackgroundColor: "rgba(255, 204, 0, 1)",
           pointHoverBorderColor: "rgba(255, 204, 0, 1)",
           data: this.state,
-          lineTension: 0
+          lineTension: 0,
         }
+        */
       ]
     }
 
@@ -152,7 +154,9 @@ class Pump {
           },
           position: 'left',
 
-        }, {
+        },
+        /* 
+        {
           id: 'running',
           type: 'linear',
           scaleLabel: {
@@ -165,8 +169,8 @@ class Pump {
             max: 1,
             stepSize: 1
           },
-        }]
-      }
+        }*/
+      ]}
     }
 
     //Get the context of the canvas element we want to select
@@ -299,7 +303,9 @@ class Pump {
 
     if(this.prevPumpTime > 0)
     {
-      cadence = Math.round((time - this.prevPumpTime)/60);
+      // i am rounding up to compensate for the bucket not
+      // being cylinder
+      cadence = Math.round((time - this.prevPumpTime)/60 + 0.5);
     }
     
     this.prevPumpTime = time;
@@ -307,6 +313,21 @@ class Pump {
     // update the text in the tile
     // let n = parseInt(tileValue.innerText);
     tileValue.innerText = (cadence).toString();
+
+    // calculate how many gallons a day 
+    let pumpsPerDay = (60 / cadence) * 24;
+    const pumpDepth : number = 0.10; // in meters
+    const bucketR : number = 0.43/2;  // in meters
+    const volume : number    = bucketR * bucketR * pumpDepth * 3.14; // in m^3
+    let liters : number = volume * 1000 * pumpsPerDay;
+    let gallons : number = volume * 264.172 * pumpsPerDay;
+
+    // i am using floor, since the bucket is not cylinder anyway
+    let litPerDayValue  = document.getElementById("litersPerDay");
+    litPerDayValue.innerText = (Math.floor(liters)).toString();
+
+    let galPerDayValue  = document.getElementById("gallonsPerDay");
+    galPerDayValue.innerText = (Math.floor(gallons)).toString();
   }
 
   
