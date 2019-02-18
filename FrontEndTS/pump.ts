@@ -89,7 +89,6 @@ class Pump {
       labels: this.timeData,
       datasets: [
         {
-          fill: -1,
           label: 'Water Level',
           yAxisID: 'waterlevel',
           borderColor: "rgba(24, 120, 240, 1)",
@@ -100,7 +99,7 @@ class Pump {
           data: this.level,
           lineTension: 0
         }
-        /*,
+        /*, // took this out to make it faster
         {
           fill: false,
           label: 'Pump State',
@@ -119,21 +118,27 @@ class Pump {
 
     let basicOption = {
       maintainAspectRatio: true,
+      legend: {
+        display: false
+      },
       title: {
         display: true,
         text: 'Realtime Monitor',
-        fontSize: 24
+        fontSize: 20
       },
       scales: {
         xAxes: [{
-          type: "time",
+          type: 'time',
+          distribution: 'linear',
+
           time: {
             displayFormats: {
-              second: 'HH:mm:ss',
+             second: 'H:mm'
             },
 
-            minUnit: 'second',
-            tooltipFormat: 'HH:mm:ss',
+            unit: 'second',
+            tooltipFormat: 'H:mm:ss',
+            stepSize: 600,
           },
           scaleLabel: {
             display: true,
@@ -155,7 +160,7 @@ class Pump {
           position: 'left',
 
         },
-        /* 
+        /* //took this out to make it faster
         {
           id: 'running',
           type: 'linear',
@@ -197,7 +202,6 @@ class Pump {
     this.initDiagram();
     this.initChart();
     this.getBaseData();
-    // register timer 
     this.updateWatchdog = window.setInterval(() => {this.luTile(); } ,1000);
   }
 
@@ -206,13 +210,14 @@ class Pump {
   // -------------------------------------------------------------------------
   close() {
     this.reset();
+    window.clearInterval(this.updateWatchdog);
+    
   }
 
   reset() {
     this.timeData.splice(0, this.timeData.length);
     this.level.splice(0, this.level.length);
     this.state.splice(0, this.state.length);
-    window.clearInterval(this.updateWatchdog);
   }
 
   // -------------------------------------------------------------------------

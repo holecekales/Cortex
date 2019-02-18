@@ -64,7 +64,6 @@ var Pump = (function () {
             labels: this.timeData,
             datasets: [
                 {
-                    fill: -1,
                     label: 'Water Level',
                     yAxisID: 'waterlevel',
                     borderColor: "rgba(24, 120, 240, 1)",
@@ -79,20 +78,25 @@ var Pump = (function () {
         };
         var basicOption = {
             maintainAspectRatio: true,
+            legend: {
+                display: false
+            },
             title: {
                 display: true,
                 text: 'Realtime Monitor',
-                fontSize: 24
+                fontSize: 20
             },
             scales: {
                 xAxes: [{
-                        type: "time",
+                        type: 'time',
+                        distribution: 'linear',
                         time: {
                             displayFormats: {
-                                second: 'HH:mm:ss',
+                                second: 'H:mm'
                             },
-                            minUnit: 'second',
-                            tooltipFormat: 'HH:mm:ss',
+                            unit: 'second',
+                            tooltipFormat: 'H:mm:ss',
+                            stepSize: 600,
                         },
                         scaleLabel: {
                             display: true,
@@ -135,7 +139,6 @@ var Pump = (function () {
         this.initDiagram();
         this.initChart();
         this.getBaseData();
-        // register timer 
         this.updateWatchdog = window.setInterval(function () { _this.luTile(); }, 1000);
     };
     // -------------------------------------------------------------------------
@@ -143,12 +146,12 @@ var Pump = (function () {
     // -------------------------------------------------------------------------
     Pump.prototype.close = function () {
         this.reset();
+        window.clearInterval(this.updateWatchdog);
     };
     Pump.prototype.reset = function () {
         this.timeData.splice(0, this.timeData.length);
         this.level.splice(0, this.level.length);
         this.state.splice(0, this.state.length);
-        window.clearInterval(this.updateWatchdog);
     };
     // -------------------------------------------------------------------------
     // updateDiagram
