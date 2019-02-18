@@ -1,5 +1,6 @@
 var express = require('express');
 var WSSocket = require('ws');
+var fs = require('fs');
 // ------------------------------------------------------------------------------------
 // Pump
 // ------------------------------------------------------------------------------------
@@ -29,7 +30,8 @@ var Pump = (function () {
         // (Hacky) Workaround for environment variable for debugging
         // this is totally not awesome!!!
         if (process.env.COMPUTERNAME == "BLUEBIRD") {
-            console.log("BLUEBIRD");
+            console.log("DEBUGGING BLUEBIRD");
+            this.sampleData = JSON.parse(fs.readFileSync('data.json', 'utf8'));
             this.proxysocket = new WSSocket('ws://homecortex.azurewebsites.net', 'chart-protocol');
             this.proxysocket.on('message', function (data) {
                 console.log(data);
@@ -79,5 +81,4 @@ var Pump = (function () {
     Pump.prototype.routes = function () { return this.router; };
     return Pump;
 }());
-// module.exports = { "router": router, "pump": new Pump() };
 module.exports = function (server) { return new Pump(server); };

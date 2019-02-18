@@ -1,5 +1,6 @@
 var express = require('express');
 const WSSocket = require('ws');
+var fs = require('fs');
 
 
 // ------------------------------------------------------------------------------------
@@ -39,7 +40,9 @@ class Pump {
     // this is totally not awesome!!!
     if((process.env as any).COMPUTERNAME == "BLUEBIRD")
     {
-      console.log("BLUEBIRD");
+      console.log("DEBUGGING BLUEBIRD");
+      var obj = JSON.parse(fs.readFileSync('data.json', 'utf8'));
+
       this.proxysocket = new WSSocket('ws://homecortex.azurewebsites.net', 'chart-protocol');
       this.proxysocket.on('message', (data) => {
         console.log(data);
@@ -94,8 +97,6 @@ class Pump {
   routes() { return this.router; }
 
 }
-
-// module.exports = { "router": router, "pump": new Pump() };
 
 module.exports = (server) => { return new Pump(server); }
 

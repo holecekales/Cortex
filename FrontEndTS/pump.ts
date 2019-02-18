@@ -8,6 +8,8 @@ interface Meassurement {
   l : number;
   s : number;
   t : number;
+  m? : string;
+  v? : string;
 }
 
 // -------------------------------------------------------------------------
@@ -304,7 +306,7 @@ class Pump {
   // -------------------------------------------------------------------------
   updateCadence(time : number) 
   {
-    let cadence : number = 0;
+    let cadence : number = 1;
 
     if(this.prevPumpTime > 0)
     {
@@ -348,8 +350,11 @@ class Pump {
     {
       // we will stop one short of the end
       // with the last one we're going to update the dashboard
-      for (let i = 0; i < obj.length; i++) {
-        this.addRecord(obj[i]);
+      for (let i = 0; i < obj.length; i++) 
+      {
+        // skip these type of events
+        if(obj[i].m != "i")
+          this.addRecord(obj[i]);
       }
       last = obj[obj.length-1];
     }
@@ -358,13 +363,18 @@ class Pump {
       last = obj;
     }
 
-    // update the dashboard elements
-    // update the real-time monitor
-    this.chart.update();
-    // update the diagram
-    this.updateDiagram(last.l);
-    // update last updated tile
-    this.lastUpdateTime = last.t; 
+    // strange error handling in case there is only one element
+    // in the array, and it is the 'm' element
+    if(last.m != "i")
+    {
+      // update the dashboard elements
+      // update the real-time monitor
+      this.chart.update();
+      // update the diagram
+      this.updateDiagram(last.l);
+      // update last updated tile
+      this.lastUpdateTime = last.t; 
+    }
   }
 
   // -------------------------------------------------------------------------

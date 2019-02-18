@@ -216,7 +216,7 @@ var Pump = (function () {
     // Update cadence tile with the right number
     // -------------------------------------------------------------------------
     Pump.prototype.updateCadence = function (time) {
-        var cadence = 0;
+        var cadence = 1;
         if (this.prevPumpTime > 0) {
             // i am rounding up to compensate for the bucket not
             // being cylinder
@@ -249,7 +249,9 @@ var Pump = (function () {
             // we will stop one short of the end
             // with the last one we're going to update the dashboard
             for (var i = 0; i < obj.length; i++) {
-                this.addRecord(obj[i]);
+                // skip these type of events
+                if (obj[i].m != "i")
+                    this.addRecord(obj[i]);
             }
             last = obj[obj.length - 1];
         }
@@ -257,13 +259,17 @@ var Pump = (function () {
             this.addRecord(obj);
             last = obj;
         }
-        // update the dashboard elements
-        // update the real-time monitor
-        this.chart.update();
-        // update the diagram
-        this.updateDiagram(last.l);
-        // update last updated tile
-        this.lastUpdateTime = last.t;
+        // strange error handling in case there is only one element
+        // in the array, and it is the 'm' element
+        if (last.m != "i") {
+            // update the dashboard elements
+            // update the real-time monitor
+            this.chart.update();
+            // update the diagram
+            this.updateDiagram(last.l);
+            // update last updated tile
+            this.lastUpdateTime = last.t;
+        }
     };
     // -------------------------------------------------------------------------
     // add one record
