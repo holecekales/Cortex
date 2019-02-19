@@ -40,8 +40,8 @@ class Pump {
     // this is totally not awesome!!!
     if((process.env as any).COMPUTERNAME == "BLUEBIRD")
     {
-      console.log("DEBUGGING BLUEBIRD");
-      var obj = JSON.parse(fs.readFileSync('data.json', 'utf8'));
+      console.log("DEBUGGING ON BLUEBIRD");
+      this.sampleData = JSON.parse(fs.readFileSync('data.json', 'utf8'));
 
       this.proxysocket = new WSSocket('ws://homecortex.azurewebsites.net', 'chart-protocol');
       this.proxysocket.on('message', (data) => {

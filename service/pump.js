@@ -30,7 +30,7 @@ var Pump = (function () {
         // (Hacky) Workaround for environment variable for debugging
         // this is totally not awesome!!!
         if (process.env.COMPUTERNAME == "BLUEBIRD") {
-            console.log("DEBUGGING BLUEBIRD");
+            console.log("DEBUGGING ON BLUEBIRD");
             this.sampleData = JSON.parse(fs.readFileSync('data.json', 'utf8'));
             this.proxysocket = new WSSocket('ws://homecortex.azurewebsites.net', 'chart-protocol');
             this.proxysocket.on('message', function (data) {
