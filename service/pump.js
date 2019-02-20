@@ -11,6 +11,13 @@ var Pump = (function () {
         this.socket = null;
         this.proxysocket = null;
         this.router = null;
+        // in memory data retention
+        // should be kept in sync between the client and the service
+        // is define in the frontend pump.ts for the front end
+        this.hoursOfData = 2; // hours worh of data that we'll be displaying
+        // hoursOfData * minutes/hour * seconds/minute (but i sample only every 2 seconds so must devide by 2)  
+        this.maxLen = this.hoursOfData * 60 * 60 / 2; // 3600
+        // this array will be thi maxlen big
         this.sampleData = [];
         // create and defined routes
         this.router = express.Router();
@@ -51,7 +58,9 @@ var Pump = (function () {
                 obj.l = 55 - obj.l; // the bucket is 55cm deep -> converstion from device
             }
             this.sampleData.push(obj);
-            if (this.sampleData.length > 86400)
+            // if we're exceeding the maximum data that we're supposed to retain
+            // we will just shift the data. maxLen is defined in terms of hour <2>
+            if (this.sampleData.length > this.maxLen)
                 this.sampleData.shift(); // keep only a 2 days worth of data (sending every 2s)
             this.broadcast(JSON.stringify(obj), 'chart-protocol');
         }
