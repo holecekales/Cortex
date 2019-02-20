@@ -9,11 +9,18 @@ var fs = require('fs');
 class Pump {
 
   private socket = null;
-
-
   private proxysocket = null; 
 
   private router = null;
+
+  // in memory data retention
+  // should be kept in sync between the client and the service
+  // is define in the frontend pump.ts for the front end
+  readonly hoursOfData : number = 2; // hours worh of data that we'll be displaying
+  // hoursOfData * minutes/hour * seconds/minute (but i sample only every 2 seconds so must devide by 2)  
+  readonly maxLen: number = this.hoursOfData * 60 * 60 / 2; // 3600
+
+  // this array will be thi maxlen big
   private sampleData = [];
 
   // constructor
@@ -67,9 +74,13 @@ class Pump {
       }
        
       this.sampleData.push(obj);
-      if(this.sampleData.length > 86400)
+
+      // if we're exceeding the maximum data that we're supposed to retain
+      // we will just shift the data. maxLen is defined in terms of hour <2>
+      if(this.sampleData.length > this.maxLen)
         this.sampleData.shift();          // keep only a 2 days worth of data (sending every 2s)
-      this.broadcast(JSON.stringify(obj), 'chart-protocol');
+      
+        this.broadcast(JSON.stringify(obj), 'chart-protocol');
     }
     catch (err) {
       console.log('Error pushing message out');
