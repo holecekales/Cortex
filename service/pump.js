@@ -26,6 +26,7 @@ var Pump = (function () {
         // variables used to calculate pump cadence and keep
         // track of the history
         this.prevPumpTime = 0; // time of last pumping
+        this.lastCadence = 0;
         this.avgWindow = undefined; // averging window (1 day)
         this.cadenceAverage = 0; // calculated average
         this.cadenceSampleCount = 0; // samples
@@ -41,7 +42,12 @@ var Pump = (function () {
         // if someone calls us return all data in the last
         // 2 hours
         this.router.use('/', function (req, res, next) {
-            res.status(200).json(_this.sampleData);
+            var pumpInfo = {
+                cadence: _this.lastCadence,
+                cadenceHist: _this.cadenceHist,
+                sampleData: _this.sampleData,
+            };
+            res.status(200).json(pumpInfo);
         });
         // create socket
         this.socket = new WSSocket.Server(server);
@@ -163,8 +169,8 @@ var Pump = (function () {
                     if (this.prevPumpTime > 0) {
                         // The cadence is in minutes. The time on the reports is Unix time 
                         // and therefore in seconds -> convert to minutes by x/60 
-                        var cadence = Math.round((time - this.prevPumpTime) / 60);
-                        this.calcCadenceAverage(time, cadence);
+                        this.lastCadence = Math.round((time - this.prevPumpTime) / 60);
+                        this.calcCadenceAverage(time, this.lastCadence);
                         console.log("Cadence Average update: ", this.cadenceAverage);
                     }
                     // remember when we saw it pumping. 

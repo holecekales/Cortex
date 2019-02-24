@@ -27,6 +27,7 @@ class Pump {
   // variables used to calculate pump cadence and keep
   // track of the history
   private prevPumpTime : number = 0;   // time of last pumping
+  private lastCadence  : number = 0;
   private avgWindow : moment.Moment = undefined; // averging window (1 day)
   private cadenceAverage  : number = 0; // calculated average
   private cadenceSampleCount : number = 0;  // samples
@@ -51,7 +52,13 @@ class Pump {
     // if someone calls us return all data in the last
     // 2 hours
     this.router.use('/', (req, res, next) => {
-      res.status(200).json(this.sampleData);
+
+      let pumpInfo : any = {
+        cadence: this.lastCadence,
+        cadenceHist: this.cadenceHist,
+        sampleData: this.sampleData,
+    };
+      res.status(200).json(pumpInfo);
     });
 
     // create socket
@@ -202,9 +209,9 @@ class Pump {
           { 
             // The cadence is in minutes. The time on the reports is Unix time 
             // and therefore in seconds -> convert to minutes by x/60 
-            let cadence = Math.round((time - this.prevPumpTime)/60);
+            this.lastCadence = Math.round((time - this.prevPumpTime)/60);
             
-            this.calcCadenceAverage(time, cadence);
+            this.calcCadenceAverage(time, this.lastCadence);
             console.log("Cadence Average update: ", this.cadenceAverage);
           }
           // remember when we saw it pumping. 
