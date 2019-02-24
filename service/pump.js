@@ -175,7 +175,7 @@ var Pump = (function () {
             cadenceCalc: {
                 cadenceAverage: this.cadenceAverage,
                 cadenceSampleCount: this.cadenceSampleCount,
-                avgWindow: this.avgWindow.unix()
+                avgWindow: util_1.isUndefined(this.avgWindow) ? undefined : this.avgWindow.unix()
             },
             cadenceHist: this.cadenceHist,
             sampleData: this.sampleData

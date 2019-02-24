@@ -216,7 +216,7 @@ class Pump {
         cadenceCalc: {
           cadenceAverage: this.cadenceAverage,
           cadenceSampleCount: this.cadenceSampleCount,
-          avgWindow: this.avgWindow.unix()
+          avgWindow: isUndefined(this.avgWindow) ? undefined : this.avgWindow.unix()
         },
         cadenceHist: this.cadenceHist,
         sampleData: this.sampleData
