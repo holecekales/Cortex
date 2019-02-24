@@ -120,7 +120,7 @@ class Pump {
           this.sampleData.shift();          // keep only a 2 days worth of data (sending every 2s)
 
           // calculate metrics 
-          this.updateMetrics();
+          this.updateMetrics(this.sampleData.length);
         
           // broadcast to all the clients (browsers)
           this.broadcast(JSON.stringify(obj), 'chart-protocol');
@@ -175,12 +175,11 @@ class Pump {
   // * how often is pump pumping
   // * calcualte averages
   // -----------------------------------------------------------------------------
-  updateMetrics() 
+  updateMetrics(len : number) 
   {
-    let len = this.sampleData.length;
     // calculate if the pump kicked in
     // we need to look across at least 15 samples to figure it out
-    if(len >= 15)
+    if(len >= 15 && len <= this.sampleData.length)
     {
       let rangeFirst : number = len - 15;
       // 24 is the level where we typically start pumping
@@ -212,7 +211,7 @@ class Pump {
             this.lastCadence = Math.round((time - this.prevPumpTime)/60);
             
             this.calcCadenceAverage(time, this.lastCadence);
-            console.log("Cadence Average update: ", this.cadenceAverage);
+            console.log("Cadence Average update: ", this.cadenceAverage, " sample count:", this.cadenceSampleCount);
           }
           // remember when we saw it pumping. 
           this.prevPumpTime = time;         
@@ -258,12 +257,29 @@ class Pump {
         
         // restore the state
         this.sampleData = state.sampleData;
+        // cadence history
         this.cadenceHist = state.cadenceHist;
         if(isUndefined(state.cadenceCalc) === false)
         {
           this.cadenceAverage = state.cadenceCalc.cadenceAverage;
           this.cadenceSampleCount = state.cadenceCalc.cadenceSampleCount;
-          this.avgWindow = isUndefined(state.cadenceCalc.avgWindow) ? undefined : moment.unix(state.cadenceCalc.avgWindow);
+          if(isUndefined(state.cadenceCalc.avgWindow) === false )
+          {
+            this.avgWindow = moment.unix(state.cadenceCalc.avgWindow);
+            if(this.avgWindow.isValid() == false)
+            this.avgWindow == undefined;
+          }
+        }
+
+        if(this.cadenceAverage == 0)
+        {
+          // process the last 2 hours of data
+          // if we did not find cadenceAverage
+          let len = this.sampleData.length;
+          for(let i = 15; i < len; i++)
+          {
+            this.updateMetrics(i);
+          }
         }
       }
       catch(e)
