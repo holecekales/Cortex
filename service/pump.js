@@ -196,19 +196,24 @@ var Pump = (function () {
     // read the state from the disk so we can restore the operation 
     // ------------------------------------------------------------
     Pump.prototype.readStateFromDisk = function () {
-        try {
-            var state = JSON.parse(fs.readFileSync('appState.json', 'utf8'));
-            // restore the state
-            this.sampleData = state.sampleData;
-            this.cadenceHist = state.cadenceHist;
-            if (util_1.isUndefined(state.cadenceCalc) === false) {
-                this.cadenceAverage = state.cadenceCalc.cadenceAverage;
-                this.cadenceSampleCount = state.cadenceCalc.cadenceSampleCount;
-                this.avgWindow = moment.unix(state.cadenceCalc.avgWindow);
+        if (fs.existsSync('appState.json')) {
+            try {
+                var state = JSON.parse(fs.readFileSync('appState.json', 'utf8'));
+                // restore the state
+                this.sampleData = state.sampleData;
+                this.cadenceHist = state.cadenceHist;
+                if (util_1.isUndefined(state.cadenceCalc) === false) {
+                    this.cadenceAverage = state.cadenceCalc.cadenceAverage;
+                    this.cadenceSampleCount = state.cadenceCalc.cadenceSampleCount;
+                    this.avgWindow = moment.unix(state.cadenceCalc.avgWindow);
+                }
+            }
+            catch (e) {
+                console.error('Error reading state: ', e.message);
             }
         }
-        catch (e) {
-            console.error('Error reading state: ', e.message);
+        else {
+            console.warn('State file does not exist!');
         }
     };
     // ------------------------------------------------------------

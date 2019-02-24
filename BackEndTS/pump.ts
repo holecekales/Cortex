@@ -243,22 +243,29 @@ class Pump {
   // ------------------------------------------------------------
   readStateFromDisk()
   {
-    try {
-      let state : any = JSON.parse(fs.readFileSync('appState.json', 'utf8'));
-      
-      // restore the state
-      this.sampleData = state.sampleData;
-      this.cadenceHist = state.cadenceHist;
-      if(isUndefined(state.cadenceCalc) === false)
+    if (fs.existsSync('appState.json')) 
+    {
+      try {
+        let state : any = JSON.parse(fs.readFileSync('appState.json', 'utf8'));
+        
+        // restore the state
+        this.sampleData = state.sampleData;
+        this.cadenceHist = state.cadenceHist;
+        if(isUndefined(state.cadenceCalc) === false)
+        {
+          this.cadenceAverage = state.cadenceCalc.cadenceAverage;
+          this.cadenceSampleCount = state.cadenceCalc.cadenceSampleCount;
+          this.avgWindow = moment.unix(state.cadenceCalc.avgWindow);
+        }
+      }
+      catch(e)
       {
-        this.cadenceAverage = state.cadenceCalc.cadenceAverage;
-        this.cadenceSampleCount = state.cadenceCalc.cadenceSampleCount;
-        this.avgWindow = moment.unix(state.cadenceCalc.avgWindow);
+        console.error('Error reading state: ', e.message);
       }
     }
-    catch(e)
+    else
     {
-      console.error('Error reading state: ', e.message);
+      console.warn('State file does not exist!');
     }
   }
   
