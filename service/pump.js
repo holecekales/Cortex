@@ -26,11 +26,16 @@ var Pump = (function () {
         // variables used to calculate pump cadence and keep
         // track of the history
         this.prevPumpTime = 0; // time of last pumping
-        this.lastHour = undefined; // are we in the same average window 
+        this.avgWindow = undefined; // averging window (1 day)
         this.cadenceAverage = 0; // calculated average
         this.cadenceSampleCount = 0; // samples
-        // this array will be thi maxlen big
+        this.cadenceHist = [];
+        // this array will be maxlen (2 hours) and will have all of the device samples
+        // main purpose - drawing diagrams
         this.sampleData = [];
+        // read the previous state from disk 
+        // (hopefully it is still relevant)
+        this.readStateFromDisk();
         // create and defined routes
         this.router = express.Router();
         // if someone calls us return all data in the last
@@ -52,7 +57,6 @@ var Pump = (function () {
         // this is totally not awesome!!!
         if (process.env.COMPUTERNAME == "BLUEBIRD") {
             console.log("DEBUGGING ON BLUEBIRD");
-            this.sampleData = JSON.parse(fs.readFileSync('data.json', 'utf8'));
             this.proxysocket = new WSSocket('ws://homecortex.azurewebsites.net', 'chart-protocol');
             this.proxysocket.on('message', function (data) {
                 console.log(data);
@@ -101,12 +105,17 @@ var Pump = (function () {
     Pump.prototype.calcCadenceAverage = function (ut, cdc) {
         var ct = moment.unix(ut); // convert to moment
         var hr = ct.minutes(0).seconds(0).milliseconds(0);
-        if (this.lastHour === undefined || hr > this.lastHour) {
+        if (this.avgWindow === undefined || hr > this.avgWindow) {
             //store the last hour if we don't have one have yet
             // $$$ we should load it from the file
             this.cadenceAverage = cdc;
             this.cadenceSampleCount = 1;
-            this.lastHour = hr;
+            this.avgWindow = hr;
+            this.cadenceHist.push({ period: hr, cadence: cdc });
+            if (this.cadenceHist.length > 365) {
+                // keep data for rolling 365 days
+                this.cadenceHist.shift();
+            }
         }
         else {
             // approximate rolling average using Welford's method:
@@ -162,25 +171,39 @@ var Pump = (function () {
     // the service needs to be restarted
     // ------------------------------------------------------------
     Pump.prototype.writeStateToDisk = function () {
-        var content = {
-            cadenceHist: [],
+        var state = {
+            cadenceCalc: {
+                cadenceAverage: this.cadenceAverage,
+                cadenceSampleCount: this.cadenceSampleCount,
+                avgWindow: this.avgWindow
+            },
+            cadenceHist: this.cadenceHist,
             sampleData: this.sampleData
         };
-        fs.writeFile('appState.json', JSON.stringify(content), 'utf8', function (err) {
+        fs.writeFile('appState.json', JSON.stringify(state), 'utf8', function (err) {
             if (err) {
-                console.error('State file failed to save at', moment().format('YYYY-MM-DD H:mm'));
-                throw err;
+                console.error('State save failed at', moment().format('YYYY-MM-DD H:mm'));
             }
-            console.log('State saved at', moment().format('YYYY-MM-DD H:mm:ss'));
         });
     };
     // ------------------------------------------------------------
-    // write the state of the object to disk, just in case 
-    // the service needs to be restarted
+    // read the state from the disk so we can restore the operation 
     // ------------------------------------------------------------
     Pump.prototype.readStateFromDisk = function () {
-        var state = JSON.parse(fs.readFileSync('appState.json', 'utf8'));
-        console.log(state);
+        try {
+            var state = JSON.parse(fs.readFileSync('appState.json', 'utf8'));
+            // restore the state
+            this.sampleData = state.sampleData;
+            this.cadenceHist = state.cadenceHist;
+            if (util_1.isUndefined(state.cadenceCalc) === false) {
+                this.cadenceAverage = state.cadenceCalc.cadenceAverage;
+                this.cadenceSampleCount = state.cadenceCalc.cadenceSampleCount;
+                this.avgWindow = state.cadenceCalc.avgWindow;
+            }
+        }
+        catch (e) {
+            console.error('Error reading state: ', e.message);
+        }
     };
     // ------------------------------------------------------------
     // broadcast to all of the clients (browsers)  
@@ -196,7 +219,7 @@ var Pump = (function () {
                     }
                 }
                 catch (e) {
-                    console.error('This' + e);
+                    console.error('Error notifying clients: ', e.message);
                 }
             }
         });
