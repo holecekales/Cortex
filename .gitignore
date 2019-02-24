@@ -2,5 +2,6 @@ upload/
 log.txt
 datafile.db
 data.json
+appState.json
 .vscode/
 npm-debug.log
