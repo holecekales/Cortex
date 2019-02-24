@@ -135,12 +135,13 @@ class Pump {
   calcCadenceAverage(ut : number, cdc : number)
   {
     let ct : moment.Moment = moment.unix(ut); // convert to moment
-    let hr : moment.Moment = ct.minutes(0).seconds(0).milliseconds(0);
+    // snap the averiging window to 1 day
+    let hr : moment.Moment = ct.hours(0).minutes(0).seconds(0).milliseconds(0);
 
     if((this.avgWindow === undefined) || (hr.isAfter(this.avgWindow)))
     {
-      //store the last hour if we don't have one have yet
-      // $$$ we should load it from the file
+      // store the last average if we don't have one
+      // or if we exceeded the averiging window (1 day)
       this.cadenceAverage     = cdc;
       this.cadenceSampleCount = 1;
       this.avgWindow = hr;
