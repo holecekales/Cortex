@@ -105,7 +105,7 @@ var Pump = (function () {
     Pump.prototype.calcCadenceAverage = function (ut, cdc) {
         var ct = moment.unix(ut); // convert to moment
         var hr = ct.minutes(0).seconds(0).milliseconds(0);
-        if ((this.avgWindow === undefined) || (hr > this.avgWindow)) {
+        if ((this.avgWindow === undefined) || (hr.isAfter(this.avgWindow))) {
             //store the last hour if we don't have one have yet
             // $$$ we should load it from the file
             this.cadenceAverage = cdc;
@@ -175,7 +175,7 @@ var Pump = (function () {
             cadenceCalc: {
                 cadenceAverage: this.cadenceAverage,
                 cadenceSampleCount: this.cadenceSampleCount,
-                avgWindow: this.avgWindow
+                avgWindow: this.avgWindow.unix()
             },
             cadenceHist: this.cadenceHist,
             sampleData: this.sampleData
@@ -198,7 +198,7 @@ var Pump = (function () {
             if (util_1.isUndefined(state.cadenceCalc) === false) {
                 this.cadenceAverage = state.cadenceCalc.cadenceAverage;
                 this.cadenceSampleCount = state.cadenceCalc.cadenceSampleCount;
-                this.avgWindow = moment(state.cadenceCalc.avgWindow);
+                this.avgWindow = moment.unix(state.cadenceCalc.avgWindow);
             }
         }
         catch (e) {
