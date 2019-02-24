@@ -255,7 +255,7 @@ class Pump {
         {
           this.cadenceAverage = state.cadenceCalc.cadenceAverage;
           this.cadenceSampleCount = state.cadenceCalc.cadenceSampleCount;
-          this.avgWindow = moment.unix(state.cadenceCalc.avgWindow);
+          this.avgWindow = isUndefined(state.cadenceCalc.avgWindow) ? undefined : moment.unix(state.cadenceCalc.avgWindow);
         }
       }
       catch(e)

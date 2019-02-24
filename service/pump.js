@@ -205,7 +205,7 @@ var Pump = (function () {
                 if (util_1.isUndefined(state.cadenceCalc) === false) {
                     this.cadenceAverage = state.cadenceCalc.cadenceAverage;
                     this.cadenceSampleCount = state.cadenceCalc.cadenceSampleCount;
-                    this.avgWindow = moment.unix(state.cadenceCalc.avgWindow);
+                    this.avgWindow = util_1.isUndefined(state.cadenceCalc.avgWindow) ? undefined : moment.unix(state.cadenceCalc.avgWindow);
                 }
             }
             catch (e) {
