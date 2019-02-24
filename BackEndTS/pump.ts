@@ -130,7 +130,7 @@ class Pump {
     let ct : moment.Moment = moment.unix(ut); // convert to moment
     let hr : moment.Moment = ct.minutes(0).seconds(0).milliseconds(0);
 
-    if(this.avgWindow === undefined || hr > this.avgWindow)
+    if((this.avgWindow === undefined) || (hr > this.avgWindow))
     {
       //store the last hour if we don't have one have yet
       // $$$ we should load it from the file
@@ -246,7 +246,7 @@ class Pump {
       {
         this.cadenceAverage = state.cadenceCalc.cadenceAverage;
         this.cadenceSampleCount = state.cadenceCalc.cadenceSampleCount;
-        this.avgWindow = state.cadenceCalc.avgWindow;
+        this.avgWindow = moment(state.cadenceCalc.avgWindow);
       }
     }
     catch(e)
