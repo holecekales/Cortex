@@ -77,6 +77,12 @@ var Pump = (function () {
                 delete obj.m; // the source was device and we'll now get rid of it.
                 obj.l = 55 - obj.l; // the bucket is 55cm deep -> converstion from device
             }
+            if (util_1.isUndefined(obj.s) === false) {
+                // the device reports state as well
+                // take it off - since it is always 0 and just adds to the volume of data
+                // which needs to be stored and transfered.
+                delete obj.s;
+            }
             //this seems like good device report
             if (util_1.isUndefined(obj.t) === false) {
                 // store device data
