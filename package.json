@@ -1,6 +1,6 @@
 {
   "name": "homecortex",
-  "version": "0.1.0",
+  "version": "1.1.0",
   "description": "test of the express framework",
   "main": "server.js",
   "scripts": {
@@ -10,7 +10,6 @@
   "author": "ales",
   "license": "MIT",
   "dependencies": {
-    "azure-event-hubs": "0.0.8",
     "express": "~4.13.4",
     "http": "0.0.0",
     "moment": "^2.18.1",
