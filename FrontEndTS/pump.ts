@@ -312,7 +312,7 @@ class Pump {
     {
       // i am rounding up to compensate for the bucket not
       // being cylinder
-      cadence = Math.round((time - this.prevPumpTime)/60 + 0.5);
+      cadence = Math.round((time - this.prevPumpTime)/60);
     }
     
     this.prevPumpTime = time;

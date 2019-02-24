@@ -220,7 +220,7 @@ var Pump = (function () {
         if (this.prevPumpTime > 0) {
             // i am rounding up to compensate for the bucket not
             // being cylinder
-            cadence = Math.round((time - this.prevPumpTime) / 60 + 0.5);
+            cadence = Math.round((time - this.prevPumpTime) / 60);
         }
         this.prevPumpTime = time;
         // update cadence only if we have successfuly calculated
