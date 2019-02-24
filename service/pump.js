@@ -111,7 +111,7 @@ var Pump = (function () {
             this.cadenceAverage = cdc;
             this.cadenceSampleCount = 1;
             this.avgWindow = hr;
-            this.cadenceHist.push({ period: hr, cadence: cdc });
+            this.cadenceHist.push({ period: hr.unix(), cadence: cdc });
             if (this.cadenceHist.length > 365) {
                 // keep data for rolling 365 days
                 this.cadenceHist.shift();
