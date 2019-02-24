@@ -344,7 +344,7 @@ var Pump = (function () {
             if (xhr.readyState == 4 && xhr.status == 200) {
                 var obj = JSON.parse(xhr.responseText);
                 _this.reset();
-                _this.addData(obj);
+                _this.addData(obj.sampleData);
                 // start recieving updates
                 _this.initSocket();
             }

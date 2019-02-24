@@ -466,7 +466,7 @@ class Pump {
       if (xhr.readyState == 4 && xhr.status == 200) {
         let obj = JSON.parse(xhr.responseText);
         this.reset();
-        this.addData(obj);
+        this.addData(obj.sampleData);
         // start recieving updates
         this.initSocket();
       }
