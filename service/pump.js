@@ -226,6 +226,8 @@ var Pump = (function () {
                         this.updateMetrics(i);
                     }
                 }
+                else
+                    this.lastCadence = this.cadenceAverage;
             }
             catch (e) {
                 console.error('Error reading state: ', e.message);

@@ -281,6 +281,8 @@ class Pump {
             this.updateMetrics(i);
           }
         }
+        else 
+          this.lastCadence = this.cadenceAverage;
       }
       catch(e)
       {
