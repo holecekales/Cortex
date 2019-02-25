@@ -209,25 +209,40 @@ var Pump = (function () {
                 this.sampleData = state.sampleData;
                 // cadence history
                 this.cadenceHist = state.cadenceHist;
+                // process the last 2 hours of data
+                // so we propertly initialize the averiging
+                // we need to capture the previous time of empty
+                // but only of the time is less than the average cadence
+                var len = this.sampleData.length;
+                for (var i = 15; i < len; i++) {
+                    this.updateMetrics(i);
+                }
+                // if there is a risk of significantly skewing the samples
+                var timeDiff = moment().unix() - this.prevPumpTime;
+                // 600 == 10 minutes - which is would be very short pump period
+                // but if we have lastCadence already computed - we should use that
+                // if we have nothing - we have to start over
+                if (timeDiff > Math.max(this.lastCadence * 60, 600)) {
+                    this.prevPumpTime = undefined;
+                    this.lastCadence = 0;
+                }
                 if (util_1.isUndefined(state.cadenceCalc) === false) {
-                    this.cadenceAverage = state.cadenceCalc.cadenceAverage;
-                    this.cadenceSampleCount = state.cadenceCalc.cadenceSampleCount;
+                    if (state.cadenceCalc.cadenceAverage > 0) {
+                        this.cadenceAverage = state.cadenceCalc.cadenceAverage;
+                    }
+                    if (state.cadenceCalc.cadenceSampleCount > 0) {
+                        this.cadenceSampleCount = state.cadenceCalc.cadenceSampleCount;
+                    }
                     if (util_1.isUndefined(state.cadenceCalc.avgWindow) === false) {
+                        // case that should not happen - but again possible 
                         this.avgWindow = moment.unix(state.cadenceCalc.avgWindow);
-                        if (this.avgWindow.isValid() == false)
+                        if (this.avgWindow.isValid() == false) {
+                            // if somehow we're still not valid time (moment)
+                            // them recompute
                             this.avgWindow == undefined;
+                        }
                     }
                 }
-                if (this.cadenceAverage == 0) {
-                    // process the last 2 hours of data
-                    // if we did not find cadenceAverage
-                    var len = this.sampleData.length;
-                    for (var i = 15; i < len; i++) {
-                        this.updateMetrics(i);
-                    }
-                }
-                else
-                    this.lastCadence = this.cadenceAverage;
             }
             catch (e) {
                 console.error('Error reading state: ', e.message);
