@@ -293,6 +293,8 @@ class Pump {
             this.cadenceSampleCount = state.cadenceCalc.cadenceSampleCount;
           }
 
+          console.log('Cadence Average(final): ', this.cadenceAverage, " sample count:", this.cadenceSampleCount);
+
           if(isUndefined(state.cadenceCalc.avgWindow) === false )
           {
             // case that should not happen - but again possible 
@@ -304,6 +306,10 @@ class Pump {
               this.avgWindow == undefined;
             }
           }
+
+          let msg = ((isUndefined(this.avgWindow)) || (this.avgWindow.isValid() == false)) ? "still unknown" :  this.avgWindow.format("MM/DD/YYYY H:mm:ss");
+          console.log("Averaging window start: ", msg);
+
         }
       }
       catch(e)

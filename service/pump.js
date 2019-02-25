@@ -233,6 +233,7 @@ var Pump = (function () {
                     if (state.cadenceCalc.cadenceSampleCount > 0) {
                         this.cadenceSampleCount = state.cadenceCalc.cadenceSampleCount;
                     }
+                    console.log('Cadence Average(final): ', this.cadenceAverage, " sample count:", this.cadenceSampleCount);
                     if (util_1.isUndefined(state.cadenceCalc.avgWindow) === false) {
                         // case that should not happen - but again possible 
                         this.avgWindow = moment.unix(state.cadenceCalc.avgWindow);
@@ -242,6 +243,8 @@ var Pump = (function () {
                             this.avgWindow == undefined;
                         }
                     }
+                    var msg = ((util_1.isUndefined(this.avgWindow)) || (this.avgWindow.isValid() == false)) ? "still unknown" : this.avgWindow.format("MM/DD/YYYY H:mm:ss");
+                    console.log("Averaging window start: ", msg);
                 }
             }
             catch (e) {
