@@ -1,63 +1,77 @@
-<div id='pump'>
-
- 
-  <div class="tilecontainer">
-    
-    <div id="lastUpdateTile" class="tile green">
-      <div class="header">
-        <div id= "lastUpdateValue" class="count">2</div>
-        <div class="title">Seconds</div>
-      </div>
-      <div class="body">
-        <div class="title">Last Updated</div>
-      </div>
-    </div>
-    
-    <div class="tile lightgreen">
-      <div class="header">
-        <div id="cadenceValue" class="count">?</div>
-        <div class="title">Minutes</div>
-      </div>
-      <div class="body">
-        <div class="title">Cadence</div>
-      </div>
-    </div>
-    
-    <br>
- 
-    <div class="tile wide blue">
-      <div class="header">
-        <div class="left">
-          <div id="litersPerDay" class="count">?</div>
-          <div class="title">Liters</div>
+<div id="pump">
+    <div id="one" class="cell">
+      <div id="lastUpdateTile" class="tile green">
+        <div class="widget">
+          <div class="wrapper">
+            <div id="lastUpdateValue" class="value">?</div>
+            <div class="units">Seconds</div>
+          </div>
         </div>
-        <div class="right">
-          <div id="gallonsPerDay" class="count">?</div>
-          <div class="title">Gallons</div>
+        <div class="label">
+          <div class="title">Last Updated</div>
         </div>
       </div>
-      <div class="body">
-        <div class="title">Pump Output per Day</div>
+    </div>
+
+    <div id="two" class="cell">
+      <div class="tile lightgreen">
+        <div class="widget">
+          <div class="wrapper">
+            <div id="cadenceValue" class="value">?</div>
+            <div class="units">Minutes</div>
+          </div>
+        </div>
+        <div class="label">
+          <div class="title">Cadence</div>
+        </div>
       </div>
     </div>
-  
-    <br>
 
-    <div class="tile wide chartGray">
-        <div class="header">
-            <canvas id="myChart" width="180" height="90"></canvas>
+    <div id="three" class="cell">
+      <div class="tile blue">
+        <div class="widget">
+          <div class="wrapper">
+            <div id="litersPerDay" class="value">?</div>
+            <div class="units">Liters</div>
+          </div>
+          <div class="wrapper">
+            <div id="gallonsPerDay" class="value">?</div>
+            <div class="units">Gallons</div>
+          </div>
         </div>
-        <div class="body">
-            <div class="title">Realtime Monitor</div>
+        <div class="label">
+          <div class="title">Pump Output per Day</div>
         </div>
+      </div>
     </div>
-</div>
 
+    <div id="four" class="cell">
+      <div id="diagramContainer">
+        <canvas id="diagram" width="10" height="10"></canvas>
+      </div>
+    </div>
 
+    <div id="five" class="cell">
+      <div class="tile chartGray">
+        <div class="widget">
+         
+        </div>
+        <div class="label">
+          <div class="title">Daily Average Cadence</div>
+        </div>
+      </div>
+    </div>
 
-  <div id="diagramContainer">
-    <canvas id="diagram" width="10" height="10"></canvas>
+    <div id="six" class="cell">
+      <div class="tile chartGray">
+        <div class="widget">
+          <!-- chart goes here-->
+          <canvas id="myChart" width="180" height="90"></canvas>
+
+        </div>
+        <div class="label">
+          <div class="title">Realtime Monitor</div>
+        </div>
+      </div>
+    </div>
   </div>
-  
-
- </div>

@@ -1,138 +1,225 @@
-
+/* ------------------ */
+/* Main Container     */
+/* ------------------ */
 #pump {
-  padding-top: 50px;
-  height: 100%;
-  max-width: 760px; 
+  padding-top: 50px;  /* offset from the top */
+  margin: 0 auto;     /* center */
+  max-width: 760px;   /* geometry for resizing */
   min-width: 500px;
   font-family: sans-serif;
-  margin: 0 auto;
-  display: block;
-  position: relative;
+
+  /* define the dashboard grid with its sizes */
+  display: grid;
+  grid-template-columns: repeat(4, 186px);
+  grid-template-rows:    repeat(5, 153px);
 }
 
+
+/* ------------------- */
+/* Positioning tiles   */
+/* ------------------- */
+#one {
+  grid-column:  1 / 1;
+  grid-row:     1 / 1;
+}
+
+#two {
+  grid-column:  2 / 2;
+  grid-row:     1 / 1;
+}
+
+#three {
+  grid-column:  1 / 3;
+  grid-row:     2 / 2;
+}
+
+#four {
+  grid-column:  3 / 5;
+  grid-row:     1 / 4;
+}
+
+#five {
+  grid-column:  1 / 3;
+  grid-row:     3 / 3;
+}
+
+#six {
+  grid-column:  1 / 5;
+  grid-row:     4 / 5;
+  height: 200px;
+}
+
+/* ---------------------- */
+/* Building blocks        */
+/* ---------------------- */
+
+.cell {
+  box-sizing: border-box;
+  /* Padding drives the spaces between tiles*/
+  padding: 4px;
+  
+  /* turn on/off gridlines */
+  /*
+  border: 2px solid #ffa94d;
+  background-color: #ffd8a8;
+  */
+}
+
+.tile {
+  width: 100%;
+  height: 100%;
+  
+  background-color: whitesmoke;
+  box-shadow: 2px 2px 4px 0 rgba(0, 0, 0, 0.25);
+  border-radius: 4px;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.tile .widget {
+  width: 100%;
+  flex: 1;
+  
+  font-weight: 300;
+  color: white;
+  background-color: #919191;
+  border-radius: 4px 4px 0 0;
+    
+  display: flex;
+  flex-direction: row;
+  justify-content:  space-around;
+  align-items: center;
+}
+
+
+.tile .label {
+  align-self: flex-end;  
+  width: 100%;
+  height: auto;
+ 
+  /* The text size and top/bottom padding */
+  /* drives the height of the label */
+  font-size: 20px; 
+  padding-top: 5px;
+  padding-bottom: 5px;
+
+  /* center vertically and horizontally */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  /* basic colors */
+  color: darkgray;
+  background-color: white;
+  border-radius: 0  0 4px 4px;
+}
+
+.tile .widget .value {
+  font-size: 50px;
+  text-align: center;
+}
+
+.tile .widget .units {
+  font-size: 15px;
+  text-align: center;
+}
+
+/* ------------------ */
+/* Diagram            */
+/* ------------------ */
+#diagramContainer {
+  width: 364px;
+  height: 451px;
+  background-color: white;
+  border-radius: 4px;
+  box-shadow: 2px 2px 4px 0 rgba(0, 0, 0, 0.15);
+}
+
+#diagram {
+  border-radius: 4px;
+  box-shadow: 2px 2px 4px 0 rgba(0,0,0,0.15);
+}
+
+/* ------------------ */
+/* Chart              */
+/* ------------------ */
 #myChart {
   padding-top: 7px;
 }
 
-#diagramContainer {
-  float: left;
-  margin-top: 8px;
-  margin-left: 8px;
-}
+/**********************/
+/* Tile Colorization  */
+/**********************/
 
-#diagram {
-  border-radius:4px;
-  box-shadow: 2px 2px 4px 0 rgba(0,0,0,0.15);
-}
-
-.tilecontainer {
-  float: left;
-  margin: 0px 0px 0px 0px;
-  line-height: 155px;
-}
-
-.tile {
-  width:178px;
-  height:140px;
-  border-radius:4px;
-  box-shadow: 2px 2px 4px 0 rgba(0,0,0,0.15);
-  margin-top: 8px;
-  margin-left:8px;
-  float:left; 
-  line-height: normal;
-  background-color: whitesmoke;
-}
-
-.tile.wide {
-  width: 364px;
-}
-
-.tile .header {
-  height:100px;
-  background-color:#f4f4f4;
-  border-radius: 4px 4px 0 0;
-  color:white;
-  font-weight:300;
-}
-
-.tile.wide .header .left, .tile.wide .header .right {
-  width:178px;
-  float:left;
-}
-
-.tile .header .count {
-  font-size: 50px;
-  text-align:center;
-  padding:10px 0 0;
-}
-
-.tile .header .title {
-  font-size: 20px;
-  text-align:center;
-}
-
-.tile .body {
-  height:40px;
-  line-height: 40px;
-  text-align: center;
-  border-radius: 0 0 4px 4px;
-  color:#333333;
-  background-color:white;
-}
-
-.tile .body .title {
-    font-size:20px;
-}
-
-.tile.wide .body .title {
-    font-size:20px;
-}
-
-.tile.green .header {
+/* ------------------ */
+/* Green Tile         */
+/* ------------------ */
+.tile.green .widget {
   background: linear-gradient(to bottom right, #609931, #87bc27);
 }
 
-.tile.green  .body {
+.tile.green .label {
   color: #609931;
 }
 
-.tile.orange .header {
+/* ------------------ */
+/* Light Grean Tile   */
+/* ------------------ */
+
+.tile.lightgreen .widget {
+  background: linear-gradient(to bottom right, #0aa361, #1adc88);
+}
+
+.tile.lightgreen .label {
+  color: #0aa361;
+}
+
+/* ------------------ */
+/* Orange             */
+/* ------------------ */
+
+.tile.orange .widget {
   background: linear-gradient(to bottom right, #ef7f00, #f7b200);
 }
 
-.tile.orange  .body {
+.tile.orange .label {
   color: #ef7f00;
 }
 
+/* ------------------ */
+/* Blue Tile          */
+/* ------------------ */
 .tile.blue .header {
   background: linear-gradient(to bottom right, #2c66a5, #4f9cf2);
 }
 
-.tile.blue .body {
+.tile.blue .widget {
+  background: linear-gradient(to bottom right, #2c66a5, #4f9cf2);
+}
+
+.tile.blue .label {
   color: #2c66a5;
 }
 
-.tile.lightgreen .header {
-  background: linear-gradient(to bottom right, #0aa361, #1adc88);
-}
-
-.tile.lightgreen  .body {
-  color: #0aa361;
-}
-
-
-.tile.red .header {
+/* ------------------ */
+/* Red Tile           */
+/* ------------------ */
+.tile.red .widget {
   background: linear-gradient(to bottom right, #fc1212, #f80e0e);
 }
 
-.tile.red  .body {
+.tile.red .label {
   color: #fc1212;
 }
 
-.tile.chartGray .header {
+/* ------------------ */
+/* Gray Tile          */
+/* ------------------ */
+.tile.chartGray .widget {
   background: linear-gradient(to bottom right, #eeeeee, #d1d1d1);
 }
 
-.tile.chartGray  .body {
+.tile.chartGray .label {
   color: #868686;
 }
