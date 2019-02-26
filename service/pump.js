@@ -21,9 +21,8 @@ var Pump = (function () {
         // in memory data retention
         // should be kept in sync between the client and the service
         // is define in the frontend pump.ts for the front end
-        this.hoursOfData = 2; // hours worh of data that we'll be displaying
-        // hoursOfData * minutes/hour * seconds/minute (but i sample only every 2 seconds so must devide by 2)  
-        this.maxLen = this.hoursOfData * 60 * 60 / 2; // 3600
+        this.retentionTime = 2 * 60 * 60; // 2 hours in seconds
+        this.maxLen = this.retentionTime / 2; // 3600
         // variables used to calculate pump cadence and keep
         // track of the history
         this.prevPumpTime = 0; // time of last pumping
@@ -206,11 +205,11 @@ var Pump = (function () {
     // ------------------------------------------------------------
     Pump.prototype.delOldRecords = function (time) {
         var len = this.sampleData.length;
-        if ((time - this.sampleData[0].t < 7200)) {
+        if ((time - this.sampleData[0].t < this.retentionTime)) {
             // the all are OK;
             return;
         }
-        if ((time - this.sampleData[len - 1].t >= 7200)) {
+        if ((time - this.sampleData[len - 1].t >= this.retentionTime)) {
             // all are bad! delete all;
             this.sampleData.splice(0, len);
             return;

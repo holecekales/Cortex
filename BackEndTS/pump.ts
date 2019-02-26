@@ -22,9 +22,8 @@ class Pump {
   // in memory data retention
   // should be kept in sync between the client and the service
   // is define in the frontend pump.ts for the front end
-  readonly hoursOfData : number = 2; // hours worh of data that we'll be displaying
-  // hoursOfData * minutes/hour * seconds/minute (but i sample only every 2 seconds so must devide by 2)  
-  readonly maxLen: number = this.hoursOfData * 60 * 60 / 2; // 3600
+  readonly retentionTime : number = 2 * 60 * 60;          // 2 hours in seconds
+  readonly maxLen: number = this.retentionTime  / 2; // 3600
 
   // variables used to calculate pump cadence and keep
   // track of the history
@@ -121,14 +120,14 @@ class Pump {
         if(this.sampleData.length > this.maxLen)
           this.sampleData.shift();          // keep only a 2 days worth of data (sending every 2s)
 
-          // calculate metrics 
-          this.updateMetrics(this.sampleData.length);
-        
-          // broadcast to all the clients (browsers)
-          this.broadcast(JSON.stringify(obj), 'chart-protocol');
+        // calculate metrics 
+        this.updateMetrics(this.sampleData.length);
+      
+        // broadcast to all the clients (browsers)
+        this.broadcast(JSON.stringify(obj), 'chart-protocol');
 
-          // write the state - important so we can restart the service if needed
-          this.writeStateToDisk();
+        // write the state - important so we can restart the service if needed
+        this.writeStateToDisk();
       }
     }
     catch (err) {
@@ -256,13 +255,13 @@ class Pump {
   {
     let len = this.sampleData.length;
 
-    if((time - this.sampleData[0].t < 7200))
+    if((time - this.sampleData[0].t < this.retentionTime))
     {
       // the all are OK;
       return;
     } 
 
-    if((time - this.sampleData[len-1].t >= 7200))
+    if((time - this.sampleData[len-1].t >= this.retentionTime))
     {
       // all are bad! delete all;
       this.sampleData.splice(0, len);
