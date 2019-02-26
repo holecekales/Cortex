@@ -13,6 +13,7 @@ var Pump = (function () {
     // ------------------------------------------------------------
     function Pump(server) {
         var _this = this;
+        this.fileVerion = '1.0';
         this.socket = null;
         this.proxysocket = null;
         // express router.
@@ -184,6 +185,7 @@ var Pump = (function () {
     // ------------------------------------------------------------
     Pump.prototype.writeStateToDisk = function () {
         var state = {
+            version: this.fileVerion,
             cadenceCalc: {
                 cadenceAverage: this.cadenceAverage,
                 cadenceSampleCount: this.cadenceSampleCount,
@@ -199,52 +201,101 @@ var Pump = (function () {
         });
     };
     // ------------------------------------------------------------
+    // delOldRecords() 
+    // delete all of the samples that are older than 2 hours (7200s)
+    // ------------------------------------------------------------
+    Pump.prototype.delOldRecords = function (time) {
+        var len = this.sampleData.length;
+        if ((time - this.sampleData[0].t < 7200)) {
+            // the all are OK;
+            return;
+        }
+        if ((time - this.sampleData[len - 1].t >= 7200)) {
+            // all are bad! delete all;
+            this.sampleData.splice(0, len);
+            return;
+        }
+        // it's somewhere in the middle
+        var begin = 0;
+        var last = len - 1;
+        var mid = 0;
+        while (begin <= last) {
+            mid = (begin + last) / 2 | 0; // integer devide 
+            if (this.sampleData[mid] < time) {
+                begin = mid + 1;
+            }
+            else if (this.sampleData[mid] > time) {
+                last = mid - 1;
+            }
+            else {
+                this.sampleData.splice(mid, len);
+            }
+        }
+    };
+    // ------------------------------------------------------------
+    // evaluate if the file is compatible with runtime
+    // ------------------------------------------------------------
+    Pump.prototype.isCompatible = function (v) {
+        return true; //v == this.fileVerion;
+    };
+    // ------------------------------------------------------------
     // read the state from the disk so we can restore the operation 
     // ------------------------------------------------------------
     Pump.prototype.readStateFromDisk = function () {
         if (fs.existsSync('appState.json')) {
             try {
                 var state = JSON.parse(fs.readFileSync('appState.json', 'utf8'));
-                // restore the state
-                this.sampleData = state.sampleData;
-                // cadence history
-                this.cadenceHist = state.cadenceHist;
-                // process the last 2 hours of data
-                // so we propertly initialize the averiging
-                // we need to capture the previous time of empty
-                // but only of the time is less than the average cadence
-                var len = this.sampleData.length;
-                for (var i = 15; i < len; i++) {
-                    this.updateMetrics(i);
-                }
-                // if there is a risk of significantly skewing the samples
-                var timeDiff = moment().unix() - this.prevPumpTime;
-                // 600 == 10 minutes - which is would be very short pump period
-                // but if we have lastCadence already computed - we should use that
-                // if we have nothing - we have to start over
-                if (timeDiff > Math.max(this.lastCadence * 60, 600)) {
-                    this.prevPumpTime = undefined;
-                    this.lastCadence = 0;
-                }
-                if (util_1.isUndefined(state.cadenceCalc) === false) {
-                    if (state.cadenceCalc.cadenceAverage > 0) {
-                        this.cadenceAverage = state.cadenceCalc.cadenceAverage;
+                // check the version of the file if is not the same
+                // then get ignore the contents
+                if (this.isCompatible(state.version)) {
+                    // restore the state
+                    this.sampleData = state.sampleData;
+                    // cadence history
+                    this.cadenceHist = state.cadenceHist;
+                    // delete everything over 2 hours old
+                    // $$$ Needs to be debugged.
+                    // this.delOldRecords(now);
+                    // process the last 2 hours of data
+                    // so we propertly initialize the averiging
+                    // we need to capture the previous time of empty
+                    // but only of the time is less than the average cadence
+                    var len = this.sampleData.length;
+                    for (var i = 15; i < len; i++) {
+                        this.updateMetrics(i);
                     }
-                    if (state.cadenceCalc.cadenceSampleCount > 0) {
-                        this.cadenceSampleCount = state.cadenceCalc.cadenceSampleCount;
+                    var now = moment().unix();
+                    // if there is a risk of significantly skewing the samples
+                    var timeDiff = now - this.prevPumpTime;
+                    // 600 == 10 minutes - which is would be very short pump period
+                    // but if we have lastCadence already computed - we should use that
+                    // if we have nothing - we have to start over
+                    if (timeDiff > Math.max(this.lastCadence * 60, 600)) {
+                        this.prevPumpTime = undefined;
+                        this.lastCadence = 0;
                     }
-                    console.log('Cadence Average(final): ', this.cadenceAverage, " sample count:", this.cadenceSampleCount);
-                    if (util_1.isUndefined(state.cadenceCalc.avgWindow) === false) {
-                        // case that should not happen - but again possible 
-                        this.avgWindow = moment.unix(state.cadenceCalc.avgWindow);
-                        if (this.avgWindow.isValid() == false) {
-                            // if somehow we're still not valid time (moment)
-                            // them recompute
-                            this.avgWindow == undefined;
+                    if (util_1.isUndefined(state.cadenceCalc) === false) {
+                        if (state.cadenceCalc.cadenceAverage > 0) {
+                            this.cadenceAverage = state.cadenceCalc.cadenceAverage;
                         }
+                        if (state.cadenceCalc.cadenceSampleCount > 0) {
+                            this.cadenceSampleCount = state.cadenceCalc.cadenceSampleCount;
+                        }
+                        if (util_1.isUndefined(state.cadenceCalc.avgWindow) === false) {
+                            // case that should not happen - but again possible 
+                            this.avgWindow = moment.unix(state.cadenceCalc.avgWindow);
+                            if (this.avgWindow.isValid() == false) {
+                                // if somehow we're still not valid time (moment)
+                                // them recompute
+                                this.avgWindow = undefined;
+                            }
+                        }
+                        // report to the console
+                        console.log('Cadence Average(final): ', this.cadenceAverage, " sample count:", this.cadenceSampleCount);
+                        var msg = ((util_1.isUndefined(this.avgWindow)) || (this.avgWindow.isValid() == false)) ? "still unknown" : this.avgWindow.format("MM/DD/YYYY H:mm:ss");
+                        console.log("Averaging window start: ", msg);
                     }
-                    var msg = ((util_1.isUndefined(this.avgWindow)) || (this.avgWindow.isValid() == false)) ? "still unknown" : this.avgWindow.format("MM/DD/YYYY H:mm:ss");
-                    console.log("Averaging window start: ", msg);
+                }
+                else {
                 }
             }
             catch (e) {

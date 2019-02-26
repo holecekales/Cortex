@@ -11,6 +11,8 @@ import { isUndefined } from 'util';
 // ------------------------------------------------------------------------------------
 class Pump {
 
+  readonly fileVerion : string  = '1.0';
+
   private socket = null;
   private proxysocket = null; 
 
@@ -227,6 +229,7 @@ class Pump {
   writeStateToDisk()
   {
     let state : any = {
+        version: this.fileVerion,
         cadenceCalc: {
           cadenceAverage: this.cadenceAverage,
           cadenceSampleCount: this.cadenceSampleCount,
@@ -246,6 +249,57 @@ class Pump {
   }
 
   // ------------------------------------------------------------
+  // delOldRecords() 
+  // delete all of the samples that are older than 2 hours (7200s)
+  // ------------------------------------------------------------
+  delOldRecords(time : number)
+  {
+    let len = this.sampleData.length;
+
+    if((time - this.sampleData[0].t < 7200))
+    {
+      // the all are OK;
+      return;
+    } 
+
+    if((time - this.sampleData[len-1].t >= 7200))
+    {
+      // all are bad! delete all;
+      this.sampleData.splice(0, len);
+      return;
+    }
+
+    // it's somewhere in the middle
+    let begin = 0;
+    let last = len-1;
+    let mid = 0;
+    
+    while(begin <= last)
+    {
+      mid = (begin + last) / 2 | 0; // integer devide 
+      if(this.sampleData[mid] < time)
+      {
+        begin = mid + 1;
+      }
+      else if(this.sampleData[mid] > time)
+      {
+        last = mid - 1;
+      }
+      else {
+        this.sampleData.splice(mid, len);
+      }
+    }
+  }
+
+  // ------------------------------------------------------------
+  // evaluate if the file is compatible with runtime
+  // ------------------------------------------------------------
+  isCompatible(v : string) : boolean
+  {
+    return true; //v == this.fileVerion;
+  }
+
+  // ------------------------------------------------------------
   // read the state from the disk so we can restore the operation 
   // ------------------------------------------------------------
   readStateFromDisk()
@@ -254,62 +308,78 @@ class Pump {
     {
       try {
         let state : any = JSON.parse(fs.readFileSync('appState.json', 'utf8'));
-        
-        // restore the state
-        this.sampleData = state.sampleData;
-        // cadence history
-        this.cadenceHist = state.cadenceHist;
 
-        // process the last 2 hours of data
-        // so we propertly initialize the averiging
-        // we need to capture the previous time of empty
-        // but only of the time is less than the average cadence
-        let len = this.sampleData.length;
-        for(let i = 15; i < len; i++)
+        // check the version of the file if is not the same
+        // then get ignore the contents
+        if(this.isCompatible(state.version))
         {
-          this.updateMetrics(i);
-        }
+          // restore the state
+          this.sampleData = state.sampleData;
 
-        // if there is a risk of significantly skewing the samples
-        let timeDiff = moment().unix() - this.prevPumpTime;
-        // 600 == 10 minutes - which is would be very short pump period
-        // but if we have lastCadence already computed - we should use that
-        // if we have nothing - we have to start over
-        if(timeDiff > Math.max(this.lastCadence*60, 600))
-        {
-          this.prevPumpTime = undefined;
-          this.lastCadence  = 0;
-        }
+          // cadence history
+          this.cadenceHist = state.cadenceHist;
 
-        if(isUndefined(state.cadenceCalc) === false)
-        {
-          if(state.cadenceCalc.cadenceAverage > 0)
+          // delete everything over 2 hours old
+          // $$$ Needs to be debugged.
+          // this.delOldRecords(now);
+
+          // process the last 2 hours of data
+          // so we propertly initialize the averiging
+          // we need to capture the previous time of empty
+          // but only of the time is less than the average cadence
+          let len = this.sampleData.length;
+          for(let i = 15; i < len; i++)
           {
-            this.cadenceAverage = state.cadenceCalc.cadenceAverage;
+            this.updateMetrics(i);
           }
 
-          if(state.cadenceCalc.cadenceSampleCount > 0)
+          let now = moment().unix();
+
+          // if there is a risk of significantly skewing the samples
+          let timeDiff = now - this.prevPumpTime;
+          // 600 == 10 minutes - which is would be very short pump period
+          // but if we have lastCadence already computed - we should use that
+          // if we have nothing - we have to start over
+          if(timeDiff > Math.max(this.lastCadence*60, 600))
           {
-            this.cadenceSampleCount = state.cadenceCalc.cadenceSampleCount;
+            this.prevPumpTime = undefined;
+            this.lastCadence  = 0;
           }
 
-          console.log('Cadence Average(final): ', this.cadenceAverage, " sample count:", this.cadenceSampleCount);
-
-          if(isUndefined(state.cadenceCalc.avgWindow) === false )
+          if(isUndefined(state.cadenceCalc) === false)
           {
-            // case that should not happen - but again possible 
-            this.avgWindow = moment.unix(state.cadenceCalc.avgWindow);
-            if(this.avgWindow.isValid() == false)
+            if(state.cadenceCalc.cadenceAverage > 0)
             {
-              // if somehow we're still not valid time (moment)
-              // them recompute
-              this.avgWindow == undefined;
+              this.cadenceAverage = state.cadenceCalc.cadenceAverage;
             }
+
+            if(state.cadenceCalc.cadenceSampleCount > 0)
+            {
+              this.cadenceSampleCount = state.cadenceCalc.cadenceSampleCount;
+            }
+
+            if(isUndefined(state.cadenceCalc.avgWindow) === false )
+            {
+              // case that should not happen - but again possible 
+              this.avgWindow = moment.unix(state.cadenceCalc.avgWindow);
+              if(this.avgWindow.isValid() == false)
+              {
+                // if somehow we're still not valid time (moment)
+                // them recompute
+                this.avgWindow = undefined;
+              }
+            }
+            
+            // report to the console
+            console.log('Cadence Average(final): ', this.cadenceAverage, " sample count:", this.cadenceSampleCount);
+            let msg = ((isUndefined(this.avgWindow)) || (this.avgWindow.isValid() == false)) ? "still unknown" :  this.avgWindow.format("MM/DD/YYYY H:mm:ss");
+            console.log("Averaging window start: ", msg);
           }
-
-          let msg = ((isUndefined(this.avgWindow)) || (this.avgWindow.isValid() == false)) ? "still unknown" :  this.avgWindow.format("MM/DD/YYYY H:mm:ss");
-          console.log("Averaging window start: ", msg);
-
+        }
+        else
+        {
+          // we don't have to delete the file
+          // because it will get overwriten on the next record coming from the device
         }
       }
       catch(e)
