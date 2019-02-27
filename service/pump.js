@@ -13,7 +13,7 @@ var Pump = (function () {
     // ------------------------------------------------------------
     function Pump(server) {
         var _this = this;
-        this.fileVerion = '1.0';
+        this.fileVersion = '1.0';
         this.socket = null;
         this.proxysocket = null;
         // express router.
@@ -26,11 +26,10 @@ var Pump = (function () {
         // variables used to calculate pump cadence and keep
         // track of the history
         this.prevPumpTime = 0; // time of last pumping
-        this.lastCadence = 0;
-        this.avgWindow = undefined; // averging window (1 day)
-        this.cadenceAverage = 0; // calculated average
-        this.cadenceSampleCount = 0; // samples
-        this.cadenceHist = [];
+        this.dailyPumpCount = 0; // how many time the pump went this day
+        this.lastInterval = 0; // the last interval between to pump outs 
+        this.period = undefined; // averging window (1 day)
+        this.history = [];
         // this array will be maxlen (2 hours) and will have all of the device samples
         // main purpose - drawing diagrams
         this.sampleData = [];
@@ -43,8 +42,8 @@ var Pump = (function () {
         // 2 hours
         this.router.use('/', function (req, res, next) {
             var pumpInfo = {
-                cadence: _this.lastCadence,
-                cadenceHist: _this.cadenceHist,
+                cadence: _this.lastInterval,
+                history: _this.history,
                 sampleData: _this.sampleData,
             };
             res.status(200).json(pumpInfo);
@@ -91,6 +90,11 @@ var Pump = (function () {
             }
             //this seems like good device report
             if (util_1.isUndefined(obj.t) === false) {
+                if (util_1.isUndefined(this.period)) {
+                    // find the day (the window for averiging)
+                    // this is how we store the histogram
+                    this.period = moment.unix(obj.t).hours(0).minutes(0).seconds(0).milliseconds(0);
+                }
                 // store device data
                 this.sampleData.push(obj);
                 // if we're exceeding the maximum data that we're supposed to retain
@@ -98,7 +102,7 @@ var Pump = (function () {
                 if (this.sampleData.length > this.maxLen)
                     this.sampleData.shift(); // keep only a 2 days worth of data (sending every 2s)
                 // calculate metrics 
-                this.updateMetrics(this.sampleData.length);
+                this.updateMetrics();
                 // broadcast to all the clients (browsers)
                 this.broadcast(JSON.stringify(obj), 'chart-protocol');
                 // write the state - important so we can restart the service if needed
@@ -112,40 +116,34 @@ var Pump = (function () {
         }
     };
     // ------------------------------------------------------------
-    // calc averages (input is unix time stemp)
+    // checkForDayBoundary() - if new day store stuff 
     // ------------------------------------------------------------
-    Pump.prototype.calcCadenceAverage = function (ut, cdc) {
-        var ct = moment.unix(ut); // convert to moment
-        // snap the averiging window to 1 day
-        var hr = ct.hours(0).minutes(0).seconds(0).milliseconds(0);
-        if ((this.avgWindow === undefined) || (hr.isAfter(this.avgWindow))) {
-            // store the last average if we don't have one
-            // or if we exceeded the averiging window (1 day)
-            this.cadenceAverage = cdc;
-            this.cadenceSampleCount = 1;
-            this.avgWindow = hr;
-            this.cadenceHist.push({ period: hr.unix(), cadence: cdc });
-            if (this.cadenceHist.length > 365) {
+    Pump.prototype.checkDayBoundary = function (time) {
+        // snap the sample time to a day boundary
+        var day = moment.unix(time).hours(0).minutes(0).seconds(0).milliseconds(0);
+        if (day.isAfter(this.period)) {
+            // we're in the next day store the stats and reset counter
+            this.history.push({ period: this.period.unix(), count: this.dailyPumpCount });
+            if (this.history.length > 365) {
                 // keep data for rolling 365 days
-                this.cadenceHist.shift();
+                this.history.shift();
             }
+            // remember the new day and start counting from 1
+            this.dailyPumpCount = 1;
+            this.period = day;
+            return true;
         }
-        else {
-            // approximate rolling average using Welford's method:
-            // (https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Online)
-            this.cadenceSampleCount += 1;
-            this.cadenceAverage = this.cadenceAverage * (this.cadenceSampleCount - 1) / this.cadenceSampleCount + cdc / this.cadenceSampleCount;
-        }
+        return false;
     };
     // -----------------------------------------------------------------------------
     // updateMetrics - calculates metrics:
     // * how often is pump pumping
     // * calcualte averages
     // -----------------------------------------------------------------------------
-    Pump.prototype.updateMetrics = function (len) {
-        // calculate if the pump kicked in
-        // we need to look across at least 15 samples to figure it out
-        if (len >= 15 && len <= this.sampleData.length) {
+    Pump.prototype.updateMetrics = function () {
+        var len = this.sampleData.length;
+        // calculate if the pump kicked in - we need 15 values for the filter
+        if (len >= 15) {
             var rangeFirst = len - 15;
             // 24 is the level where we typically start pumping
             // if we're at that level (or higher) and if we saw a dip going down, 
@@ -159,21 +157,21 @@ var Pump = (function () {
                     maxRangeLevel = Math.max(maxRangeLevel, this.sampleData[i].l);
                 }
                 // if within this range the values exceeded max (24) and min (16)
-                // than the pump is pumping and we need to remember the time and 
-                // update the cadence
+                // than the pump is pumping and we need to update metrics
                 if (minRangeLevel <= 16 && maxRangeLevel >= 24) {
                     // this is the time of the last device report
                     var time = this.sampleData[len - 1].t;
                     // this may be the first one we're seeing.
                     if (this.prevPumpTime > 0) {
-                        // The cadence is in minutes. The time on the reports is Unix time 
+                        // The interval is in minutes. The time on the reports is Unix time 
                         // and therefore in seconds -> convert to minutes by x/60 
-                        this.lastCadence = Math.round((time - this.prevPumpTime) / 60);
-                        this.calcCadenceAverage(time, this.lastCadence);
-                        console.log("Cadence Average update: ", this.cadenceAverage, " sample count:", this.cadenceSampleCount);
+                        this.lastInterval = Math.round((time - this.prevPumpTime) / 60);
+                        console.log("New Interval: ", this.lastInterval);
                     }
                     // remember when we saw it pumping. 
                     this.prevPumpTime = time;
+                    this.dailyPumpCount += 1;
+                    this.checkDayBoundary(time);
                 }
             }
         }
@@ -184,13 +182,14 @@ var Pump = (function () {
     // ------------------------------------------------------------
     Pump.prototype.writeStateToDisk = function () {
         var state = {
-            version: this.fileVerion,
-            cadenceCalc: {
-                cadenceAverage: this.cadenceAverage,
-                cadenceSampleCount: this.cadenceSampleCount,
-                avgWindow: util_1.isUndefined(this.avgWindow) ? undefined : this.avgWindow.unix()
+            version: this.fileVersion,
+            current: {
+                time: this.prevPumpTime,
+                interval: this.lastInterval,
+                period: this.period.unix(),
+                count: this.dailyPumpCount,
             },
-            cadenceHist: this.cadenceHist,
+            history: this.history,
             sampleData: this.sampleData
         };
         fs.writeFile('appState.json', JSON.stringify(state), 'utf8', function (err) {
@@ -200,42 +199,10 @@ var Pump = (function () {
         });
     };
     // ------------------------------------------------------------
-    // delOldRecords() 
-    // delete all of the samples that are older than 2 hours (7200s)
-    // ------------------------------------------------------------
-    Pump.prototype.delOldRecords = function (time) {
-        var len = this.sampleData.length;
-        if ((time - this.sampleData[0].t < this.retentionTime)) {
-            // the all are OK;
-            return;
-        }
-        if ((time - this.sampleData[len - 1].t >= this.retentionTime)) {
-            // all are bad! delete all;
-            this.sampleData.splice(0, len);
-            return;
-        }
-        // it's somewhere in the middle
-        var begin = 0;
-        var last = len - 1;
-        var mid = 0;
-        while (begin <= last) {
-            mid = (begin + last) / 2 | 0; // integer devide 
-            if (this.sampleData[mid] < time) {
-                begin = mid + 1;
-            }
-            else if (this.sampleData[mid] > time) {
-                last = mid - 1;
-            }
-            else {
-                this.sampleData.splice(mid, len);
-            }
-        }
-    };
-    // ------------------------------------------------------------
     // evaluate if the file is compatible with runtime
     // ------------------------------------------------------------
     Pump.prototype.isCompatible = function (v) {
-        return true; //v == this.fileVerion;
+        return v == this.fileVersion;
     };
     // ------------------------------------------------------------
     // read the state from the disk so we can restore the operation 
@@ -247,54 +214,31 @@ var Pump = (function () {
                 // check the version of the file if is not the same
                 // then get ignore the contents
                 if (this.isCompatible(state.version)) {
-                    // restore the state
+                    this.prevPumpTime = state.current.time;
+                    this.lastInterval = state.current.interval;
+                    this.period = moment.unix(state.current.period);
+                    this.dailyPumpCount = state.current.count;
+                    this.history = state.history;
                     this.sampleData = state.sampleData;
-                    // cadence history
-                    this.cadenceHist = state.cadenceHist;
-                    // delete everything over 2 hours old
-                    // $$$ Needs to be debugged.
-                    // this.delOldRecords(now);
-                    // process the last 2 hours of data
-                    // so we propertly initialize the averiging
-                    // we need to capture the previous time of empty
-                    // but only of the time is less than the average cadence
-                    var len = this.sampleData.length;
-                    for (var i = 15; i < len; i++) {
-                        this.updateMetrics(i);
-                    }
-                    var now = moment().unix();
                     // if there is a risk of significantly skewing the samples
+                    // we better start over!
+                    var now = moment().unix();
                     var timeDiff = now - this.prevPumpTime;
                     // 600 == 10 minutes - which is would be very short pump period
-                    // but if we have lastCadence already computed - we should use that
+                    // but if we have lastInterval already computed - we should use that
                     // if we have nothing - we have to start over
-                    if (timeDiff > Math.max(this.lastCadence * 60, 600)) {
-                        this.prevPumpTime = undefined;
-                        this.lastCadence = 0;
+                    if (timeDiff > Math.max(this.lastInterval * 60, 600)) {
+                        this.prevPumpTime = 0;
+                        this.lastInterval = 0;
                     }
-                    if (util_1.isUndefined(state.cadenceCalc) === false) {
-                        if (state.cadenceCalc.cadenceAverage > 0) {
-                            this.cadenceAverage = state.cadenceCalc.cadenceAverage;
-                        }
-                        if (state.cadenceCalc.cadenceSampleCount > 0) {
-                            this.cadenceSampleCount = state.cadenceCalc.cadenceSampleCount;
-                        }
-                        if (util_1.isUndefined(state.cadenceCalc.avgWindow) === false) {
-                            // case that should not happen - but again possible 
-                            this.avgWindow = moment.unix(state.cadenceCalc.avgWindow);
-                            if (this.avgWindow.isValid() == false) {
-                                // if somehow we're still not valid time (moment)
-                                // them recompute
-                                this.avgWindow = undefined;
-                            }
-                        }
-                        // report to the console
-                        console.log('Cadence Average(final): ', this.cadenceAverage, " sample count:", this.cadenceSampleCount);
-                        var msg = ((util_1.isUndefined(this.avgWindow)) || (this.avgWindow.isValid() == false)) ? "still unknown" : this.avgWindow.format("MM/DD/YYYY H:mm:ss");
-                        console.log("Averaging window start: ", msg);
+                    if (this.checkDayBoundary(now)) {
+                        // re-aquire day from the device
+                        this.period = undefined;
+                        // start counting
+                        this.dailyPumpCount = 0;
                     }
-                }
-                else {
+                    var msg = (util_1.isUndefined(this.period)) ? "still unknown" : this.period.format("MM/DD/YYYY H:mm:ss");
+                    console.log("current period: ", msg);
                 }
             }
             catch (e) {
