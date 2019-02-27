@@ -28,12 +28,9 @@ class Pump {
   // variables used to calculate pump cadence and keep
   // track of the history
   private prevPumpTime: number = 0;   // time of last pumping
-  private dailyPumpCount: number = 0; // how many time the pump went this day
   private lastInterval: number = 0;   // the last interval between to pump outs 
 
-  private period: moment.Moment = undefined; // averging window (1 day)
-
-
+  // 365 days of history of # of pump runs
   private history = [];
 
   // this array will be maxlen (2 hours) and will have all of the device samples
@@ -107,15 +104,9 @@ class Pump {
         // which needs to be stored and transfered.
         delete obj.s;
       }
+
       //this seems like good device report
       if (isUndefined(obj.t) === false) {
-
-        if (isUndefined(this.period)) {
-          // find the day (the window for averiging)
-          // this is how we store the histogram
-          this.period = moment(obj.t).hours(0).minutes(0).seconds(0).milliseconds(0);
-        }
-
         // store device data
         this.sampleData.push(obj);
         // if we're exceeding the maximum data that we're supposed to retain
@@ -141,24 +132,30 @@ class Pump {
   }
 
   // ------------------------------------------------------------
-  // checkForDayBoundary() - if new day store stuff 
+  // recordEvent - record pumpEvent into the history 
   // ------------------------------------------------------------
-  checkDayBoundary(time: number) {
+  recordEvent(time: number) {
+
+    let len = this.history.length;
+    let period = len == 0 ? 0 : this.history[len - 1].period;
+
     // snap the sample time to a day boundary
-    let day: moment.Moment = moment.unix(time).hours(0).minutes(0).seconds(0).milliseconds(0);
-    if (day.isAfter(this.period)) {
+    let eventDay: number = moment.unix(time).startOf('day').unix();
+
+    if (eventDay > period) {
       // we're in the next day store the stats and reset counter
-      this.history.push({ period: this.period.unix(), count: this.dailyPumpCount });
+      this.history.push({ period: eventDay, count: 1 });
       if (this.history.length > 365) {
         // keep data for rolling 365 days
         this.history.shift();
       }
-      // remember the new day and start counting from 1
-      this.dailyPumpCount = 1;
-      this.period = day;
-      return true;
     }
-    return false;
+    else {
+      if (this.history[len - 1].period != eventDay) {
+        console.error("Mismatch of event and accumulation period:", this.history[len - 1].period, eventDay);
+      }
+      this.history[len - 1].count += 1;
+    }
   }
 
   // -----------------------------------------------------------------------------
@@ -183,9 +180,9 @@ class Pump {
           maxRangeLevel = Math.max(maxRangeLevel, this.sampleData[i].l);
         }
         // if within this range the values exceeded max (24) and min (16)
-        // than the pump is pumping and we need to update metrics
+        // than the pump is pumping and we need to update metrics + record the event
         if (minRangeLevel <= 16 && maxRangeLevel >= 24) {
-          // this is the time of the last device report
+          // this is the time of the last device report (unix time)
           let time = this.sampleData[len - 1].t;
 
           // this may be the first one we're seeing.
@@ -197,8 +194,7 @@ class Pump {
           }
           // remember when we saw it pumping. 
           this.prevPumpTime = time;
-          this.dailyPumpCount += 1;
-          this.checkDayBoundary(time);
+          this.recordEvent(time);
         }
       }
     }
@@ -214,8 +210,6 @@ class Pump {
       current: {
         time: this.prevPumpTime,
         interval: this.lastInterval,
-        period: this.period.unix(),
-        count: this.dailyPumpCount,
       },
       history: this.history,
       sampleData: this.sampleData
@@ -247,19 +241,33 @@ class Pump {
 
         // check the version of the file if is not the same
         // then get ignore the contents
-        if (this.isCompatible(state.version)) 
-        {
+        if (this.isCompatible(state.version)) {
           this.prevPumpTime = state.current.time;
           this.lastInterval = state.current.interval;
-          this.period = moment.unix(state.current.period);
-          this.dailyPumpCount = state.current.count;
-
           this.history = state.history;
           this.sampleData = state.sampleData;
 
-          // if there is a risk of significantly skewing the samples
-          // we better start over!
+          // this should be really obtained from the device 
+          // or at least from the time service. 
+          // hope the servers have the right time on them
           let now = moment().unix();
+
+          if (this.lastInterval > 0) {
+                                   
+              let ins = this.lastInterval * 60; // interval in seconds (unix time)
+
+              // for debugging purposes only   
+              let ne = Math.round((now - (this.prevPumpTime + ins)) / ins);
+              console.log("Onload: Synthetically added", ne, "events.");
+
+              // catch up with the down time, using the previous statistics
+              // if lastInterval is set, means that prevPumpTime must be set as well!
+              for (var t = (this.prevPumpTime + ins); t < now; t += ins) {
+                  this.recordEvent(t);
+              }
+          }
+          // if there is a risk of significantly skewing the samples
+          // require lastInterval 
           let timeDiff = now - this.prevPumpTime;
           // 600 == 10 minutes - which is would be very short pump period
           // but if we have lastInterval already computed - we should use that
@@ -267,18 +275,8 @@ class Pump {
           if (timeDiff > Math.max(this.lastInterval * 60, 600)) {
             this.prevPumpTime = 0;
             this.lastInterval = 0;
+            console.log("Onload: time and interval stale -> reset");
           }
-
-          if(this.checkDayBoundary(now))
-          {
-            // re-aquire day from the device
-            this.period = undefined;
-            // start counting
-            this.dailyPumpCount = 0;
-          }
-
-          let msg = (isUndefined(this.period)) ? "still unknown" : this.period.format("MM/DD/YYYY H:mm:ss");
-          console.log("current period: ", msg);
         }
       }
       catch (e) {
