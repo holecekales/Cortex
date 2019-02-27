@@ -25,8 +25,8 @@ var Pump = (function () {
         this.maxLen = this.retentionTime / 2; // 3600
         // variables used to calculate pump cadence and keep
         // track of the history
-        this.prevPumpTime = 0; // time of last pumping
-        this.lastInterval = 0; // the last interval between to pump outs 
+        this.time = 0; // time of last pumping
+        this.interval = 0; // the last interval between to pump outs 
         // 365 days of history of # of pump runs
         this.history = [];
         // this array will be maxlen (2 hours) and will have all of the device samples
@@ -41,7 +41,7 @@ var Pump = (function () {
         // 2 hours
         this.router.use('/', function (req, res, next) {
             var pumpInfo = {
-                cadence: _this.lastInterval,
+                cadence: _this.interval,
                 history: _this.history,
                 sampleData: _this.sampleData,
             };
@@ -159,14 +159,14 @@ var Pump = (function () {
                     // this is the time of the last device report (unix time)
                     var time = this.sampleData[len - 1].t;
                     // this may be the first one we're seeing.
-                    if (this.prevPumpTime > 0) {
+                    if (this.time > 0) {
                         // The interval is in minutes. The time on the reports is Unix time 
                         // and therefore in seconds -> convert to minutes by x/60 
-                        this.lastInterval = Math.round((time - this.prevPumpTime) / 60);
-                        console.log("New Interval: ", this.lastInterval);
+                        this.interval = Math.round((time - this.time) / 60);
+                        console.log("New Interval: ", this.interval);
                     }
                     // remember when we saw it pumping. 
-                    this.prevPumpTime = time;
+                    this.time = time;
                     this.recordEvent(time);
                 }
             }
@@ -180,8 +180,8 @@ var Pump = (function () {
         var state = {
             version: this.fileVersion,
             current: {
-                time: this.prevPumpTime,
-                interval: this.lastInterval,
+                time: this.time,
+                interval: this.interval,
             },
             history: this.history,
             sampleData: this.sampleData
@@ -208,34 +208,34 @@ var Pump = (function () {
                 // check the version of the file if is not the same
                 // then get ignore the contents
                 if (this.isCompatible(state.version)) {
-                    this.prevPumpTime = state.current.time;
-                    this.lastInterval = state.current.interval;
+                    this.time = state.current.time;
+                    this.interval = state.current.interval;
                     this.history = state.history;
                     this.sampleData = state.sampleData;
                     // this should be really obtained from the device 
                     // or at least from the time service. 
                     // hope the servers have the right time on them
                     var now = moment().unix();
-                    if (this.lastInterval > 0) {
-                        var ins = this.lastInterval * 60; // interval in seconds (unix time)
+                    if (this.interval > 0) {
+                        var ins = this.interval * 60; // interval in seconds (unix time)
                         // for debugging purposes only   
-                        var ne = Math.round((now - (this.prevPumpTime + ins)) / ins);
+                        var ne = Math.round((now - (this.time + ins)) / ins);
                         console.log("Onload: Synthetically added", ne, "events.");
                         // catch up with the down time, using the previous statistics
                         // if lastInterval is set, means that prevPumpTime must be set as well!
-                        for (var t = (this.prevPumpTime + ins); t < now; t += ins) {
+                        for (var t = (this.time + ins); t < now; t += ins) {
                             this.recordEvent(t);
                         }
                     }
                     // if there is a risk of significantly skewing the samples
                     // require lastInterval 
-                    var timeDiff = now - this.prevPumpTime;
+                    var timeDiff = now - this.time;
                     // 600 == 10 minutes - which is would be very short pump period
                     // but if we have lastInterval already computed - we should use that
                     // if we have nothing - we have to start over
-                    if (timeDiff > Math.max(this.lastInterval * 60, 600)) {
-                        this.prevPumpTime = 0;
-                        this.lastInterval = 0;
+                    if (timeDiff > Math.max(this.interval * 60, 600)) {
+                        this.time = 0;
+                        this.interval = 0;
                         console.log("Onload: time and interval stale -> reset");
                     }
                 }

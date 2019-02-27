@@ -27,8 +27,8 @@ class Pump {
 
   // variables used to calculate pump cadence and keep
   // track of the history
-  private prevPumpTime: number = 0;   // time of last pumping
-  private lastInterval: number = 0;   // the last interval between to pump outs 
+  private time: number = 0;       // time of last pumping
+  private interval: number = 0;   // the last interval between to pump outs 
 
   // 365 days of history of # of pump runs
   private history = [];
@@ -53,7 +53,7 @@ class Pump {
     this.router.use('/', (req, res, next) => {
 
       let pumpInfo: any = {
-        cadence: this.lastInterval,
+        cadence: this.interval,
         history: this.history,
         sampleData: this.sampleData,
       };
@@ -186,14 +186,14 @@ class Pump {
           let time = this.sampleData[len - 1].t;
 
           // this may be the first one we're seeing.
-          if (this.prevPumpTime > 0) {
+          if (this.time > 0) {
             // The interval is in minutes. The time on the reports is Unix time 
             // and therefore in seconds -> convert to minutes by x/60 
-            this.lastInterval = Math.round((time - this.prevPumpTime) / 60);
-            console.log("New Interval: ", this.lastInterval);
+            this.interval = Math.round((time - this.time) / 60);
+            console.log("New Interval: ", this.interval);
           }
           // remember when we saw it pumping. 
-          this.prevPumpTime = time;
+          this.time = time;
           this.recordEvent(time);
         }
       }
@@ -208,8 +208,8 @@ class Pump {
     let state: any = {
       version: this.fileVersion,
       current: {
-        time: this.prevPumpTime,
-        interval: this.lastInterval,
+        time: this.time,
+        interval: this.interval,
       },
       history: this.history,
       sampleData: this.sampleData
@@ -242,8 +242,8 @@ class Pump {
         // check the version of the file if is not the same
         // then get ignore the contents
         if (this.isCompatible(state.version)) {
-          this.prevPumpTime = state.current.time;
-          this.lastInterval = state.current.interval;
+          this.time = state.current.time;
+          this.interval = state.current.interval;
           this.history = state.history;
           this.sampleData = state.sampleData;
 
@@ -252,29 +252,29 @@ class Pump {
           // hope the servers have the right time on them
           let now = moment().unix();
 
-          if (this.lastInterval > 0) {
+          if (this.interval > 0) {
                                    
-              let ins = this.lastInterval * 60; // interval in seconds (unix time)
+              let ins = this.interval * 60; // interval in seconds (unix time)
 
               // for debugging purposes only   
-              let ne = Math.round((now - (this.prevPumpTime + ins)) / ins);
+              let ne = Math.round((now - (this.time + ins)) / ins);
               console.log("Onload: Synthetically added", ne, "events.");
 
               // catch up with the down time, using the previous statistics
               // if lastInterval is set, means that prevPumpTime must be set as well!
-              for (var t = (this.prevPumpTime + ins); t < now; t += ins) {
+              for (var t = (this.time + ins); t < now; t += ins) {
                   this.recordEvent(t);
               }
           }
           // if there is a risk of significantly skewing the samples
           // require lastInterval 
-          let timeDiff = now - this.prevPumpTime;
+          let timeDiff = now - this.time;
           // 600 == 10 minutes - which is would be very short pump period
           // but if we have lastInterval already computed - we should use that
           // if we have nothing - we have to start over
-          if (timeDiff > Math.max(this.lastInterval * 60, 600)) {
-            this.prevPumpTime = 0;
-            this.lastInterval = 0;
+          if (timeDiff > Math.max(this.interval * 60, 600)) {
+            this.time = 0;
+            this.interval = 0;
             console.log("Onload: time and interval stale -> reset");
           }
         }
