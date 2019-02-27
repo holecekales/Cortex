@@ -42,6 +42,7 @@ var Pump = (function () {
         this.router.use('/', function (req, res, next) {
             var pumpInfo = {
                 cadence: _this.interval,
+                time: _this.time,
                 history: _this.history,
                 sampleData: _this.sampleData,
             };

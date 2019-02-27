@@ -54,6 +54,7 @@ class Pump {
 
       let pumpInfo: any = {
         cadence: this.interval,
+        time: this.time,
         history: this.history,
         sampleData: this.sampleData,
       };
