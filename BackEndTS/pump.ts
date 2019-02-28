@@ -122,7 +122,7 @@ class Pump {
         let histLength = this.history.length; 
 
         // data packet
-        let data : any  = {
+        let packet : any  = {
           reading: obj, // the reading from the device
           event:   0    // <0> if nothing, 1 if pump on the same day, unix time of midnight if day roller over
         };
@@ -131,15 +131,15 @@ class Pump {
         if(this.updateMetrics()) {
           // new day may have been added in updateMetrics (this.history.length + 1)
           if(histLength < this.history.length) {
-            data.event = this.history[histLength-1].period; // send down the next day number
+            packet.event = this.history[histLength-1].period; // send down the next day number
           }
           else {
-            data.event = 1; // we will just increment on the client by 1
+            packet.event = 1; // we will just increment on the client by 1
           }
         }
 
         // broadcast to all the clients (browsers)
-        this.broadcast(JSON.stringify(data), 'chart-protocol');
+        this.broadcast(JSON.stringify(packet), 'chart-protocol');
 
         // write the state - important so we can restart the service if needed
         this.writeStateToDisk();
