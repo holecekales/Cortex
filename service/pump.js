@@ -104,7 +104,9 @@ var Pump = (function () {
                 // data packet
                 var packet = {
                     reading: obj,
-                    event: 0 // <0> if nothing, 1 if pump on the same day, unix time of midnight if day roller over
+                    event: 0,
+                    time: this.time,
+                    interval: this.interval // cadence/interval of the pump
                 };
                 // calculate metrics 
                 if (this.updateMetrics()) {

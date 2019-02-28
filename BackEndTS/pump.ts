@@ -123,8 +123,10 @@ class Pump {
 
         // data packet
         let packet : any  = {
-          reading: obj, // the reading from the device
-          event:   0    // <0> if nothing, 1 if pump on the same day, unix time of midnight if day roller over
+          reading: obj,     // the reading from the device
+          event:   0,       // <0> if nothing, 1 if pump on the same day, unix time of midnight if day roller over
+          time:   this.time,// last time the pump was on
+          interval: this.interval // cadence/interval of the pump
         };
 
         // calculate metrics 
