@@ -96,10 +96,25 @@ var Pump = (function () {
                 // we will just shift the data. maxLen is defined in terms of hour <2>
                 if (this.sampleData.length > this.maxLen)
                     this.sampleData.shift(); // keep only a 2 days worth of data (sending every 2s)
+                // we will use this to determine day roll over.
+                var histLength = this.history.length;
+                // data packet
+                var data_1 = {
+                    reading: obj,
+                    event: 0 // <0> if nothing, 1 if pump on the same day, unix time of midnight if day roller over
+                };
                 // calculate metrics 
-                this.updateMetrics();
+                if (this.updateMetrics()) {
+                    // new day may have been added in updateMetrics (this.history.length + 1)
+                    if (histLength < this.history.length) {
+                        data_1.event = this.history[histLength - 1].period; // send down the next day number
+                    }
+                    else {
+                        data_1.event = 1; // we will just increment on the client by 1
+                    }
+                }
                 // broadcast to all the clients (browsers)
-                this.broadcast(JSON.stringify(obj), 'chart-protocol');
+                this.broadcast(JSON.stringify(data_1), 'chart-protocol');
                 // write the state - important so we can restart the service if needed
                 this.writeStateToDisk();
             }
