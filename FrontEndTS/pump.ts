@@ -5,11 +5,11 @@ let Chart: any;
 // Interface for One Meassurement
 // -------------------------------------------------------------------------
 interface Meassurement {
-  l : number;
-  s : number;
-  t : number;
-  m? : string;
-  v? : string;
+  l: number;
+  s: number;
+  t: number;
+  m?: string;
+  v?: string;
 }
 
 // -------------------------------------------------------------------------
@@ -18,12 +18,12 @@ interface Meassurement {
 class Pump {
 
   // data rentention 
-  readonly hoursOfData : number = 2; // hours worh of data that we'll be displaying
+  readonly hoursOfData: number = 2; // hours worh of data that we'll be displaying
   // hoursOfData * minutes/hour * seconds/minute (but i sample only every 2 seconds so must devide by 2)  
   readonly maxLen: number = this.hoursOfData * 60 * 60 / 2; // 3600
 
   // pumping cadance 
-  private prevPumpTime : number = 0; // when the  
+  private prevPumpTime: number = 0; // when the  
 
   // time series
   private timeData = [];
@@ -33,17 +33,17 @@ class Pump {
 
   // pump monitoring
   private lastUpdateTime = 0;
-  private updateWatchdog : number = 0;
-  
+  private updateWatchdog: number = 0;
+
   // Socket
   private ws: WebSocket = null;
 
   // UX
   private ctx: CanvasRenderingContext2D;
-  private diagramImage : HTMLImageElement;
+  private diagramImage: HTMLImageElement;
   private diagCtx: CanvasRenderingContext2D;
-  private diagramReady : boolean = false;
-  private lastLevel : number = 0.1;
+  private diagramReady: boolean = false;
+  private lastLevel: number = 0.1;
 
   constructor() { };
 
@@ -75,11 +75,11 @@ class Pump {
       c.height = this.diagramImage.height;
 
       this.diagCtx = c.getContext("2d");
-     
-      this.diagramReady = true;  
-      this.updateDiagram(0); 
+
+      this.diagramReady = true;
+      this.updateDiagram(0);
     };
-    
+
     this.diagramImage.src = '/public/images/sump.png';
   }
 
@@ -135,7 +135,7 @@ class Pump {
 
           time: {
             displayFormats: {
-             second: 'H:mm'
+              second: 'H:mm'
             },
 
             unit: 'second',
@@ -162,22 +162,23 @@ class Pump {
           position: 'left',
 
         },
-        /* //took this out to make it faster
-        {
-          id: 'running',
-          type: 'linear',
-          scaleLabel: {
-            labelString: 'Pump On',
-            display: true
-          },
-          position: 'right',
-          ticks: {
-            min: 0,
-            max: 1,
-            stepSize: 1
-          },
-        }*/
-      ]}
+          /* //took this out to make it faster
+          {
+            id: 'running',
+            type: 'linear',
+            scaleLabel: {
+              labelString: 'Pump On',
+              display: true
+            },
+            position: 'right',
+            ticks: {
+              min: 0,
+              max: 1,
+              stepSize: 1
+            },
+          }*/
+        ]
+      }
     }
 
     //Get the context of the canvas element we want to select
@@ -204,7 +205,7 @@ class Pump {
     this.initDiagram();
     this.initChart();
     this.getBaseData();
-    this.updateWatchdog = window.setInterval(() => {this.luTile(); } ,1000);
+    this.updateWatchdog = window.setInterval(() => { this.luTile(); }, 1000);
   }
 
   // -------------------------------------------------------------------------
@@ -213,7 +214,7 @@ class Pump {
   close() {
     this.reset();
     window.clearInterval(this.updateWatchdog);
-    
+
   }
 
   reset() {
@@ -225,24 +226,24 @@ class Pump {
   // -------------------------------------------------------------------------
   // updateDiagram
   // -------------------------------------------------------------------------
-  updateDiagram(wh : number) {
-    if(this.diagramReady === false)
+  updateDiagram(wh: number) {
+    if (this.diagramReady === false)
       return;
 
 
-    if(this.lastLevel == wh)
+    if (this.lastLevel == wh)
       return;
-    
+
     this.lastLevel = wh;
 
-    this.diagCtx.drawImage(this.diagramImage, 0,0);
+    this.diagCtx.drawImage(this.diagramImage, 0, 0);
     this.diagCtx.globalAlpha = 0.4;
     this.diagCtx.fillStyle = 'rgb(24, 120, 240)';
 
 
     const top = 177; // top of the bucket on the diagrams in px
     const bot = 398; // bottom of the bucket on the diagram in px
-    const depthInPixels = 398-177; // depth in pixels
+    const depthInPixels = 398 - 177; // depth in pixels
     const depth = 55.0;  // depth in cm
 
     wh = 55 - wh;
@@ -251,16 +252,15 @@ class Pump {
     let pixelperCm = depthInPixels / depth;
 
     let h = wh * pixelperCm;
-    let y = 398-h;  
-    this.diagCtx.fillRect(115,y, 134, h);
+    let y = 398 - h;
+    this.diagCtx.fillRect(115, y, 134, h);
     this.diagCtx.globalAlpha = 1.0;
   }
 
   // -------------------------------------------------------------------------
   // luTile - Fix the last updated tile
   // -------------------------------------------------------------------------
-  luTile()
-  {
+  luTile() {
     // timeouts for green and yellow tile
     const g = 4;  // i can miss 2 cycles to be green
     const y = 10; // i can miss 5 cycles to be yello
@@ -269,28 +269,25 @@ class Pump {
     // get the DOM elements for the text and the tile
     let tile = document.getElementById("lastUpdateTile");
     let tileValue = document.getElementById("lastUpdateValue");
-    
+
     // current time in seconds;
     let ct = Math.floor(Date.now() / 1000);
 
     // the diff since we saw last update
     let diff = ct - this.lastUpdateTime;
 
-    if(diff <= g)
-    {
+    if (diff <= g) {
       // all is OK
       tile.classList.remove("orange", "red");
       tile.classList.add("green");
     }
-    else if(diff > g && diff <= y)
-    {
+    else if (diff > g && diff <= y) {
       // we did not get an update for some time
       // go check the pump
       tile.classList.remove("green", "red");
       tile.classList.add("orange");
     }
-    else 
-    {
+    else {
       // we did not get an update for some time
       // alarm
       tile.classList.remove("green", "orange");
@@ -304,146 +301,90 @@ class Pump {
   // -------------------------------------------------------------------------
   // Update cadence tile with the right number
   // -------------------------------------------------------------------------
-  updateCadence(time : number) 
-  {
-    let cadence : number = 0;
+  updateCadence(time: number) {
+    let cadence: number = 0;
 
-    if(this.prevPumpTime > 0)
-    {
+    if (this.prevPumpTime > 0) {
       // i am rounding up to compensate for the bucket not
       // being cylinder
-      cadence = Math.round((time - this.prevPumpTime)/60);
+      cadence = Math.round((time - this.prevPumpTime) / 60);
     }
-    
+
     this.prevPumpTime = time;
-    
+
     // update cadence only if we have successfuly calculated
     // we have to have at least 2x empty the bucket (pumping)
-    if(cadence > 0)
-    {
+    if (cadence > 0) {
       let tileValue = document.getElementById("cadenceValue");
       // update the text in the tile
       tileValue.innerText = (cadence).toString();
 
       // calculate how many gallons a day 
       let pumpsPerDay = (60 / cadence) * 24;
-      const pumpDepth : number = 0.10; // in meters
-      const bucketR : number = 0.43/2;  // in meters
-      const volume : number    = bucketR * bucketR * pumpDepth * 3.14; // in m^3
-      let liters : number = volume * 1000 * pumpsPerDay;
-      let gallons : number = volume * 264.172 * pumpsPerDay;
+      const pumpDepth: number = 0.10; // in meters
+      const bucketR: number = 0.43 / 2;  // in meters
+      const volume: number = bucketR * bucketR * pumpDepth * 3.14; // in m^3
+      let liters: number = volume * 1000 * pumpsPerDay;
+      let gallons: number = volume * 264.172 * pumpsPerDay;
 
       // i am using floor, since the bucket is not cylinder anyway
-      let litPerDayValue  = document.getElementById("litersPerDay");
+      let litPerDayValue = document.getElementById("litersPerDay");
       litPerDayValue.innerText = (Math.floor(liters)).toString();
 
-      let galPerDayValue  = document.getElementById("gallonsPerDay");
+      let galPerDayValue = document.getElementById("gallonsPerDay");
       galPerDayValue.innerText = (Math.floor(gallons)).toString();
     }
   }
 
-  
+
 
   // -------------------------------------------------------------------------
   // addData - adds one or more records
   // -------------------------------------------------------------------------
   addData(obj: any) {
 
-    var last : Meassurement;
-
-    if (obj.constructor === Array) 
-    {
-      // we will stop one short of the end
-      // with the last one we're going to update the dashboard
-      for (let i = 0; i < obj.length; i++) 
-      {
-        // skip these type of events
-        if(obj[i].m != "i")
-          this.addRecord(obj[i]);
+    if (obj.constructor === Array) {
+      for (let i = 0; i < obj.length; i++) {
+        this.addRecord(obj[i]);
       }
-      last = obj[obj.length-1];
     }
     else {
       this.addRecord(obj);
-      last = obj;
     }
-
-    // strange error handling in case there is only one element
-    // in the array, and it is the 'm' element
-    if(last.m != "i")
+    // update the dashboard elements
+    // update the real-time monitor
+    if(this.timeData.length > 0)
     {
-      // update the dashboard elements
-      // update the real-time monitor
       this.chart.update();
       // update the diagram
-      this.updateDiagram(last.l);
+      this.updateDiagram(this.level[this.level.length - 1]);
       // update last updated tile
-      this.lastUpdateTime = last.t; 
+      this.lastUpdateTime = this.timeData[this.timeData.length - 1];
     }
   }
 
   // -------------------------------------------------------------------------
   // add one record
   // -------------------------------------------------------------------------
-  addRecord(obj : any) {
+  addRecord(obj: any) {
     try {
       // convert obj.t from Unix based time to Javascript based
       // Javascript is in milliseconds while Unix is seconds
       // and push it into the array
-      this.timeData.push(obj.t*1000);
+      if (obj.m != "i") {
+        // skip any object that has .m property
 
-      // store the level of water in the bucket
-      this.level.push(obj.l);
+        this.timeData.push(obj.t * 1000);
 
-      let len = this.timeData.length;
+        // store the level of water in the bucket
+        this.level.push(obj.l);
 
-      // --------------------------------------------------------------------------
-      // $$$ This needs to move to the server!
-      // calculate if the pump kicked in
-      // we look across 15 samples
-      let pumpOn = 0;
-      if(len >= 15)
-      {
-        let rangeFirst : number = len - 15;
-        // 24 is the level where we typically start pumping
-        // if we're at that level (or higher) and if we saw a dip going down, 
-        // let's see if we went through pumping
-        if(this.level[rangeFirst] >= 24 && this.level[rangeFirst+1] < this.level[rangeFirst])
-        {
-          let minRangeLevel = 30;
-          let maxRangeLevel = 0;
-          // calculate min and max over our range
-          for(let i=rangeFirst; i < len; i++)
-          {
-            minRangeLevel = Math.min(minRangeLevel, this.level[i]);
-            maxRangeLevel = Math.max(maxRangeLevel, this.level[i]);
-          }
-          // if within this range the values exceeded max (24) and min (16)
-          // than the pump was pumping 
-          
-          if(minRangeLevel <= 16 && maxRangeLevel >= 24)
-          {
-            pumpOn = 1;
-            this.updateCadence(obj.t);
-          }
+        // limit the number of points 
+        if (this.timeData.length > this.maxLen) {
+          this.timeData.shift();
+          this.level.shift();
         }
       }
-      
-      this.state.push(pumpOn);
-      // --------------------------------------------------------------------------
-
-      // limit the number of points 
-      if (len > this.maxLen) 
-      {
-        this.timeData.shift();
-        this.level.shift();
-      }
-      
-      if (this.state.length > this.maxLen) 
-      {
-        this.state.shift();
-      }
-
     } catch (err) {
       console.error(err);
     }

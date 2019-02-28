@@ -117,7 +117,8 @@ var Pump = (function () {
                         },
                         position: 'left',
                     },
-                ] }
+                ]
+            }
         };
         //Get the context of the canvas element we want to select
         this.ctx = document.getElementById("myChart").getContext("2d");
@@ -247,31 +248,22 @@ var Pump = (function () {
     // addData - adds one or more records
     // -------------------------------------------------------------------------
     Pump.prototype.addData = function (obj) {
-        var last;
         if (obj.constructor === Array) {
-            // we will stop one short of the end
-            // with the last one we're going to update the dashboard
             for (var i = 0; i < obj.length; i++) {
-                // skip these type of events
-                if (obj[i].m != "i")
-                    this.addRecord(obj[i]);
+                this.addRecord(obj[i]);
             }
-            last = obj[obj.length - 1];
         }
         else {
             this.addRecord(obj);
-            last = obj;
         }
-        // strange error handling in case there is only one element
-        // in the array, and it is the 'm' element
-        if (last.m != "i") {
-            // update the dashboard elements
-            // update the real-time monitor
+        // update the dashboard elements
+        // update the real-time monitor
+        if (this.timeData.length > 0) {
             this.chart.update();
             // update the diagram
-            this.updateDiagram(last.l);
+            this.updateDiagram(this.level[this.level.length - 1]);
             // update last updated tile
-            this.lastUpdateTime = last.t;
+            this.lastUpdateTime = this.timeData[this.timeData.length - 1];
         }
     };
     // -------------------------------------------------------------------------
@@ -282,45 +274,16 @@ var Pump = (function () {
             // convert obj.t from Unix based time to Javascript based
             // Javascript is in milliseconds while Unix is seconds
             // and push it into the array
-            this.timeData.push(obj.t * 1000);
-            // store the level of water in the bucket
-            this.level.push(obj.l);
-            var len = this.timeData.length;
-            // --------------------------------------------------------------------------
-            // $$$ This needs to move to the server!
-            // calculate if the pump kicked in
-            // we look across 15 samples
-            var pumpOn = 0;
-            if (len >= 15) {
-                var rangeFirst = len - 15;
-                // 24 is the level where we typically start pumping
-                // if we're at that level (or higher) and if we saw a dip going down, 
-                // let's see if we went through pumping
-                if (this.level[rangeFirst] >= 24 && this.level[rangeFirst + 1] < this.level[rangeFirst]) {
-                    var minRangeLevel = 30;
-                    var maxRangeLevel = 0;
-                    // calculate min and max over our range
-                    for (var i = rangeFirst; i < len; i++) {
-                        minRangeLevel = Math.min(minRangeLevel, this.level[i]);
-                        maxRangeLevel = Math.max(maxRangeLevel, this.level[i]);
-                    }
-                    // if within this range the values exceeded max (24) and min (16)
-                    // than the pump was pumping 
-                    if (minRangeLevel <= 16 && maxRangeLevel >= 24) {
-                        pumpOn = 1;
-                        this.updateCadence(obj.t);
-                    }
+            if (obj.m != "i") {
+                // skip any object that has .m property
+                this.timeData.push(obj.t * 1000);
+                // store the level of water in the bucket
+                this.level.push(obj.l);
+                // limit the number of points 
+                if (this.timeData.length > this.maxLen) {
+                    this.timeData.shift();
+                    this.level.shift();
                 }
-            }
-            this.state.push(pumpOn);
-            // --------------------------------------------------------------------------
-            // limit the number of points 
-            if (len > this.maxLen) {
-                this.timeData.shift();
-                this.level.shift();
-            }
-            if (this.state.length > this.maxLen) {
-                this.state.shift();
             }
         }
         catch (err) {
