@@ -57,7 +57,8 @@ class Pump {
     }
     this.ws.onmessage = (message) => {
       // console.log('receive message' + message.data);
-      this.addData(JSON.parse(message.data));
+      let packet = JSON.parse(message.data);
+      this.addData(packet.reading);
     }
   }
 
@@ -343,24 +344,25 @@ class Pump {
   // -------------------------------------------------------------------------
   addData(obj: any) {
 
+    let last = null;
+
     if (obj.constructor === Array) {
       for (let i = 0; i < obj.length; i++) {
         this.addRecord(obj[i]);
+        last = obj[i];
       }
     }
     else {
       this.addRecord(obj);
+      last = obj;
     }
     // update the dashboard elements
     // update the real-time monitor
-    if(this.timeData.length > 0)
-    {
       this.chart.update();
       // update the diagram
-      this.updateDiagram(this.level[this.level.length - 1]);
+      this.updateDiagram(last.l);
       // update last updated tile
-      this.lastUpdateTime = this.timeData[this.timeData.length - 1];
-    }
+      this.lastUpdateTime = last.t;
   }
 
   // -------------------------------------------------------------------------

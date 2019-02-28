@@ -36,7 +36,8 @@ var Pump = (function () {
         };
         this.ws.onmessage = function (message) {
             // console.log('receive message' + message.data);
-            _this.addData(JSON.parse(message.data));
+            var packet = JSON.parse(message.data);
+            _this.addData(packet.reading);
         };
     };
     // -------------------------------------------------------------------------
@@ -248,23 +249,24 @@ var Pump = (function () {
     // addData - adds one or more records
     // -------------------------------------------------------------------------
     Pump.prototype.addData = function (obj) {
+        var last = null;
         if (obj.constructor === Array) {
             for (var i = 0; i < obj.length; i++) {
                 this.addRecord(obj[i]);
+                last = obj[i];
             }
         }
         else {
             this.addRecord(obj);
+            last = obj;
         }
         // update the dashboard elements
         // update the real-time monitor
-        if (this.timeData.length > 0) {
-            this.chart.update();
-            // update the diagram
-            this.updateDiagram(this.level[this.level.length - 1]);
-            // update last updated tile
-            this.lastUpdateTime = this.timeData[this.timeData.length - 1];
-        }
+        this.chart.update();
+        // update the diagram
+        this.updateDiagram(last.l);
+        // update last updated tile
+        this.lastUpdateTime = last.t;
     };
     // -------------------------------------------------------------------------
     // add one record
