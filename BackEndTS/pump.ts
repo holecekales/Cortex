@@ -164,7 +164,7 @@ class Pump {
   // * how often is pump pumping
   // * calcualte averages
   // -----------------------------------------------------------------------------
-  updateMetrics() {
+  updateMetrics() : boolean {
     let len: number = this.sampleData.length;
     // calculate if the pump kicked in - we need 15 values for the filter
     if (len >= 15) {
@@ -196,9 +196,11 @@ class Pump {
           // remember when we saw it pumping. 
           this.time = time;
           this.recordEvent(time);
+          return true;
         }
       }
     }
+    return false;
   }
 
   // ------------------------------------------------------------

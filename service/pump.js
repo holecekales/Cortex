@@ -169,9 +169,11 @@ var Pump = (function () {
                     // remember when we saw it pumping. 
                     this.time = time;
                     this.recordEvent(time);
+                    return true;
                 }
             }
         }
+        return false;
     };
     // ------------------------------------------------------------
     // write the state of the object to disk, just in case 
