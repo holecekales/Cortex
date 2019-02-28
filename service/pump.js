@@ -65,7 +65,10 @@ var Pump = (function () {
             this.proxysocket = new WSSocket('ws://homecortex.azurewebsites.net', 'chart-protocol');
             this.proxysocket.on('message', function (data) {
                 console.log(data);
-                _this.rcvData(data.reading);
+                if (util_1.isUndefined(data.reading))
+                    _this.rcvData(data);
+                else
+                    _this.rcvData(data.reading);
             });
             this.proxysocket.on('open', function open() {
                 console.log("homecoretex opened");
