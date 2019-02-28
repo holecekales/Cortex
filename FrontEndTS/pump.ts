@@ -438,12 +438,6 @@ class Pump {
         this.timeData.shift();
         this.level.shift();
       }
-
-      // $$$ this needs to be reenabled 
-      // if (obj.s) 
-      // {
-      //   this.state.push(obj.s);
-      // }
       
       if (this.state.length > this.maxLen) 
       {
