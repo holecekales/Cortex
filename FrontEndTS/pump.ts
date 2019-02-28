@@ -28,7 +28,6 @@ class Pump {
   // time series
   private timeData = [];
   private level = [];
-  private state = [];
   private chart = null;
 
   // pump monitoring
@@ -103,20 +102,6 @@ class Pump {
           data: this.level,
           lineTension: 0
         }
-        /*, // took this out to make it faster
-        {
-          fill: false,
-          label: 'Pump State',
-          yAxisID: 'running',
-          borderColor: "rgba(255, 204, 0, 1)",
-          pointBoarderColor: "rgba(255, 204, 0, 1)",
-          backgroundColor: "rgba(255, 204, 0, 0.4)",
-          pointHoverBackgroundColor: "rgba(255, 204, 0, 1)",
-          pointHoverBorderColor: "rgba(255, 204, 0, 1)",
-          data: this.state,
-          lineTension: 0,
-        }
-        */
       ]
     }
 
@@ -222,7 +207,6 @@ class Pump {
   reset() {
     this.timeData.splice(0, this.timeData.length);
     this.level.splice(0, this.level.length);
-    this.state.splice(0, this.state.length);
   }
 
   // -------------------------------------------------------------------------

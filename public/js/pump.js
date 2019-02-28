@@ -14,7 +14,6 @@ var Pump = (function () {
         // time series
         this.timeData = [];
         this.level = [];
-        this.state = [];
         this.chart = null;
         // pump monitoring
         this.lastUpdateTime = 0;
@@ -154,7 +153,6 @@ var Pump = (function () {
     Pump.prototype.reset = function () {
         this.timeData.splice(0, this.timeData.length);
         this.level.splice(0, this.level.length);
-        this.state.splice(0, this.state.length);
     };
     // -------------------------------------------------------------------------
     // updateDiagram
