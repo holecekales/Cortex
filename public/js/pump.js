@@ -38,6 +38,7 @@ var Pump = (function () {
             // console.log('receive message' + message.data);
             var packet = JSON.parse(message.data);
             _this.addData(packet.reading);
+            _this.updateCadence(packet.interval);
         };
     };
     // -------------------------------------------------------------------------
@@ -217,14 +218,7 @@ var Pump = (function () {
     // -------------------------------------------------------------------------
     // Update cadence tile with the right number
     // -------------------------------------------------------------------------
-    Pump.prototype.updateCadence = function (time) {
-        var cadence = 0;
-        if (this.prevPumpTime > 0) {
-            // i am rounding up to compensate for the bucket not
-            // being cylinder
-            cadence = Math.round((time - this.prevPumpTime) / 60);
-        }
-        this.prevPumpTime = time;
+    Pump.prototype.updateCadence = function (cadence) {
         // update cadence only if we have successfuly calculated
         // we have to have at least 2x empty the bucket (pumping)
         if (cadence > 0) {

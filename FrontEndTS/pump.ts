@@ -59,6 +59,7 @@ class Pump {
       // console.log('receive message' + message.data);
       let packet = JSON.parse(message.data);
       this.addData(packet.reading);
+      this.updateCadence(packet.interval);
     }
   }
 
@@ -302,16 +303,7 @@ class Pump {
   // -------------------------------------------------------------------------
   // Update cadence tile with the right number
   // -------------------------------------------------------------------------
-  updateCadence(time: number) {
-    let cadence: number = 0;
-
-    if (this.prevPumpTime > 0) {
-      // i am rounding up to compensate for the bucket not
-      // being cylinder
-      cadence = Math.round((time - this.prevPumpTime) / 60);
-    }
-
-    this.prevPumpTime = time;
+  updateCadence(cadence: number) {
 
     // update cadence only if we have successfuly calculated
     // we have to have at least 2x empty the bucket (pumping)
