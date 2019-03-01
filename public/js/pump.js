@@ -37,7 +37,7 @@ var Pump = (function () {
             // console.log('receive message' + message.data);
             var packet = JSON.parse(message.data);
             _this.addData(packet.reading);
-            _this.updateCadence(packet.interval);
+            _this.updateCadenceTile(packet.interval);
         };
     };
     // -------------------------------------------------------------------------
@@ -216,7 +216,7 @@ var Pump = (function () {
     // -------------------------------------------------------------------------
     // Update cadence tile with the right number
     // -------------------------------------------------------------------------
-    Pump.prototype.updateCadence = function (cadence) {
+    Pump.prototype.updateCadenceTile = function (cadence) {
         // update cadence only if we have successfuly calculated
         // we have to have at least 2x empty the bucket (pumping)
         if (cadence > 0) {

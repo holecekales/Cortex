@@ -58,7 +58,7 @@ class Pump {
       // console.log('receive message' + message.data);
       let packet = JSON.parse(message.data);
       this.addData(packet.reading);
-      this.updateCadence(packet.interval);
+      this.updateCadenceTile(packet.interval);
     }
   }
 
@@ -149,21 +149,6 @@ class Pump {
           position: 'left',
 
         },
-          /* //took this out to make it faster
-          {
-            id: 'running',
-            type: 'linear',
-            scaleLabel: {
-              labelString: 'Pump On',
-              display: true
-            },
-            position: 'right',
-            ticks: {
-              min: 0,
-              max: 1,
-              stepSize: 1
-            },
-          }*/
         ]
       }
     }
@@ -287,7 +272,7 @@ class Pump {
   // -------------------------------------------------------------------------
   // Update cadence tile with the right number
   // -------------------------------------------------------------------------
-  updateCadence(cadence: number) {
+  updateCadenceTile(cadence: number) {
 
     // update cadence only if we have successfuly calculated
     // we have to have at least 2x empty the bucket (pumping)
@@ -312,9 +297,7 @@ class Pump {
       galPerDayValue.innerText = (Math.floor(gallons)).toString();
     }
   }
-
-
-
+  
   // -------------------------------------------------------------------------
   // addData - adds one or more records
   // -------------------------------------------------------------------------
