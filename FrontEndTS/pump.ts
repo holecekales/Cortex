@@ -188,7 +188,6 @@ class Pump {
 
  
     let barChartData2 = {
-      // labels : this.historyData,  
       datasets : [
           {
             backgroundColor : 'rgba(0,159,199,0.6)',
@@ -217,8 +216,7 @@ class Pump {
                   }
               }
           }]
-      }
-
+        }
       }   
     });
 
