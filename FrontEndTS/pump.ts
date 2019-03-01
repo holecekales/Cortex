@@ -29,6 +29,13 @@ class Pump {
   private timeData = [];
   private level = [];
   private chart = null;
+  
+
+  // history chart
+  private historyData = [];
+  private historyCount = [];
+  private historyChart = null;
+
 
   // pump monitoring
   private lastUpdateTime = 0;
@@ -37,8 +44,7 @@ class Pump {
   // Socket
   private ws: WebSocket = null;
 
-  // UX
-  private ctx: CanvasRenderingContext2D;
+  // Diagram ux
   private diagramImage: HTMLImageElement;
   private diagCtx: CanvasRenderingContext2D;
   private diagramReady: boolean = false;
@@ -154,20 +160,70 @@ class Pump {
     }
 
     //Get the context of the canvas element we want to select
-    this.ctx = (<HTMLCanvasElement>document.getElementById("myChart")).getContext("2d");
 
     Chart.defaults.global.animation.duration = 0;
     Chart.defaults.global.elements.point.radius = 0;
     Chart.defaults.global.elements.point.hitRadius = 3;
-
     Chart.defaults.global.elements.line.borderWidth = 1;
 
 
-    this.chart = new Chart(this.ctx, {
+    this.chart = new Chart("myChart", {
       type: 'line',
       data: data,
       options: basicOption
     });
+
+    this.chart.canvas.parentNode.style.height = '60px';
+
+    // >>>>>>>>> setup history chart <<<<<<<<<<<<<<
+
+    var date = new Date().getTime();
+
+    for(let i=0; i< 365; i++)
+    {
+      date += 86400000;
+      this.historyData[i] =  date;
+      this.historyCount[i] = {x: date, y: Math.round(Math.random() * 180)};
+    }
+
+ 
+    let barChartData2 = {
+      // labels : this.historyData,  
+      datasets : [
+          {
+            backgroundColor : 'rgba(0,159,199,0.6)',
+            data : this.historyCount
+          },
+
+      ]
+    }
+  
+    this.historyChart = new Chart("myChart2", { 
+      type: 'bar',
+      data: barChartData2,
+      options: {
+        maintainAspectRatio: false,
+        legend: {
+          display: false
+        },
+        scales: {
+          xAxes: [{
+              type: 'time',
+              time: {
+                  unit: 'month',
+                  stepSize: 1,
+                  displayFormats: {
+                    month: 'MMM'
+                  }
+              }
+          }]
+      }
+
+      }   
+    });
+
+    this.historyChart.canvas.parentNode.style.height = '60px';
+   
   }
 
   // -------------------------------------------------------------------------

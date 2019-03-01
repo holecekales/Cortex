@@ -46,7 +46,7 @@
 #six {
   grid-column:  1 / 5;
   grid-row:     4 / 5;
-  height: 200px;
+ 
 }
 
 /* ---------------------- */
@@ -148,6 +148,10 @@
   padding-top: 7px;
 }
 
+#myChart2 {
+  padding-top: 7px;
+}
+
 /**********************/
 /* Tile Colorization  */
 /**********************/
@@ -191,7 +195,7 @@
 /* Blue Tile          */
 /* ------------------ */
 .tile.blue .header {
-  background: linear-gradient(to bottom right, #2c66a5, #4f9cf2);
+  background: linear-gradient(to bottom right, #009fc7, #4f9cf2);
 }
 
 .tile.blue .widget {
