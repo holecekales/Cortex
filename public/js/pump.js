@@ -138,22 +138,32 @@ var Pump = (function () {
         this.chart.canvas.parentNode.style.height = '60px';
         // >>>>>>>>> setup history chart <<<<<<<<<<<<<<
         var date = new Date().getTime();
+        var bkgClr = [];
         for (var i = 0; i < 365; i++) {
             date += 86400000;
             this.historyData[i] = date;
-            this.historyCount[i] = { x: date, y: Math.round(Math.random() * 180) };
+            this.historyCount[i] = { x: date, y: 10 };
+            if (i < 100) {
+                bkgClr.push('#009fc7ff');
+            }
+            else if (i == 100) {
+                bkgClr.push('#ff0000');
+            }
+            else {
+                bkgClr.push('#009fc770');
+            }
         }
-        var barChartData2 = {
+        var bardata = {
             datasets: [
                 {
-                    backgroundColor: 'rgba(0,159,199,0.6)',
+                    backgroundColor: bkgClr,
                     data: this.historyCount
                 },
             ]
         };
         this.historyChart = new Chart("myChart2", {
             type: 'bar',
-            data: barChartData2,
+            data: bardata,
             options: {
                 maintainAspectRatio: false,
                 legend: {
@@ -297,6 +307,7 @@ var Pump = (function () {
         // update the dashboard elements
         // update the real-time monitor
         this.chart.update();
+        this.historyChart.update();
         // update the diagram
         this.updateDiagram(last.l);
         // update last updated tile
