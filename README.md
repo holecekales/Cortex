@@ -1,11 +1,8 @@
 # Experiments in IoT
 
 ## Todo:
-
-* In the debugging environment - download the entire file  
-* delete the mismatched version handling
 * What does the split over the 2 days (UTC) mean? Do I need to flip it to local?
-
+* Error handling on the sockets?
 
 **Fix https and wss**
 * I think I need to get a cert?
