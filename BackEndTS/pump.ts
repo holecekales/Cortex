@@ -87,6 +87,10 @@ class Pump {
       this.proxysocket.on('open', function open() {
         console.log("homecoretex opened");
       });
+      this.proxysocket.on('error', (err) => {
+        console.error(err);
+        this.proxysocket.terminate();
+      });
     }
   }
 

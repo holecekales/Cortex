@@ -73,6 +73,10 @@ var Pump = (function () {
             this.proxysocket.on('open', function open() {
                 console.log("homecoretex opened");
             });
+            this.proxysocket.on('error', function (err) {
+                console.error(err);
+                _this.proxysocket.terminate();
+            });
         }
     }
     // ------------------------------------------------------------
