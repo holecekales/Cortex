@@ -399,31 +399,11 @@ var Pump = (function () {
     // populateHistory()
     // -------------------------------------------------------------------------
     Pump.prototype.populateHistory = function (hist) {
-        // zero out the history array
-        var today = moment().dayOfYear();
-        var first = moment().startOf('year');
         var len = hist.length;
         for (var i = 0; i < len; i++) {
             this.historyCount.push({ x: hist[i].period * 1000, y: hist[i].count });
         }
         this.historyChart.update();
-        if (hist.length > 0) {
-            // for (let i = hist.length-1; i >= 0; i--) {
-            //   let dayOfYear = moment.unix(hist[i].period).dayOfYear();
-            //   // set the entry to JS time (unix * 1000)
-            //   this.historyCount[dayOfYear] = {x: moment.unix(hist[i].period) * 1000, y: hist[i].count};
-            // }
-            // fill in the blanks. There are several cases:
-            // * history array covers entire 365 days - amount we want to display
-            // * history array covers the 365 only partially AND
-            //   * are spread across the same year
-            //   * are spread across 2 different years
-            // based on these conditions we need to set colors and fill in the blanks
-            // to construct the rolling 365 chart
-            // let first  = moment.unix(hist[0].period).dayOfYear();
-            // let last   = moment.unix(hist[hist.length-1].period).dayOfYear();
-            this.historyChart.update();
-        }
     };
     // -------------------------------------------------------------------------
     // getBaseData
