@@ -41,7 +41,7 @@ var Pump = (function () {
             // console.log('receive message' + message.data);
             var packet = JSON.parse(message.data);
             _this.addData(packet.reading);
-            _this.updateHistory();
+            _this.updateHistory(packet);
             _this.updateCadenceTile(packet.interval);
         };
     };
@@ -371,8 +371,7 @@ var Pump = (function () {
     // -------------------------------------------------------------------------
     // populateHistory()
     // -------------------------------------------------------------------------
-    Pump.prototype.updateHistory = function () {
-        // this.historyCount[i].y = v;
+    Pump.prototype.updateHistory = function (packet) {
         this.historyChart.update();
     };
     // -------------------------------------------------------------------------

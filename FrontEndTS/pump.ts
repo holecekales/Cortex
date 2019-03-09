@@ -65,7 +65,7 @@ class Pump {
       // console.log('receive message' + message.data);
       let packet = JSON.parse(message.data);
       this.addData(packet.reading);
-      this.updateHistory();
+      this.updateHistory(packet);
       this.updateCadenceTile(packet.interval);
     }
   }
@@ -465,9 +465,9 @@ class Pump {
   // -------------------------------------------------------------------------
   // populateHistory()
   // -------------------------------------------------------------------------
-  updateHistory()
+  updateHistory(packet : any)
   {
-    // this.historyCount[i].y = v;
+    
     this.historyChart.update();
   }
 
