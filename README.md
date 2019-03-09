@@ -3,6 +3,7 @@
 ## Todo:
 * What does the split over the 2 days (UTC) mean? Do I need to flip it to local?
 * Error handling on the sockets?
+* Make the last update tile switch to minutes and hours.
 
 **Fix https and wss**
 * I think I need to get a cert?

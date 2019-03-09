@@ -1,5 +1,6 @@
-// (hack)
+// (hacks)
 var Chart;
+var moment;
 // -------------------------------------------------------------------------
 // class Pump
 // -------------------------------------------------------------------------
@@ -16,7 +17,6 @@ var Pump = (function () {
         this.level = [];
         this.chart = null;
         // history chart
-        this.historyData = [];
         this.historyCount = [];
         this.historyChart = null;
         // pump monitoring
@@ -41,6 +41,7 @@ var Pump = (function () {
             // console.log('receive message' + message.data);
             var packet = JSON.parse(message.data);
             _this.addData(packet.reading);
+            _this.updateHistory();
             _this.updateCadenceTile(packet.interval);
         };
     };
@@ -139,24 +140,28 @@ var Pump = (function () {
         // >>>>>>>>> setup history chart <<<<<<<<<<<<<<
         var date = new Date().getTime();
         var bkgClr = [];
-        for (var i = 0; i < 365; i++) {
-            date += 86400000;
-            this.historyData[i] = date;
-            this.historyCount[i] = { x: date, y: 10 };
-            if (i < 100) {
-                bkgClr.push('#009fc7ff');
-            }
-            else if (i == 100) {
-                bkgClr.push('#ff0000');
-            }
-            else {
-                bkgClr.push('#009fc770');
-            }
-        }
+        // this.historyCount[i] = { x: date, y: 10 };
+        // if (i < 100) {
+        //   bkgClr.push('#009fc7ff');
+        // }
+        // else if (i == 100) {
+        //   bkgClr.push('#ff0000');
+        // }
+        // else {
+        //   bkgClr.push('#009fc770');
+        // }
+        var today = moment().dayOfYear();
+        var first = moment().startOf('year');
+        // for (let i = 0; i < 365; i++) {
+        //   this.historyCount[i] = {x: first.unix() * 1000, y: 10};
+        //   // if(i == today)
+        //   //   first.subtract(1, 'year');
+        //   first.add(1, 'days');
+        // }
         var bardata = {
             datasets: [
                 {
-                    backgroundColor: bkgClr,
+                    // backgroundColor: 'rgba(0,159,199,0.6)', //bkgClr, //'rgba(0,159,199,0.6)',
                     data: this.historyCount
                 },
             ]
@@ -178,6 +183,12 @@ var Pump = (function () {
                                 displayFormats: {
                                     month: 'MMM'
                                 }
+                            }
+                        }],
+                    yAxes: [{
+                            ticks: {
+                                suggestedMin: 0,
+                                suggestedMax: 20
                             }
                         }]
                 }
@@ -262,8 +273,49 @@ var Pump = (function () {
             tile.classList.remove("green", "orange");
             tile.classList.add("red");
         }
+        //Convert here into better units
+        var u = "Seconds"; // units
+        var h = 0; // hours
+        var m = 0; // minuts
+        // diff contains the seconds
+        if (diff > 3600) {
+            // we have valid hours
+            h = Math.floor(diff / 3600);
+            diff -= (h * 3600);
+        }
+        if (diff > 60) {
+            m = Math.floor(diff / 60);
+            diff -= (m * 60);
+        }
+        var display = '';
+        var fontsize = '50px';
+        if (h > 0) {
+            display = h.toString() + ":";
+            if (h > 100) {
+                fontsize = '38px';
+            }
+            else if (h > 10) {
+                fontsize = '40px';
+            }
+            u = 'Hours';
+        }
+        if (m > 0 || h > 0) {
+            if (m < 10)
+                display += '0';
+            display += m.toString() + ":";
+            if (h == 0) {
+                u = 'Minutes';
+            }
+        }
+        if ((m > 0 || h > 0) && diff < 10)
+            display += '0';
+        display += diff.toString();
         // update the text in the tile
-        tileValue.innerText = diff.toString();
+        tileValue.innerText = display;
+        tileValue.style.fontSize = fontsize;
+        // update the units
+        var unitElem = document.querySelector("#lastUpdateTile .units");
+        unitElem.innerText = u;
     };
     // -------------------------------------------------------------------------
     // Update cadence tile with the right number
@@ -307,7 +359,6 @@ var Pump = (function () {
         // update the dashboard elements
         // update the real-time monitor
         this.chart.update();
-        this.historyChart.update();
         // update the diagram
         this.updateDiagram(last.l);
         // update last updated tile
@@ -338,6 +389,43 @@ var Pump = (function () {
         }
     };
     // -------------------------------------------------------------------------
+    // populateHistory()
+    // -------------------------------------------------------------------------
+    Pump.prototype.updateHistory = function () {
+        // this.historyCount[i].y = v;
+        this.historyChart.update();
+    };
+    // -------------------------------------------------------------------------
+    // populateHistory()
+    // -------------------------------------------------------------------------
+    Pump.prototype.populateHistory = function (hist) {
+        // zero out the history array
+        var today = moment().dayOfYear();
+        var first = moment().startOf('year');
+        var len = hist.length;
+        for (var i = 0; i < len; i++) {
+            this.historyCount.push({ x: hist[i].period * 1000, y: hist[i].count });
+        }
+        this.historyChart.update();
+        if (hist.length > 0) {
+            // for (let i = hist.length-1; i >= 0; i--) {
+            //   let dayOfYear = moment.unix(hist[i].period).dayOfYear();
+            //   // set the entry to JS time (unix * 1000)
+            //   this.historyCount[dayOfYear] = {x: moment.unix(hist[i].period) * 1000, y: hist[i].count};
+            // }
+            // fill in the blanks. There are several cases:
+            // * history array covers entire 365 days - amount we want to display
+            // * history array covers the 365 only partially AND
+            //   * are spread across the same year
+            //   * are spread across 2 different years
+            // based on these conditions we need to set colors and fill in the blanks
+            // to construct the rolling 365 chart
+            // let first  = moment.unix(hist[0].period).dayOfYear();
+            // let last   = moment.unix(hist[hist.length-1].period).dayOfYear();
+            this.historyChart.update();
+        }
+    };
+    // -------------------------------------------------------------------------
     // getBaseData
     // -------------------------------------------------------------------------
     Pump.prototype.getBaseData = function () {
@@ -350,6 +438,7 @@ var Pump = (function () {
                 var obj = JSON.parse(xhr.responseText);
                 _this.reset();
                 _this.addData(obj.sampleData);
+                _this.populateHistory(obj.history);
                 // start recieving updates
                 _this.initSocket();
             }

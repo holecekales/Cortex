@@ -1,5 +1,6 @@
-// (hack)
+// (hacks)
 let Chart: any;
+let moment: any;
 
 // -------------------------------------------------------------------------
 // Interface for One Meassurement
@@ -29,10 +30,10 @@ class Pump {
   private timeData = [];
   private level = [];
   private chart = null;
-  
+
 
   // history chart
-  private historyData = [];
+  
   private historyCount = [];
   private historyChart = null;
 
@@ -64,6 +65,7 @@ class Pump {
       // console.log('receive message' + message.data);
       let packet = JSON.parse(message.data);
       this.addData(packet.reading);
+      this.updateHistory();
       this.updateCadenceTile(packet.interval);
     }
   }
@@ -180,38 +182,39 @@ class Pump {
     let date = new Date().getTime();
     let bkgClr = [];
 
+      // this.historyCount[i] = { x: date, y: 10 };
+    // if (i < 100) {
+    //   bkgClr.push('#009fc7ff');
+    // }
+    // else if (i == 100) {
+    //   bkgClr.push('#ff0000');
+    // }
+    // else {
+    //   bkgClr.push('#009fc770');
+    // }
 
-    for(let i=0; i< 365; i++)
-    {
-      date += 86400000;
-      this.historyData[i] =  date;
-      this.historyCount[i] = {x: date, y: 10};
-      if(i < 100)
-      {
-        bkgClr.push('#009fc7ff');
-      }
-      else if(i== 100)
-      {
-        bkgClr.push('#ff0000');
-      } 
-      else 
-      {
-        bkgClr.push('#009fc770');
-      }
-    }
+    let today = moment().dayOfYear();
+    let first = moment().startOf('year'); 
+    
+    // for (let i = 0; i < 365; i++) {
+    //   this.historyCount[i] = {x: first.unix() * 1000, y: 10};
+    //   // if(i == today)
+    //   //   first.subtract(1, 'year');
+  
+    //   first.add(1, 'days');
+    // }
 
- 
     let bardata = {
-      datasets : [
-          {
-            backgroundColor : bkgClr, //'rgba(0,159,199,0.6)',
-            data : this.historyCount
-          },
+      datasets: [
+        {
+          // backgroundColor: 'rgba(0,159,199,0.6)', //bkgClr, //'rgba(0,159,199,0.6)',
+          data: this.historyCount
+        },
 
       ]
     }
-  
-    this.historyChart = new Chart("myChart2", { 
+
+    this.historyChart = new Chart("myChart2", {
       type: 'bar',
       data: bardata,
       options: {
@@ -221,21 +224,27 @@ class Pump {
         },
         scales: {
           xAxes: [{
-              type: 'time',
-              time: {
-                  unit: 'month',
-                  stepSize: 1,
-                  displayFormats: {
-                    month: 'MMM'
-                  }
+            type: 'time',
+            time: {
+              unit: 'month',
+              stepSize: 1,
+              displayFormats: {
+                month: 'MMM'
+              }
+            }
+          }],
+          yAxes: [{
+              ticks: {
+                suggestedMin: 0,
+                suggestedMax: 20
               }
           }]
         }
-      }   
+      }
     });
 
     this.historyChart.canvas.parentNode.style.height = '60px';
-   
+
   }
 
   // -------------------------------------------------------------------------
@@ -333,8 +342,66 @@ class Pump {
       tile.classList.add("red");
     }
 
+    //Convert here into better units
+    let u = "Seconds" // units
+    let h = 0;        // hours
+    let m = 0;        // minuts
+    
+    // diff contains the seconds
+    if (diff > 3600)
+    {
+      // we have valid hours
+      h = Math.floor(diff / 3600);
+      diff -= (h * 3600);
+    }
+    if(diff > 60) 
+    {
+      m = Math.floor(diff / 60);
+      diff -= (m * 60);
+    }
+
+    let display = '';
+    let fontsize = '50px';
+    if(h > 0)
+    {
+      display = h.toString() + ":"
+      if (h > 100)
+      {
+        fontsize = '38px';
+      }
+      else if (h > 10)
+      {
+        fontsize = '40px';
+      }
+      
+      u = 'Hours';
+    }
+    
+    if(m > 0 || h > 0)
+    {
+      if(m < 10)
+        display += '0';
+      
+      display += m.toString() + ":";
+
+      if(h == 0)
+      {
+        u = 'Minutes'
+      }
+    }
+
+    if((m > 0 || h > 0) && diff < 10)
+      display += '0';    
+    
+    display += diff.toString();
+
     // update the text in the tile
-    tileValue.innerText = diff.toString();
+    tileValue.innerText = display; 
+    tileValue.style.fontSize = fontsize;
+
+    // update the units
+    let unitElem = <HTMLElement>document.querySelector("#lastUpdateTile .units");
+    unitElem.innerText = u;
   }
 
   // -------------------------------------------------------------------------
@@ -365,7 +432,7 @@ class Pump {
       galPerDayValue.innerText = (Math.floor(gallons)).toString();
     }
   }
-  
+
   // -------------------------------------------------------------------------
   // addData - adds one or more records
   // -------------------------------------------------------------------------
@@ -385,14 +452,12 @@ class Pump {
     }
     // update the dashboard elements
     // update the real-time monitor
-      this.chart.update();
-      this.historyChart.update();
-
-
-      // update the diagram
-      this.updateDiagram(last.l);
-      // update last updated tile
-      this.lastUpdateTime = last.t;
+    this.chart.update();
+   
+    // update the diagram
+    this.updateDiagram(last.l);
+    // update last updated tile
+    this.lastUpdateTime = last.t;
   }
 
   // -------------------------------------------------------------------------
@@ -421,7 +486,57 @@ class Pump {
       console.error(err);
     }
   }
+  
+  // -------------------------------------------------------------------------
+  // populateHistory()
+  // -------------------------------------------------------------------------
+  updateHistory()
+  {
+    // this.historyCount[i].y = v;
+    this.historyChart.update();
+  }
 
+  // -------------------------------------------------------------------------
+  // populateHistory()
+  // -------------------------------------------------------------------------
+  populateHistory(hist) {
+
+    // zero out the history array
+
+    let today = moment().dayOfYear();
+    let first = moment().startOf('year'); 
+
+    let len = hist.length;
+
+    for (let i = 0; i < len; i++) {
+       this.historyCount.push({x: hist[i].period * 1000, y: hist[i].count});
+    }
+
+
+    this.historyChart.update();
+
+    if(hist.length > 0)
+    {
+      // for (let i = hist.length-1; i >= 0; i--) {
+      //   let dayOfYear = moment.unix(hist[i].period).dayOfYear();
+      //   // set the entry to JS time (unix * 1000)
+      //   this.historyCount[dayOfYear] = {x: moment.unix(hist[i].period) * 1000, y: hist[i].count};
+      // }
+
+      // fill in the blanks. There are several cases:
+      // * history array covers entire 365 days - amount we want to display
+      // * history array covers the 365 only partially AND
+      //   * are spread across the same year
+      //   * are spread across 2 different years
+      // based on these conditions we need to set colors and fill in the blanks
+      // to construct the rolling 365 chart
+      // let first  = moment.unix(hist[0].period).dayOfYear();
+      // let last   = moment.unix(hist[hist.length-1].period).dayOfYear();
+
+      this.historyChart.update();
+
+    } 
+  }
   // -------------------------------------------------------------------------
   // getBaseData
   // -------------------------------------------------------------------------
@@ -434,6 +549,7 @@ class Pump {
         let obj = JSON.parse(xhr.responseText);
         this.reset();
         this.addData(obj.sampleData);
+        this.populateHistory(obj.history);
         // start recieving updates
         this.initSocket();
       }
