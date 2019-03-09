@@ -138,30 +138,10 @@ var Pump = (function () {
         });
         this.chart.canvas.parentNode.style.height = '60px';
         // >>>>>>>>> setup history chart <<<<<<<<<<<<<<
-        var date = new Date().getTime();
-        var bkgClr = [];
-        // this.historyCount[i] = { x: date, y: 10 };
-        // if (i < 100) {
-        //   bkgClr.push('#009fc7ff');
-        // }
-        // else if (i == 100) {
-        //   bkgClr.push('#ff0000');
-        // }
-        // else {
-        //   bkgClr.push('#009fc770');
-        // }
-        var today = moment().dayOfYear();
-        var first = moment().startOf('year');
-        // for (let i = 0; i < 365; i++) {
-        //   this.historyCount[i] = {x: first.unix() * 1000, y: 10};
-        //   // if(i == today)
-        //   //   first.subtract(1, 'year');
-        //   first.add(1, 'days');
-        // }
         var bardata = {
             datasets: [
                 {
-                    // backgroundColor: 'rgba(0,159,199,0.6)', //bkgClr, //'rgba(0,159,199,0.6)',
+                    backgroundColor: 'rgba(0,159,199,0.4)',
                     data: this.historyCount
                 },
             ]
