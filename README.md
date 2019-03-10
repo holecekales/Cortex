@@ -1,12 +1,11 @@
 # Experiments in IoT
 
 ## Todo:
-* Error handling on the sockets?
+* some kind of total of something?
 
 **Fix https and wss**
 * I think I need to get a cert?
-
-* If the data is older than 2 hours, we should delete the data from sampleData - it means that the data is completely irrelevant.
+* Error handling on the sockets?
 
 **On the backend**
 - Meassure when I last talked to the device
