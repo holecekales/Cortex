@@ -200,10 +200,11 @@ interface HistoryUpate {
           xAxes: [{
             type: 'time',
             time: {
-              unit: 'month',
+              unit: 'day', // 'month'
               stepSize: 1,
               displayFormats: {
-                month: 'MMM'
+                month: 'MMM',
+                day: 'M/D'
               }
             }
           }],
@@ -486,6 +487,13 @@ interface HistoryUpate {
     for (let i = 0; i < len; i++) {
       this.historyCount.push({ x: hist[i].period * 1000, y: hist[i].count });
     }
+
+    // set the units for the chart dynamicaly - keep it interesting
+    if(len < 90)
+      this.historyChart.options.scales.xAxes[0].time.unit = 'day';
+    else  
+      this.historyChart.options.scales.xAxes[0].time.unit = 'month';
+
     this.historyChart.update();
   }
   // -------------------------------------------------------------------------

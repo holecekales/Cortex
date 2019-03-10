@@ -160,10 +160,11 @@ var Pump = (function () {
                     xAxes: [{
                             type: 'time',
                             time: {
-                                unit: 'month',
+                                unit: 'day',
                                 stepSize: 1,
                                 displayFormats: {
-                                    month: 'MMM'
+                                    month: 'MMM',
+                                    day: 'M/D'
                                 }
                             }
                         }],
@@ -397,6 +398,11 @@ var Pump = (function () {
         for (var i = 0; i < len; i++) {
             this.historyCount.push({ x: hist[i].period * 1000, y: hist[i].count });
         }
+        // set the units for the chart dynamicaly - keep it interesting
+        if (len < 90)
+            this.historyChart.options.scales.xAxes[0].time.unit = 'day';
+        else
+            this.historyChart.options.scales.xAxes[0].time.unit = 'month';
         this.historyChart.update();
     };
     // -------------------------------------------------------------------------
