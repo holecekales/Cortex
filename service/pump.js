@@ -65,10 +65,16 @@ var Pump = (function () {
             this.proxysocket = new WSSocket('ws://homecortex.azurewebsites.net', 'chart-protocol');
             this.proxysocket.on('message', function (data) {
                 console.log(data);
-                if (util_1.isUndefined(data.reading))
+                var msg = JSON.parse(data);
+                if (util_1.isUndefined(msg.reading)) {
+                    // this is not the new message so just pass the data
+                    // but at some point we should be able to count that
+                    // all messages have reading
                     _this.rcvData(data);
-                else
-                    _this.rcvData(data.reading);
+                }
+                else {
+                    _this.rcvData(JSON.stringify(msg.reading));
+                }
             });
             this.proxysocket.on('open', function open() {
                 console.log("homecoretex opened");
