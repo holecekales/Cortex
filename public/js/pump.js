@@ -45,6 +45,7 @@ var Pump = (function () {
             if (packet.histUpdate !== undefined)
                 _this.updateHistory(packet.histUpdate);
             _this.updateCadenceTile(packet.interval);
+            _this.updateMonTitle(packet.time);
         };
     };
     // -------------------------------------------------------------------------
@@ -342,6 +343,10 @@ var Pump = (function () {
             var galPerDayValue = document.getElementById("gallonsPerDay");
             galPerDayValue.innerText = (Math.floor(gallons)).toString();
         }
+    };
+    Pump.prototype.updateMonTitle = function (time) {
+        var title = document.querySelector('#updateTime > span');
+        title.innerText = moment.unix(time).format('HH:mm');
     };
     // -------------------------------------------------------------------------
     // addData - adds one or more records

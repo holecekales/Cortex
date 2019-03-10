@@ -66,6 +66,7 @@ interface HistoryUpate {
       if(packet.histUpdate !== undefined)
         this.updateHistory(<HistoryUpate>packet.histUpdate);
       this.updateCadenceTile(packet.interval);
+      this.updateMonTitle(packet.time)
     }
   }
 
@@ -423,6 +424,12 @@ interface HistoryUpate {
       let galPerDayValue = document.getElementById("gallonsPerDay");
       galPerDayValue.innerText = (Math.floor(gallons)).toString();
     }
+  }
+
+  updateMonTitle(time : number)
+  {
+    let title = <HTMLElement>document.querySelector('#updateTime > span');
+    title.innerText = moment.unix(time).format('HH:mm');
   }
 
   // -------------------------------------------------------------------------
