@@ -79,14 +79,14 @@
 
 .tile .widget {
   width: 100%;
-  flex: 1;
-  
+ 
   font-weight: 300;
   color: white;
   background-color: #919191;
   border-radius: 4px 4px 0 0;
     
   display: flex;
+  flex: 1;
   flex-direction: row;
   justify-content:  space-around;
   align-items: center;
@@ -107,7 +107,8 @@
   /* center vertically and horizontally */
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-around;
+
   
   /* basic colors */
   color: darkgray;

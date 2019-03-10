@@ -57,8 +57,10 @@
           <canvas id="myChart" width="180" height="90"></canvas>
         </div>
         <div class="label">
+          <!--hack to flex box does even distribution-->
+          <div style="margin-right: auto; margin-left: 7px; font-size: 14px; color: white"> 00:00</div>
           <div class="title">Monitor </div>
-          <div id="updateTime" style="width: 50px; padding-left: 230px; text-align: right"><span></span></div>
+          <div id="updateTime" style="margin-right: 7px; margin-left: auto; font-size: 14px"><span>00:00</span></div>
         </div>
       </div>
     </div>
@@ -68,7 +70,6 @@
         <div class="widget">
           <!-- chart goes here-->
           <canvas id="myChart2" width="180" height="90"></canvas>
-
         </div>
         <div class="label">
           <div class="title">History</div>
