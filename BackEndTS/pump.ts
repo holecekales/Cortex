@@ -177,10 +177,8 @@ class Pump {
     // snap the sample time to a day boundary
     let eventDay: number = moment.unix(time).startOf('day').unix();
 
-    console.log(">>> Event Day: ", moment.unix(eventDay).format());
-    console.log(">>> Period: ",   moment.unix(period).format());
-
     if (eventDay > period) {
+      console.log(">>> Starting new period:", eventDay, "<<<")
       // we're in the next day store the stats and reset counter
       this.history.push({ period: eventDay, count: 1 });
       if (this.history.length > 365) {
