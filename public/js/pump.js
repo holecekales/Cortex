@@ -228,6 +228,17 @@ var Pump = (function () {
         var y = 398 - h;
         this.diagCtx.fillRect(115, y, 134, h);
         this.diagCtx.globalAlpha = 1.0;
+        var txtX = 123;
+        var txtY = 240;
+        this.diagCtx.fillStyle = 'rgb(60, 60, 60)'; //'rgb(60, 60, 60)';
+        this.diagCtx.textAlign = 'left'; //'center'; 
+        this.diagCtx.font = "bold 18px/1 sans-serif ";
+        this.diagCtx.fillText(Math.round(this.lastLevel).toString() + "cm", txtX + 15, txtY);
+        this.diagCtx.beginPath();
+        this.diagCtx.moveTo(txtX, y);
+        this.diagCtx.lineTo(txtX, txtY + 3);
+        this.diagCtx.lineTo(txtX + 61, txtY + 3);
+        this.diagCtx.stroke();
     };
     // -------------------------------------------------------------------------
     // luTile - Fix the last updated tile
