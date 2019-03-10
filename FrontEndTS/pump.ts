@@ -5,18 +5,16 @@ let moment: any;
 // -------------------------------------------------------------------------
 // Interface for One Meassurement
 // -------------------------------------------------------------------------
-interface Meassurement {
-  l: number;
-  s: number;
-  t: number;
-  m?: string;
-  v?: string;
-}
+
+interface HistoryUpate {
+  period: number;
+  count: number;
+};
 
 // -------------------------------------------------------------------------
 // class Pump
 // -------------------------------------------------------------------------
-class Pump {
+  class Pump {
 
   // data rentention 
   readonly hoursOfData: number = 2; // hours worh of data that we'll be displaying
@@ -33,7 +31,7 @@ class Pump {
 
 
   // history chart
-  
+
   private historyCount = [];
   private historyChart = null;
 
@@ -65,7 +63,8 @@ class Pump {
       // console.log('receive message' + message.data);
       let packet = JSON.parse(message.data);
       this.addData(packet.reading);
-      this.updateHistory(packet);
+      if(packet.histUpdate !== undefined)
+        this.updateHistory(<HistoryUpate>packet.histUpdate);
       this.updateCadenceTile(packet.interval);
     }
   }
@@ -209,10 +208,10 @@ class Pump {
             }
           }],
           yAxes: [{
-              ticks: {
-                suggestedMin: 0,
-                suggestedMax: 20
-              }
+            ticks: {
+              suggestedMin: 0,
+              suggestedMax: 20
+            }
           }]
         }
       }
@@ -321,57 +320,50 @@ class Pump {
     let u = "Seconds" // units
     let h = 0;        // hours
     let m = 0;        // minuts
-    
+
     // diff contains the seconds
-    if (diff > 3600)
-    {
+    if (diff > 3600) {
       // we have valid hours
       h = Math.floor(diff / 3600);
       diff -= (h * 3600);
     }
-    if(diff > 60) 
-    {
+    if (diff > 60) {
       m = Math.floor(diff / 60);
       diff -= (m * 60);
     }
 
     let display = '';
     let fontsize = '50px';
-    if(h > 0)
-    {
+    if (h > 0) {
       display = h.toString() + ":"
-      if (h > 100)
-      {
+      if (h > 100) {
         fontsize = '38px';
       }
-      else if (h > 10)
-      {
+      else if (h > 10) {
         fontsize = '40px';
       }
-      
+
       u = 'Hours';
     }
-    
-    if(m > 0 || h > 0)
-    {
-      if(m < 10)
+
+    if (m > 0 || h > 0) {
+      if (m < 10)
         display += '0';
-      
+
       display += m.toString() + ":";
 
-      if(h == 0)
-      {
+      if (h == 0) {
         u = 'Minutes'
       }
     }
 
-    if((m > 0 || h > 0) && diff < 10)
-      display += '0';    
-    
+    if ((m > 0 || h > 0) && diff < 10)
+      display += '0';
+
     display += diff.toString();
 
     // update the text in the tile
-    tileValue.innerText = display; 
+    tileValue.innerText = display;
     tileValue.style.fontSize = fontsize;
 
     // update the units
@@ -428,7 +420,7 @@ class Pump {
     // update the dashboard elements
     // update the real-time monitor
     this.chart.update();
-   
+
     // update the diagram
     this.updateDiagram(last.l);
     // update last updated tile
@@ -461,27 +453,40 @@ class Pump {
       console.error(err);
     }
   }
-  
+
   // -------------------------------------------------------------------------
-  // populateHistory()
+  // updateHistory - update the history chart
   // -------------------------------------------------------------------------
-  updateHistory(packet : any)
-  {
-    
+  updateHistory(event: HistoryUpate) {
+
+    let len = this.historyCount.length;
+    // convert the time in the record to unix * 1000 (milliseconds)
+    let d = event.period * 1000;
+
+    // if this is the first sample or if the day (unix time rounded to a day)
+    // is different than the last day in the array then insert new record
+    if (len == 0 || this.historyCount[len - 1].x != d) {
+      this.historyCount.push({ x: d, y: event.count });
+    }
+    else {
+      // update the value of the last record by the increment
+      // which is normally 1
+      this.historyCount[len - 1].y = event.count;
+    }
     this.historyChart.update();
   }
 
   // -------------------------------------------------------------------------
   // populateHistory()
   // -------------------------------------------------------------------------
-  populateHistory(hist) {
+  populateHistory(hist: Array<HistoryUpate>) {
 
     let len = hist.length;
 
     for (let i = 0; i < len; i++) {
-       this.historyCount.push({x: hist[i].period * 1000, y: hist[i].count});
+      this.historyCount.push({ x: hist[i].period * 1000, y: hist[i].count });
     }
-    this.historyChart.update(); 
+    this.historyChart.update();
   }
   // -------------------------------------------------------------------------
   // getBaseData
@@ -504,7 +509,6 @@ class Pump {
     xhr.setRequestHeader('Content-type', 'json');
     xhr.send();
   }
-
 }
 
 

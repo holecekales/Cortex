@@ -108,19 +108,14 @@ var Pump = (function () {
                 // data packet
                 var packet = {
                     reading: obj,
-                    event: 0,
+                    histUpdate: undefined,
                     time: this.time,
                     interval: this.interval // cadence/interval of the pump
                 };
                 // calculate metrics 
                 if (this.updateMetrics()) {
                     // new day may have been added in updateMetrics (this.history.length + 1)
-                    if (histLength < this.history.length) {
-                        packet.event = this.history[histLength - 1].period; // send down the next day number
-                    }
-                    else {
-                        packet.event = 1; // we will just increment on the client by 1
-                    }
+                    packet.histUpdate = this.history[histLength - 1];
                 }
                 // broadcast to all the clients (browsers)
                 this.broadcast(JSON.stringify(packet), 'chart-protocol');
@@ -243,11 +238,24 @@ var Pump = (function () {
                     // or at least from the time service. 
                     // hope the servers have the right time on them
                     var now = moment().unix();
+                    // through out old data, since they are no more useful
+                    // we want to display and track only the last 2 hours.
+                    var len = this.sampleData.length;
+                    var i = 0;
+                    // find the point in the array when we're older than
+                    // 2 hours (log2 would be better)
+                    var sent = 7200; // sentinel for 2 hours in seconds
+                    while ((i >= 0) && ((now - this.sampleData[i].t) < sent)) {
+                        i++;
+                    }
+                    if (i < len - 1)
+                        console.log("Purging old samples starting at:", i);
+                    this.sampleData.splice(i, len - i);
                     if (this.interval > 0) {
                         var ins = this.interval * 60; // interval in seconds (unix time)
-                        // for debugging purposes only   
-                        var ne = Math.round((now - (this.time + ins)) / ins);
-                        console.log("Onload: Synthetically added", ne, "events.");
+                        // for debugging purposes only - so we can display the log message
+                        var addEventCount = Math.round((now - (this.time + ins)) / ins);
+                        console.log("Onload: Synthetically added", addEventCount, "events.");
                         // catch up with the down time, using the previous statistics
                         // if lastInterval is set, means that prevPumpTime must be set as well!
                         for (var t = (this.time + ins); t < now; t += ins) {

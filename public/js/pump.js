@@ -1,6 +1,7 @@
 // (hacks)
 var Chart;
 var moment;
+;
 // -------------------------------------------------------------------------
 // class Pump
 // -------------------------------------------------------------------------
@@ -41,7 +42,8 @@ var Pump = (function () {
             // console.log('receive message' + message.data);
             var packet = JSON.parse(message.data);
             _this.addData(packet.reading);
-            _this.updateHistory(packet);
+            if (packet.histUpdate !== undefined)
+                _this.updateHistory(packet.histUpdate);
             _this.updateCadenceTile(packet.interval);
         };
     };
@@ -369,9 +371,22 @@ var Pump = (function () {
         }
     };
     // -------------------------------------------------------------------------
-    // populateHistory()
+    // updateHistory - update the history chart
     // -------------------------------------------------------------------------
-    Pump.prototype.updateHistory = function (packet) {
+    Pump.prototype.updateHistory = function (event) {
+        var len = this.historyCount.length;
+        // convert the time in the record to unix * 1000 (milliseconds)
+        var d = event.period * 1000;
+        // if this is the first sample or if the day (unix time rounded to a day)
+        // is different than the last day in the array then insert new record
+        if (len == 0 || this.historyCount[len - 1].x != d) {
+            this.historyCount.push({ x: d, y: event.count });
+        }
+        else {
+            // update the value of the last record by the increment
+            // which is normally 1
+            this.historyCount[len - 1].y = event.count;
+        }
         this.historyChart.update();
     };
     // -------------------------------------------------------------------------

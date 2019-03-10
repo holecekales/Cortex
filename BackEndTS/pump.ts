@@ -79,9 +79,9 @@ class Pump {
       this.proxysocket = new WSSocket('ws://homecortex.azurewebsites.net', 'chart-protocol');
       this.proxysocket.on('message', (data) => {
         console.log(data);
-        if(isUndefined(data.reading))
+        if (isUndefined(data.reading))
           this.rcvData(data);
-        else 
+        else
           this.rcvData(data.reading);
       });
       this.proxysocket.on('open', function open() {
@@ -123,25 +123,20 @@ class Pump {
           this.sampleData.shift();          // keep only a 2 days worth of data (sending every 2s)
 
         // we will use this to determine day roll over.
-        let histLength = this.history.length; 
+        let histLength = this.history.length;
 
         // data packet
-        let packet : any  = {
-          reading: obj,     // the reading from the device
-          event:   0,       // <0> if nothing, 1 if pump on the same day, unix time of midnight if day roller over
-          time:   this.time,// last time the pump was on
+        let packet: any = {
+          reading: obj,           // the reading from the device
+          histUpdate: undefined,  // empty history update
+          time: this.time,      // last time the pump was on
           interval: this.interval // cadence/interval of the pump
         };
 
         // calculate metrics 
-        if(this.updateMetrics()) {
+        if (this.updateMetrics()) {
           // new day may have been added in updateMetrics (this.history.length + 1)
-          if(histLength < this.history.length) {
-            packet.event = this.history[histLength-1].period; // send down the next day number
-          }
-          else {
-            packet.event = 1; // we will just increment on the client by 1
-          }
+          packet.histUpdate = this.history[histLength - 1];
         }
 
         // broadcast to all the clients (browsers)
@@ -190,7 +185,7 @@ class Pump {
   // * how often is pump pumping
   // * calcualte averages
   // -----------------------------------------------------------------------------
-  updateMetrics() : boolean {
+  updateMetrics(): boolean {
     let len: number = this.sampleData.length;
     // calculate if the pump kicked in - we need 15 values for the filter
     if (len >= 15) {
@@ -281,19 +276,36 @@ class Pump {
           // hope the servers have the right time on them
           let now = moment().unix();
 
+          // through out old data, since they are no more useful
+          // we want to display and track only the last 2 hours.
+          let len = this.sampleData.length;
+          let i = 0;
+          // find the point in the array when we're older than
+          // 2 hours (log2 would be better)
+          const sent : number = 7200; // sentinel for 2 hours in seconds
+
+          while ((i >= 0) && ((now - this.sampleData[i].t) < sent)) {
+            i++;
+          }
+          
+          if(i < len-1)
+            console.log("Purging old samples starting at:", i);
+
+          this.sampleData.splice(i, len - i);
+
           if (this.interval > 0) {
-                                   
-              let ins = this.interval * 60; // interval in seconds (unix time)
 
-              // for debugging purposes only   
-              let ne = Math.round((now - (this.time + ins)) / ins);
-              console.log("Onload: Synthetically added", ne, "events.");
+            let ins = this.interval * 60; // interval in seconds (unix time)
 
-              // catch up with the down time, using the previous statistics
-              // if lastInterval is set, means that prevPumpTime must be set as well!
-              for (var t = (this.time + ins); t < now; t += ins) {
-                  this.recordEvent(t);
-              }
+            // for debugging purposes only - so we can display the log message
+            let addEventCount = Math.round((now - (this.time + ins)) / ins);
+            console.log("Onload: Synthetically added", addEventCount, "events.");
+
+            // catch up with the down time, using the previous statistics
+            // if lastInterval is set, means that prevPumpTime must be set as well!
+            for (var t = (this.time + ins); t < now; t += ins) {
+              this.recordEvent(t);
+            }
           }
           // if there is a risk of significantly skewing the samples
           // require lastInterval 
