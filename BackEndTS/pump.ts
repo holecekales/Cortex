@@ -318,6 +318,12 @@ class Pump {
             this.interval = 0;
             console.log("Onload: time and interval stale -> reset");
           }
+
+          // just debugging
+          for (let x=0; x < this.history.length; x++)
+          {
+            console.log(moment.unix(this.history[x].period).startOf('day').format());
+          }
         }
       }
       catch (e) {

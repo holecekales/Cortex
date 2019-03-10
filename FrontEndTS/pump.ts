@@ -199,6 +199,11 @@ interface HistoryUpate {
         scales: {
           xAxes: [{
             type: 'time',
+            // barPercentage: 0.9,
+            //categoryPercentage: 0.8,
+            // gridLines: {
+            //   offsetGridLines: false,
+            // },
             time: {
               unit: 'day', // 'month'
               stepSize: 1,
