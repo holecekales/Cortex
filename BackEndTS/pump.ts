@@ -318,6 +318,7 @@ class Pump {
             // catch up with the down time, using the previous statistics
             // if lastInterval is set, means that prevPumpTime must be set as well!
             for (var t = (this.time + ins); t < now; t += ins) {
+              console.log("Adding event at time: ", t);
               this.recordEvent(t);
             }
           }
