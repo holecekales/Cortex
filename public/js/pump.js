@@ -235,6 +235,9 @@ var Pump = (function () {
         this.diagCtx.font = "bold 18px/1 sans-serif ";
         this.diagCtx.fillText(Math.round(this.lastLevel).toString() + "cm", txtX + 15, txtY);
         this.diagCtx.beginPath();
+        this.diagCtx.arc(txtX, y, 2, 0, Math.PI * 2); // circle
+        this.diagCtx.fill();
+        this.diagCtx.beginPath();
         this.diagCtx.moveTo(txtX, y);
         this.diagCtx.lineTo(txtX, txtY + 3);
         this.diagCtx.lineTo(txtX + 61, txtY + 3);
@@ -396,7 +399,7 @@ var Pump = (function () {
         var d = event.period * 1000;
         // if this is the first sample or if the day (unix time rounded to a day)
         // is different than the last day in the array then insert new record
-        if (len == 0 || this.historyCount[len - 1].x != d) {
+        if (len == 0 || this.historyCount[len - 1].x < d) {
             this.historyCount.push({ x: d, y: event.count });
         }
         else {

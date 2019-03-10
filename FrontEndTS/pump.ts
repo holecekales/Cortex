@@ -293,6 +293,10 @@ interface HistoryUpate {
     this.diagCtx.fillText(Math.round(this.lastLevel).toString() + "cm", txtX+15, txtY);
 
     this.diagCtx.beginPath();
+    this.diagCtx.arc(txtX, y, 2, 0, Math.PI * 2); // circle
+    this.diagCtx.fill();
+
+    this.diagCtx.beginPath();
     this.diagCtx.moveTo(txtX, y);
     this.diagCtx.lineTo(txtX, txtY + 3);
     this.diagCtx.lineTo(txtX+61, txtY + 3);
@@ -486,7 +490,7 @@ interface HistoryUpate {
 
     // if this is the first sample or if the day (unix time rounded to a day)
     // is different than the last day in the array then insert new record
-    if (len == 0 || this.historyCount[len - 1].x != d) {
+    if (len == 0 || this.historyCount[len - 1].x < d) {
       this.historyCount.push({ x: d, y: event.count });
     }
     else {
