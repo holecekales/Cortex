@@ -284,7 +284,7 @@ class Pump {
           // 2 hours (log2 would be better)
           const sent : number = 7200; // sentinel for 2 hours in seconds
 
-          while ((i >= 0) && ((now - this.sampleData[i].t) < sent)) {
+          while ((i < len) && ((now - this.sampleData[i].t) < sent)) {
             i++;
           }
           

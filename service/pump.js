@@ -245,7 +245,7 @@ var Pump = (function () {
                     // find the point in the array when we're older than
                     // 2 hours (log2 would be better)
                     var sent = 7200; // sentinel for 2 hours in seconds
-                    while ((i >= 0) && ((now - this.sampleData[i].t) < sent)) {
+                    while ((i < len) && ((now - this.sampleData[i].t) < sent)) {
                         i++;
                     }
                     if (i < len - 1)
