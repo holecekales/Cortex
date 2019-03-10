@@ -129,14 +129,17 @@ class Pump {
         let packet: any = {
           reading: obj,           // the reading from the device
           histUpdate: undefined,  // empty history update
-          time: this.time,      // last time the pump was on
-          interval: this.interval // cadence/interval of the pump
+          time: this.time,
+          interval: this.interval
         };
 
         // calculate metrics 
         if (this.updateMetrics()) {
           // new day may have been added in updateMetrics (this.history.length + 1)
           packet.histUpdate = this.history[histLength - 1];
+           // update time and interval
+          packet.time = this.time;        
+          packet.interval = this.interval;
         }
 
         // broadcast to all the clients (browsers)
@@ -163,6 +166,9 @@ class Pump {
 
     // snap the sample time to a day boundary
     let eventDay: number = moment.unix(time).startOf('day').unix();
+
+    console.log(">>> Event Day: ", moment.unix(eventDay).format());
+    console.log(">>> Period: ",   moment.unix(period).format());
 
     if (eventDay > period) {
       // we're in the next day store the stats and reset counter
@@ -299,7 +305,7 @@ class Pump {
 
             // for debugging purposes only - so we can display the log message
             let addEventCount = Math.round((now - (this.time + ins)) / ins);
-            console.log("Onload: Synthetically added", addEventCount, "events.");
+            console.log("Onload: Synthetically adding", addEventCount, "events.");
 
             // catch up with the down time, using the previous statistics
             // if lastInterval is set, means that prevPumpTime must be set as well!
@@ -319,10 +325,16 @@ class Pump {
             console.log("Onload: time and interval stale -> reset");
           }
 
-          // just debugging
+          // fixing up a file!
           for (let x=0; x < this.history.length; x++)
           {
-            console.log(moment.unix(this.history[x].period).startOf('day').format());
+            let sod = moment.unix(this.history[x].period).startOf('day').unix();
+            if(this.history[x].period  != sod)
+            {
+              
+              console.error("Period not at SOD. idx=", x, moment.unix(this.history[x].period).format(), "<- fixing");
+              this.history[x].period = sod; 
+            }
           }
         }
       }

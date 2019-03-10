@@ -110,12 +110,15 @@ var Pump = (function () {
                     reading: obj,
                     histUpdate: undefined,
                     time: this.time,
-                    interval: this.interval // cadence/interval of the pump
+                    interval: this.interval
                 };
                 // calculate metrics 
                 if (this.updateMetrics()) {
                     // new day may have been added in updateMetrics (this.history.length + 1)
                     packet.histUpdate = this.history[histLength - 1];
+                    // update time and interval
+                    packet.time = this.time;
+                    packet.interval = this.interval;
                 }
                 // broadcast to all the clients (browsers)
                 this.broadcast(JSON.stringify(packet), 'chart-protocol');
@@ -137,6 +140,8 @@ var Pump = (function () {
         var period = len == 0 ? 0 : this.history[len - 1].period;
         // snap the sample time to a day boundary
         var eventDay = moment.unix(time).startOf('day').unix();
+        console.log(">>> Event Day: ", moment.unix(eventDay).format());
+        console.log(">>> Period: ", moment.unix(period).format());
         if (eventDay > period) {
             // we're in the next day store the stats and reset counter
             this.history.push({ period: eventDay, count: 1 });
@@ -255,7 +260,7 @@ var Pump = (function () {
                         var ins = this.interval * 60; // interval in seconds (unix time)
                         // for debugging purposes only - so we can display the log message
                         var addEventCount = Math.round((now - (this.time + ins)) / ins);
-                        console.log("Onload: Synthetically added", addEventCount, "events.");
+                        console.log("Onload: Synthetically adding", addEventCount, "events.");
                         // catch up with the down time, using the previous statistics
                         // if lastInterval is set, means that prevPumpTime must be set as well!
                         for (var t = (this.time + ins); t < now; t += ins) {
@@ -273,9 +278,13 @@ var Pump = (function () {
                         this.interval = 0;
                         console.log("Onload: time and interval stale -> reset");
                     }
-                    // just debugging
+                    // fixing up a file!
                     for (var x = 0; x < this.history.length; x++) {
-                        console.log(moment.unix(this.history[x].period).startOf('day').format());
+                        var sod = moment.unix(this.history[x].period).startOf('day').unix();
+                        if (this.history[x].period != sod) {
+                            console.error("Period not at SOD. idx=", x, moment.unix(this.history[x].period).format(), "<- fixing");
+                            this.history[x].period = sod;
+                        }
                     }
                 }
             }
