@@ -39,12 +39,23 @@ var Pump = (function () {
         this.router = express.Router();
         // if someone calls us return all data in the last
         // 2 hours
-        this.router.use('/', function (req, res, next) {
+        this.router.get('/time',  (req, res, next) => {
+            var data = {
+                js: moment().format(),
+                jsOffset: moment().utcOffset(),
+                devicePumpTime: this.time ? moment.unix(this.time).format() : 0,
+                deviceUnix: this.time,
+                devideOffset: moment.unix(this.time).utcOffset(),
+                deviceSoD: this.time ? moment.unix(this.time).startOf('day').format() : 0
+            };
+            res.status(200).json(data);
+        });
+        this.router.get('/', (req, res, next) => {
             var pumpInfo = {
-                cadence: _this.interval,
-                time: _this.time,
-                history: _this.history,
-                sampleData: _this.sampleData,
+                cadence: this.interval,
+                time: this.time,
+                history: this.history,
+                sampleData: this.sampleData,
             };
             res.status(200).json(pumpInfo);
         });
@@ -279,10 +290,10 @@ var Pump = (function () {
                     // if there is a risk of significantly skewing the samples
                     // require lastInterval 
                     var timeDiff = now - this.time;
-                    // 600 == 10 minutes - which is would be very short pump period
+                    // 3600 == 60 minutes - which is would be very short pump period
                     // but if we have lastInterval already computed - we should use that
                     // if we have nothing - we have to start over
-                    if (timeDiff > Math.max(this.interval * 60, 600)) {
+                    if (timeDiff > Math.max(this.interval * 60, 3600)) {
                         this.time = 0;
                         this.interval = 0;
                         console.log("Onload: time and interval stale -> reset");

@@ -50,6 +50,18 @@ class Pump {
 
     // if someone calls us return all data in the last
     // 2 hours
+
+    this.router.get('/time', function (req, res, next) {
+      var data = {
+          js: moment().format(),
+          time: this.time ? moment(this.time).format() : 0,
+          timeUnix: this.time,
+          offset: moment().utcOffset(),
+          offsetForTime: moment.unix(this.time).utcOffset()
+      };
+      res.status(200).json(data);
+  });
+
     this.router.use('/', (req, res, next) => {
 
       let pumpInfo: any = {
@@ -60,7 +72,7 @@ class Pump {
       };
       res.status(200).json(pumpInfo);
     });
-
+    
     // create socket
     this.socket = new WSSocket.Server(server);
     this.socket.on('connection', (ws, req) => {
