@@ -298,14 +298,17 @@ class Pump {
           // 2 hours (log2 would be better)
           const sent : number = 7200; // sentinel for 2 hours in seconds
 
-          while ((i < len) && ((now - this.sampleData[i].t) < sent)) {
+          let delItems = false;
+          while ((i < len) && ((now - this.sampleData[i].t) > sent)) {
             i++;
+            delItems = true;
           }
-          
-          if(i < len-1)
-            console.log("Purging old samples starting at:", i);
 
-          this.sampleData.splice(i, len - i);
+          if(delItems)
+          {
+            console.log("Purging:", '0 -', i, "time: ", moment.unix(this.sampleData[Math.min(i+1, len-1)].t).format());
+            this.sampleData.splice(0, Math.min(i+1, len));
+          }
 
           if (this.interval > 0) {
 
