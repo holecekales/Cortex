@@ -350,6 +350,7 @@ class Pump {
           }
 
           // fixing up a file!
+          /*
           for (let x=0; x < this.history.length; x++)
           {
             let sod = moment.unix(this.history[x].period).startOf('day').unix();
@@ -360,6 +361,7 @@ class Pump {
               this.history[x].period = sod; 
             }
           }
+          */
         }
       }
       catch (e) {

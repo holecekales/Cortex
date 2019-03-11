@@ -39,23 +39,22 @@ var Pump = (function () {
         this.router = express.Router();
         // if someone calls us return all data in the last
         // 2 hours
-        this.router.get('/time',  (req, res, next) => {
+        this.router.get('/time', function (req, res, next) {
             var data = {
                 js: moment().format(),
-                jsOffset: moment().utcOffset(),
-                devicePumpTime: this.time ? moment.unix(this.time).format() : 0,
-                deviceUnix: this.time,
-                devideOffset: moment.unix(this.time).utcOffset(),
-                deviceSoD: this.time ? moment.unix(this.time).startOf('day').format() : 0
+                time: this.time ? moment(this.time).format() : 0,
+                timeUnix: this.time,
+                offset: moment().utcOffset(),
+                offsetForTime: moment.unix(this.time).utcOffset()
             };
             res.status(200).json(data);
         });
-        this.router.get('/', (req, res, next) => {
+        this.router.use('/', function (req, res, next) {
             var pumpInfo = {
-                cadence: this.interval,
-                time: this.time,
-                history: this.history,
-                sampleData: this.sampleData,
+                cadence: _this.interval,
+                time: _this.time,
+                history: _this.history,
+                sampleData: _this.sampleData,
             };
             res.status(200).json(pumpInfo);
         });
@@ -290,21 +289,13 @@ var Pump = (function () {
                     // if there is a risk of significantly skewing the samples
                     // require lastInterval 
                     var timeDiff = now - this.time;
-                    // 3600 == 60 minutes - which is would be very short pump period
+                    // 600 == 10 minutes - which is would be very short pump period
                     // but if we have lastInterval already computed - we should use that
                     // if we have nothing - we have to start over
-                    if (timeDiff > Math.max(this.interval * 60, 3600)) {
+                    if (timeDiff > Math.max(this.interval * 60, 600)) {
                         this.time = 0;
                         this.interval = 0;
                         console.log("Onload: time and interval stale -> reset");
-                    }
-                    // fixing up a file!
-                    for (var x = 0; x < this.history.length; x++) {
-                        var sod = moment.unix(this.history[x].period).startOf('day').unix();
-                        if (this.history[x].period != sod) {
-                            console.error("Period not at SOD. idx=", x, moment.unix(this.history[x].period).format(), "<- fixing");
-                            this.history[x].period = sod;
-                        }
                     }
                 }
             }
