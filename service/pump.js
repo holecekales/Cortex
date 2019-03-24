@@ -4,6 +4,8 @@ var WSSocket = require('ws');
 var fs = require('fs');
 var moment = require('moment');
 var util_1 = require('util');
+// $$$ Remove the API key!!!
+// https://api.darksky.net/forecast/<APIKey>/47.684830594, -122.18833258,1549756800?exclude=hourly, currently
 // ------------------------------------------------------------------------------------
 // Pump
 // ------------------------------------------------------------------------------------
@@ -32,6 +34,9 @@ var Pump = (function () {
         // this array will be maxlen (2 hours) and will have all of the device samples
         // main purpose - drawing diagrams
         this.sampleData = [];
+        // holds API key for https://darksky.net/dev
+        // is provided during the config state of the service
+        this.weatherKey = undefined;
         // read the previous state from disk 
         // (hopefully it is still relevant)
         this.readStateFromDisk();
@@ -238,6 +243,8 @@ var Pump = (function () {
     Pump.prototype.readStateFromDisk = function () {
         if (fs.existsSync('appState.json')) {
             try {
+                var config = JSON.parse(fs.readFileSync('appConfig.json', 'utf8'));
+                this.weatherKey = config.weatherKey;
                 var state = JSON.parse(fs.readFileSync('appState.json', 'utf8'));
                 // check the version of the file if is not the same
                 // then get ignore the contents

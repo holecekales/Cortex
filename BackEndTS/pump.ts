@@ -6,6 +6,9 @@ var fs = require('fs');
 import * as moment from 'moment';
 import { isUndefined } from 'util';
 
+// $$$ Remove the API key!!!
+// https://api.darksky.net/forecast/<APIKey>/47.684830594, -122.18833258,1549756800?exclude=hourly, currently
+
 // ------------------------------------------------------------------------------------
 // Pump
 // ------------------------------------------------------------------------------------
@@ -36,6 +39,10 @@ class Pump {
   // this array will be maxlen (2 hours) and will have all of the device samples
   // main purpose - drawing diagrams
   private sampleData = [];
+
+  // holds API key for https://darksky.net/dev
+  // is provided during the config state of the service
+  private weatherKey = undefined;
 
   // ------------------------------------------------------------
   // construct the Pump object
@@ -275,6 +282,10 @@ class Pump {
   readStateFromDisk() {
     if (fs.existsSync('appState.json')) {
       try {
+
+        let config: any = JSON.parse(fs.readFileSync('appConfig.json', 'utf8'));
+        this.weatherKey = config.weatherKey;
+
         let state: any = JSON.parse(fs.readFileSync('appState.json', 'utf8'));
 
         // check the version of the file if is not the same
