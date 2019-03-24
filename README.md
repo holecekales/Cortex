@@ -7,10 +7,13 @@
 * Day total + prediction and yearly total
 * Add weather 
   - Temperature
-  - Percipitation  
+  - Percipitation
+* Look at CSS animation for indicating change  
 
-**Critical Fix**
+**Critical Fixes**
 * I need to get a cert for WSS? (https and wss)
+* Load the API Key for the darksky from a file so it is not in github
+* Let's make sure that to catalog the password and API key somewhere
 
 **Backend error handling**
 - Socket error handling - ping/pong
