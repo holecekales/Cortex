@@ -4,6 +4,7 @@ var WSSocket = require('ws');
 var fs = require('fs');
 var moment = require('moment');
 var util_1 = require('util');
+var DayBoundary_1 = require('./DayBoundary');
 // $$$ Remove the API key!!!
 // https://api.darksky.net/forecast/<APIKey>/47.684830594, -122.18833258,1549756800?exclude=hourly, currently
 // ------------------------------------------------------------------------------------
@@ -42,18 +43,17 @@ var Pump = (function () {
         this.readStateFromDisk();
         // create and defined routes
         this.router = express.Router();
-        // if someone calls us return all data in the last
-        // 2 hours
+        // see what we can get from the time
         this.router.get('/time', function (req, res, next) {
             var data = {
-                js: moment().format(),
-                time: this.time ? moment(this.time).format() : 0,
-                timeUnix: this.time,
-                offset: moment().utcOffset(),
-                offsetForTime: moment.unix(this.time).utcOffset()
+                now: moment().format(),
+                lastTime: _this.time ? _this.time : "not set",
+                dayBoundary: _this.time ? DayBoundary_1.getDateBoundary(_this.time) : "not set"
             };
             res.status(200).json(data);
         });
+        // if someone calls us return all data in the last
+        // 2 hours
         this.router.use('/', function (req, res, next) {
             var pumpInfo = {
                 cadence: _this.interval,
@@ -295,6 +295,13 @@ var Pump = (function () {
                         this.time = 0;
                         this.interval = 0;
                         console.log("Onload: time and interval stale -> reset");
+                    }
+                    // fixing up a file!
+                    for (var x = 0; x < this.history.length; x++) {
+                        var sod = DayBoundary_1.getDateBoundary(this.history[x].period);
+                        if (this.history[x].period != sod) {
+                            console.error("Period not at SOD. idx=", x, ":", this.history[x].period, sod);
+                        }
                     }
                 }
             }

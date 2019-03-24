@@ -6,6 +6,8 @@ var fs = require('fs');
 import * as moment from 'moment';
 import { isUndefined } from 'util';
 
+import { getDateBoundary } from './DayBoundary';
+
 // $$$ Remove the API key!!!
 // https://api.darksky.net/forecast/<APIKey>/47.684830594, -122.18833258,1549756800?exclude=hourly, currently
 
@@ -55,22 +57,19 @@ class Pump {
     // create and defined routes
     this.router = express.Router();
 
-    // if someone calls us return all data in the last
-    // 2 hours
-
-    this.router.get('/time', function (req, res, next) {
+    // see what we can get from the time
+    this.router.get('/time',  (req, res, next) => {
       var data = {
-          js: moment().format(),
-          time: this.time ? moment(this.time).format() : 0,
-          timeUnix: this.time,
-          offset: moment().utcOffset(),
-          offsetForTime: moment.unix(this.time).utcOffset()
+        now: moment().format(),
+        lastTime: this.time ? this.time : "not set",
+        dayBoundary: this.time ? getDateBoundary(this.time) : "not set"
       };
       res.status(200).json(data);
-  });
+    });
 
+    // if someone calls us return all data in the last
+    // 2 hours
     this.router.use('/', (req, res, next) => {
-
       let pumpInfo: any = {
         cadence: this.interval,
         time: this.time,
@@ -79,7 +78,7 @@ class Pump {
       };
       res.status(200).json(pumpInfo);
     });
-    
+
     // create socket
     this.socket = new WSSocket.Server(server);
     this.socket.on('connection', (ws, req) => {
@@ -99,7 +98,7 @@ class Pump {
       this.proxysocket.on('message', (data) => {
         console.log(data);
         let msg = JSON.parse(data);
-        this.rcvData(JSON.stringify(msg.reading));       
+        this.rcvData(JSON.stringify(msg.reading));
       });
       this.proxysocket.on('open', function open() {
         console.log("homecoretex opened");
@@ -154,8 +153,8 @@ class Pump {
         if (this.updateMetrics()) {
           // new day may have been added in updateMetrics (this.history.length + 1)
           packet.histUpdate = this.history[histLength - 1];
-           // update time and interval
-          packet.time = this.time;        
+          // update time and interval
+          packet.time = this.time;
           packet.interval = this.interval;
         }
 
@@ -307,7 +306,7 @@ class Pump {
           let i = 0;
           // find the point in the array when we're older than
           // 2 hours (log2 would be better)
-          const sent : number = 7200; // sentinel for 2 hours in seconds
+          const sent: number = 7200; // sentinel for 2 hours in seconds
 
           let delItems = false;
           while ((i < len) && ((now - this.sampleData[i].t) > sent)) {
@@ -315,10 +314,9 @@ class Pump {
             delItems = true;
           }
 
-          if(delItems)
-          {
-            console.log("Purging:", '0 -', i, "time: ", moment.unix(this.sampleData[Math.min(i+1, len-1)].t).format());
-            this.sampleData.splice(0, Math.min(i+1, len));
+          if (delItems) {
+            console.log("Purging:", '0 -', i, "time: ", moment.unix(this.sampleData[Math.min(i + 1, len - 1)].t).format());
+            this.sampleData.splice(0, Math.min(i + 1, len));
           }
 
           if (this.interval > 0) {
@@ -349,18 +347,17 @@ class Pump {
           }
 
           // fixing up a file!
-          /*
+
           for (let x=0; x < this.history.length; x++)
           {
-            let sod = moment.unix(this.history[x].period).startOf('day').unix();
+            let sod = getDateBoundary(this.history[x].period); 
             if(this.history[x].period  != sod)
             {
               
-              console.error("Period not at SOD. idx=", x, moment.unix(this.history[x].period).format(), "<- fixing");
-              this.history[x].period = sod; 
+              console.error("Period not at SOD. idx=", x, ":", this.history[x].period, sod);
+              // this.history[x].period = sod; 
             }
           }
-          */
         }
       }
       catch (e) {
