@@ -1,8 +1,11 @@
 upload/
 log.txt
+.vscode/
+npm-debug.log
+
 datafile.db
 data.json
 appState.json
 appConfig.json
-.vscode/
-npm-debug.log
+localappState.json
+remoteAppStateFixed.json
