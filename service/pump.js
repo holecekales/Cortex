@@ -300,7 +300,8 @@ var Pump = (function () {
                     for (var x = 0; x < this.history.length; x++) {
                         var sod = DayBoundary_1.getDateBoundary(this.history[x].period);
                         if (this.history[x].period != sod) {
-                            console.error("Period not at SOD. idx=", x, ":", this.history[x].period, sod);
+                            console.error("Period not at SOD. idx=", x, ":", this.history[x].period, sod, "<- fixed");
+                            this.history[x].period = sod;
                         }
                     }
                 }
