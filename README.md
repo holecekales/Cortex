@@ -10,6 +10,7 @@
   - Percipitation
 * Look at CSS animation for indicating change  
 
+
 **Critical Fixes**
 * I need to get a cert for WSS? (https and wss)
 * Load the API Key for the darksky from a file so it is not in github
