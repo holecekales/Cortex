@@ -66,7 +66,7 @@ class Pump {
       // let m = moment.utc(d).utcOffset(-420, true).local();
 
       var data = {
-        ver:   1,
+        ver:   2,
         srvrT: moment().format(),
         nowTm:  m.format(),
         isDST: m.isDST(),
