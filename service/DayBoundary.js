@@ -37,6 +37,6 @@ function pstOff(unixTime) {
     return mPstOffset * 60;
 }
 function getDateBoundary(unixTime) {
-    return moment.unix(unixTime).add(pstOff(unixTime), 'minutes').startOf('day').unix();
+    return moment.unix(unixTime).utcOffset(pstOff(unixTime)).startOf('day').unix();
 }
 exports.getDateBoundary = getDateBoundary;

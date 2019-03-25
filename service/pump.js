@@ -2,7 +2,7 @@
 var express = require('express');
 var WSSocket = require('ws');
 var fs = require('fs');
-var moment = require('moment');
+var moment = require('moment-timezone');
 var util_1 = require('util');
 var DayBoundary_1 = require('./DayBoundary');
 // $$$ Remove the API key!!!
@@ -45,8 +45,9 @@ var Pump = (function () {
         this.router = express.Router();
         // see what we can get from the time
         this.router.get('/time', function (req, res, next) {
-            var d = moment().format("YYYY-MM-DD");
-            var m = moment.unix(DayBoundary_1.getDateBoundary(_this.time)); // this will not work with PST since it is not taking care of DST
+            // let d = moment().format("YYYY-MM-DD");
+            // let m = moment.unix(getDateBoundary(this.time)); // this will not work with PST since it is not taking care of DST
+            var m = moment.unix(_this.time); // this will not work with PST since it is not taking care of DST
             // the parseZone stuff is not going to work, since it is not setting true timezone
             // let m = moment.parseZone(d+"T00:00:00-4:00");
             // let m = moment(d + "-0600", "YYYY-MM-DD Z"); 
@@ -54,7 +55,7 @@ var Pump = (function () {
             var data = {
                 ver: 11,
                 srvrT: moment().format(),
-                nowTm: m.format(),
+                nowTm: m.tz('America/Los_Angeles').format('ha z'),
                 isDST: m.isDST(),
                 lastTime: _this.time ? _this.time : "not set",
                 dayBoundary: _this.time ? DayBoundary_1.getDateBoundary(_this.time) : "not set",

@@ -24,6 +24,7 @@ function isDst(unixTime: number) {
     return false;
 
   // Calculate DST start day, it is the last sunday of March
+  // >>> !!! Last Sunday is not true for US <<<
   var start_day = (31 - ((((5 * _year) / 4) + 4) % 7));
   var SUMMER_start = new Date(Date.UTC(_year, 2, start_day, 1, 0, 0));
 
@@ -48,7 +49,7 @@ function pstOff(unixTime) {
 }
 
 export function getDateBoundary(unixTime: number) : number {
-  return moment.unix(unixTime).add(pstOff(unixTime), 'minutes').startOf('day').unix();
+  return moment.unix(unixTime).utcOffset(pstOff(unixTime)).startOf('day').unix();
 }
 
 
