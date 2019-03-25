@@ -54,13 +54,12 @@ var Pump = (function () {
             // let m = moment(d + "-0600", "YYYY-MM-DD Z"); 
             // let m = moment.utc(d).utcOffset(-420, true).local();
             var data = {
-                ver: 12,
-                srvrT: DayBoundary_1.getDateBoundary(s.unix()),
-                nowTm: m.tz('America/Los_Angeles').format('ha z'),
+                ver: 13,
+                srvrT: moment.unix(DayBoundary_1.getDateBoundary(s.unix())).format("MM/DD hh:mm"),
+                nowTm: m.tz('America/Los_Angeles').format('ha:mm z'),
                 isDST: m.isDST(),
                 lastTime: _this.time ? _this.time : "not set",
                 dayBoundary: _this.time ? DayBoundary_1.getDateBoundary(_this.time) : "not set",
-                moment: m
             };
             res.status(200).json(data);
         });

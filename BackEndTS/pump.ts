@@ -72,13 +72,12 @@ class Pump {
       // let m = moment.utc(d).utcOffset(-420, true).local();
 
       var data = {
-        ver:   12,
-        srvrT: getDateBoundary(s.unix()),
-        nowTm:  m.tz('America/Los_Angeles').format('ha z'),
+        ver:   13,
+        srvrT: moment.unix(getDateBoundary(s.unix())).format("MM/DD hh:mm"),
+        nowTm:  m.tz('America/Los_Angeles').format('ha:mm z'),
         isDST: m.isDST(),
         lastTime: this.time ? this.time : "not set",
         dayBoundary: this.time ? getDateBoundary(this.time) : "not set",
-        moment: m
       };
       res.status(200).json(data);
     });
