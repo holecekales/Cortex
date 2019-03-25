@@ -8,16 +8,17 @@ function stdTimezoneOffset(m) {
 }
 // determine if we're in day light saving zone
 function isDst(time) {
-    return -time.utcOffset() < stdTimezoneOffset(time);
+    return (-time.utcOffset()) < stdTimezoneOffset(time);
 }
 // calculate the offset from UTC to Pacific Standard Time
 // and take date light saving into consideration
-function pstOff(time) {
-    var mPstOffset = isDst(time) ? -7 : -8;
+function pstOff() {
+    var dst = moment().isDST();
+    // convert to pacific time (since this is where the sensor is)
+    var mPstOffset = dst ? -7 : -8;
     return mPstOffset * 60;
 }
 function getDateBoundary(unixTime) {
-    var m = moment.unix(unixTime);
-    return moment.unix(unixTime).utc().utcOffset(pstOff(m)).startOf('day').unix();
+    return moment.unix(unixTime).utc().utcOffset(pstOff()).startOf('day').unix();
 }
 exports.getDateBoundary = getDateBoundary;
