@@ -64,7 +64,7 @@ class Pump {
       // let m = moment.unix(getDateBoundary(this.time)); // this will not work with PST since it is not taking care of DST
 
       let m = moment.unix(this.time); // this will not work with PST since it is not taking care of DST
-
+      let s = moment();
 
       // the parseZone stuff is not going to work, since it is not setting true timezone
       // let m = moment.parseZone(d+"T00:00:00-4:00");
@@ -72,8 +72,8 @@ class Pump {
       // let m = moment.utc(d).utcOffset(-420, true).local();
 
       var data = {
-        ver:   11,
-        srvrT: moment().format(),
+        ver:   12,
+        srvrT: getDateBoundary(s.unix()),
         nowTm:  m.tz('America/Los_Angeles').format('ha z'),
         isDST: m.isDST(),
         lastTime: this.time ? this.time : "not set",

@@ -1,5 +1,5 @@
 "use strict";
-var moment = require('moment');
+var moment = require('moment-timezone');
 // calc the timezone offset without the day light saving 
 function stdTimezoneOffset(m) {
     var jan = moment([m.year(), 0, 1]);
@@ -37,6 +37,7 @@ function pstOff(unixTime) {
     return mPstOffset * 60;
 }
 function getDateBoundary(unixTime) {
-    return moment.unix(unixTime).utcOffset(pstOff(unixTime)).startOf('day').unix();
+    //return moment.unix(unixTime).utcOffset(pstOff(unixTime)).startOf('day').unix();
+    return moment.unix(unixTime).tz('America/Los_Angeles').startOf('day').unix();
 }
 exports.getDateBoundary = getDateBoundary;

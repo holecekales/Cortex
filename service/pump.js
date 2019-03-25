@@ -48,13 +48,14 @@ var Pump = (function () {
             // let d = moment().format("YYYY-MM-DD");
             // let m = moment.unix(getDateBoundary(this.time)); // this will not work with PST since it is not taking care of DST
             var m = moment.unix(_this.time); // this will not work with PST since it is not taking care of DST
+            var s = moment();
             // the parseZone stuff is not going to work, since it is not setting true timezone
             // let m = moment.parseZone(d+"T00:00:00-4:00");
             // let m = moment(d + "-0600", "YYYY-MM-DD Z"); 
             // let m = moment.utc(d).utcOffset(-420, true).local();
             var data = {
-                ver: 11,
-                srvrT: moment().format(),
+                ver: 12,
+                srvrT: DayBoundary_1.getDateBoundary(s.unix()),
                 nowTm: m.tz('America/Los_Angeles').format('ha z'),
                 isDST: m.isDST(),
                 lastTime: _this.time ? _this.time : "not set",

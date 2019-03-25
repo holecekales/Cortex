@@ -1,4 +1,4 @@
-import * as moment from 'moment';
+import * as moment from 'moment-timezone';
 
 
 // calc the timezone offset without the day light saving 
@@ -49,7 +49,8 @@ function pstOff(unixTime) {
 }
 
 export function getDateBoundary(unixTime: number) : number {
-  return moment.unix(unixTime).utcOffset(pstOff(unixTime)).startOf('day').unix();
+  //return moment.unix(unixTime).utcOffset(pstOff(unixTime)).startOf('day').unix();
+  return moment.unix(unixTime).tz('America/Los_Angeles').startOf('day').unix();
 }
 
 
