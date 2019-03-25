@@ -299,9 +299,9 @@ var Pump = (function () {
                     // fixing up a file!
                     for (var x = 0; x < this.history.length; x++) {
                         var sod = DayBoundary_1.getDateBoundary(this.history[x].period);
+                        console.log(x, moment.unix(this.history[x].period).format("MM/DD"), this.history[x].count);
                         if (this.history[x].period != sod) {
-                            console.error("Period not at SOD. idx=", x, ":", this.history[x].period, sod, "<- fixed");
-                            this.history[x].period = sod;
+                            console.error("Period not at SOD. idx=", x, ":", this.history[x].period, sod /*, "<- fixed"*/);
                         }
                     }
                 }

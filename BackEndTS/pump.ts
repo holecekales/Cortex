@@ -350,12 +350,12 @@ class Pump {
 
           for (let x=0; x < this.history.length; x++)
           {
-            let sod = getDateBoundary(this.history[x].period); 
+            let sod = getDateBoundary(this.history[x].period);
+            console.log(x, moment.unix(this.history[x].period).format("MM/DD"), this.history[x].count);
             if(this.history[x].period  != sod)
             {
-              
-              console.error("Period not at SOD. idx=", x, ":", this.history[x].period, sod, "<- fixed");
-              this.history[x].period = sod; 
+              console.error("Period not at SOD. idx=", x, ":", this.history[x].period, sod /*, "<- fixed"*/);
+              // this.history[x].period = sod; 
             }
           }
         }
