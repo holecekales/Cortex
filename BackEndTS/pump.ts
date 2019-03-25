@@ -363,7 +363,7 @@ class Pump {
             if(this.history[x].period  != sod)
             {
               console.error("Period not at SOD. idx=", x, ":", this.history[x].period, sod /*, "<- fixed"*/);
-              /// this.history[x].period = sod; 
+              // this.history[x].period = sod; 
             }
           }
         }
