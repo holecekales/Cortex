@@ -2,14 +2,12 @@
 
 ## Todo:
 * Some kind of total of something?
-* Fix  server time issue
 * Make Gallons/m^3 on the tile 
 * Day total + prediction and yearly total
 * Add weather 
   - Temperature
   - Percipitation
 * Look at CSS animation for indicating change  
-* 14: {"period":1552204800,"count":59},
 
 
 **Critical Fixes**
