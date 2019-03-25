@@ -45,20 +45,14 @@ var Pump = (function () {
         this.router = express.Router();
         // see what we can get from the time
         this.router.get('/time', function (req, res, next) {
-            // let d = moment().format("YYYY-MM-DD");
-            // let m = moment.unix(getDateBoundary(this.time)); // this will not work with PST since it is not taking care of DST
             var m = moment.unix(_this.time); // this will not work with PST since it is not taking care of DST
             var s = moment();
-            // the parseZone stuff is not going to work, since it is not setting true timezone
-            // let m = moment.parseZone(d+"T00:00:00-4:00");
-            // let m = moment(d + "-0600", "YYYY-MM-DD Z"); 
-            // let m = moment.utc(d).utcOffset(-420, true).local();
             var data = {
                 ver: 13,
-                srvrT: moment.unix(DayBoundary_1.getDateBoundary(s.unix())).format("MM/DD hh:mm"),
-                nowTm: m.tz('America/Los_Angeles').format('ha:mm z'),
-                isDST: m.isDST(),
+                svrBoundary: moment.unix(DayBoundary_1.getDateBoundary(s.unix())).format("MM/DD hh:mm"),
                 lastTime: _this.time ? _this.time : "not set",
+                lastTimeTm: m.tz('America/Los_Angeles').format('ha:mm z'),
+                isDST: m.isDST(),
                 dayBoundary: _this.time ? DayBoundary_1.getDateBoundary(_this.time) : "not set",
             };
             res.status(200).json(data);
