@@ -48,6 +48,7 @@ var Pump = (function () {
             var d = moment().format("YYYY-MM-DD");
             var m = moment.utc(d).utcOffset(-420, true).local();
             var data = {
+                ver: 1,
                 srvrT: moment().format(),
                 nowTm: m.format(),
                 isDST: m.isDST(),
