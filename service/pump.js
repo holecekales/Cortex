@@ -152,7 +152,7 @@ var Pump = (function () {
         var len = this.history.length;
         var period = len == 0 ? 0 : this.history[len - 1].period;
         // snap the sample time to a day boundary
-        var eventDay = moment.unix(time).startOf('day').unix();
+        var eventDay = DayBoundary_1.getDateBoundary(time);
         if (eventDay > period) {
             console.log(">>> Starting new period:", eventDay, "<<<");
             // we're in the next day store the stats and reset counter

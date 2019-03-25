@@ -181,7 +181,7 @@ class Pump {
     let period = len == 0 ? 0 : this.history[len - 1].period;
 
     // snap the sample time to a day boundary
-    let eventDay: number = moment.unix(time).startOf('day').unix();
+    let eventDay: number = getDateBoundary(time); 
 
     if (eventDay > period) {
       console.log(">>> Starting new period:", eventDay, "<<<")
@@ -355,7 +355,7 @@ class Pump {
             if(this.history[x].period  != sod)
             {
               console.error("Period not at SOD. idx=", x, ":", this.history[x].period, sod /*, "<- fixed"*/);
-              // this.history[x].period = sod; 
+              /// this.history[x].period = sod; 
             }
           }
         }
