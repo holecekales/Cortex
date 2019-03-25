@@ -18,6 +18,7 @@ function isDst(unixTime) {
     if (_year <= 1998 && _year > 2099)
         return false;
     // Calculate DST start day, it is the last sunday of March
+    // >>> !!! Last Sunday is not true for US <<<
     var start_day = (31 - ((((5 * _year) / 4) + 4) % 7));
     var SUMMER_start = new Date(Date.UTC(_year, 2, start_day, 1, 0, 0));
     // Calculate DST end day, it is the last sunday of October
@@ -36,6 +37,6 @@ function pstOff(unixTime) {
     return mPstOffset * 60;
 }
 function getDateBoundary(unixTime) {
-    return moment.unix(unixTime).utc().utcOffset(pstOff(unixTime)).startOf('day').unix();
+    return moment.unix(unixTime).add(pstOff(unixTime), 'minutes').startOf('day').unix();
 }
 exports.getDateBoundary = getDateBoundary;

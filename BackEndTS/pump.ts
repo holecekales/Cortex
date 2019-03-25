@@ -61,7 +61,7 @@ class Pump {
     this.router.get('/time',  (req, res, next) => {
 
       let d = moment().format("YYYY-MM-DD");
-      let m = moment.utc(getDateBoundary(this.time)); // this will not work with PST since it is not taking care of DST
+      let m = moment.unix(getDateBoundary(this.time)); // this will not work with PST since it is not taking care of DST
 
       // the parseZone stuff is not going to work, since it is not setting true timezone
       // let m = moment.parseZone(d+"T00:00:00-4:00");
