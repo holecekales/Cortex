@@ -13,7 +13,7 @@ function isDst(time) {
 // calculate the offset from UTC to Pacific Standard Time
 // and take date light saving into consideration
 function pstOff() {
-    var dst = moment().isDST();
+    var dst = moment.utc().utcOffset(-420).local().isDST();
     // convert to pacific time (since this is where the sensor is)
     var mPstOffset = dst ? -7 : -8;
     return mPstOffset * 60;
