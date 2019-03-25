@@ -62,7 +62,7 @@ class Pump {
       var data = {
         now: moment.utc().format(),
         tzOff: moment().utcOffset(),
-        isDST: moment.utc().utcOffset(-420, true).local().isDST(),
+        isDST: moment.utc().utcOffset(-420, true).isDST(),
         lastTime: this.time ? this.time : "not set",
         dayBoundary: this.time ? getDateBoundary(this.time) : "not set"
       };
