@@ -46,15 +46,16 @@ var Pump = (function () {
         // see what we can get from the time
         this.router.get('/time', function (req, res, next) {
             var d = moment().format("YYYY-MM-DD");
-            var m = moment(d + "-0800", "YYYY-MM-DD Z");
+            var m = moment(d + "-0600", "YYYY-MM-DD Z");
             // let m = moment.utc(d).utcOffset(-420, true).local();
             var data = {
-                ver: 2,
+                ver: 7,
                 srvrT: moment().format(),
                 nowTm: m.format(),
                 isDST: m.isDST(),
                 lastTime: _this.time ? _this.time : "not set",
-                dayBoundary: _this.time ? DayBoundary_1.getDateBoundary(_this.time) : "not set"
+                dayBoundary: _this.time ? DayBoundary_1.getDateBoundary(_this.time) : "not set",
+                moment: m
             };
             res.status(200).json(data);
         });
