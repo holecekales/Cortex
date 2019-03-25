@@ -61,6 +61,7 @@ class Pump {
     this.router.get('/time',  (req, res, next) => {
       var data = {
         now: moment().format(),
+        isDST: moment().isDST(),
         lastTime: this.time ? this.time : "not set",
         dayBoundary: this.time ? getDateBoundary(this.time) : "not set"
       };
@@ -183,7 +184,8 @@ class Pump {
     // snap the sample time to a day boundary
     let eventDay: number = getDateBoundary(time); 
 
-    if (eventDay > period) {
+    // did we move 24 hours (in seconds) forward?
+    if (eventDay > (period + 24 * 60 * 60)) {
       console.log(">>> Starting new period:", eventDay, "<<<")
       // we're in the next day store the stats and reset counter
       this.history.push({ period: eventDay, count: 1 });
