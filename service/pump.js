@@ -45,7 +45,7 @@ var Pump = (function () {
         this.router = express.Router();
         // see what we can get from the time
         this.router.get('/time', function (req, res, next) {
-            var m = moment(moment().format('YYYY-MM-DD')).local();
+            var m = moment().local().utcOffset(-420, true);
             var data = {
                 srvrT: moment().format(),
                 nowTm: m.format(),
