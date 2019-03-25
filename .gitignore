@@ -1,4 +1,5 @@
 upload/
+logs/
 log.txt
 .vscode/
 npm-debug.log
