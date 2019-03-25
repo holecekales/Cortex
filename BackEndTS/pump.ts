@@ -60,7 +60,9 @@ class Pump {
     // see what we can get from the time
     this.router.get('/time',  (req, res, next) => {
 
-      let m = moment().local().utcOffset(-420, true);
+      let d = moment().format("YYYY-MM-DD");
+
+      let m = moment.utc(d).utcOffset(-420).local();
 
       var data = {
         srvrT: moment().format(),
