@@ -46,9 +46,10 @@ var Pump = (function () {
         // see what we can get from the time
         this.router.get('/time', function (req, res, next) {
             var d = moment().format("YYYY-MM-DD");
-            var m = moment.utc(d).utcOffset(-420, true).local();
+            var m = moment(d + "-0800", "YYYY-MM-DD Z");
+            // let m = moment.utc(d).utcOffset(-420, true).local();
             var data = {
-                ver: 1,
+                ver: 2,
                 srvrT: moment().format(),
                 nowTm: m.format(),
                 isDST: m.isDST(),

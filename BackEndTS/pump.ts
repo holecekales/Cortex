@@ -61,8 +61,9 @@ class Pump {
     this.router.get('/time',  (req, res, next) => {
 
       let d = moment().format("YYYY-MM-DD");
+      let m = moment(d + "-0800", "YYYY-MM-DD Z"); 
 
-      let m = moment.utc(d).utcOffset(-420, true).local();
+      // let m = moment.utc(d).utcOffset(-420, true).local();
 
       var data = {
         ver:   1,
