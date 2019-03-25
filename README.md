@@ -9,6 +9,7 @@
   - Temperature
   - Percipitation
 * Look at CSS animation for indicating change  
+* 14: {"period":1552204800,"count":59},
 
 
 **Critical Fixes**
