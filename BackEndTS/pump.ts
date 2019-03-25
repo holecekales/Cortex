@@ -62,7 +62,7 @@ class Pump {
 
       let d = moment().format("YYYY-MM-DD");
 
-      let m = moment.utc(d).utcOffset(-420).local();
+      let m = moment.utc(d).utcOffset(-420, true).local();
 
       var data = {
         srvrT: moment().format(),
