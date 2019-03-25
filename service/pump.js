@@ -45,10 +45,11 @@ var Pump = (function () {
         this.router = express.Router();
         // see what we can get from the time
         this.router.get('/time', function (req, res, next) {
+            var m = moment().utcOffset(-420, true).local();
             var data = {
                 srvrT: moment().format(),
-                nowTm: moment().local().utcOffset(-420, true).format(),
-                isDST: moment().utcOffset(-420, true).isDST(),
+                nowTm: m.format(),
+                isDST: m.isDST(),
                 lastTime: _this.time ? _this.time : "not set",
                 dayBoundary: _this.time ? DayBoundary_1.getDateBoundary(_this.time) : "not set"
             };

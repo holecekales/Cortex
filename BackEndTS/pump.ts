@@ -59,10 +59,13 @@ class Pump {
 
     // see what we can get from the time
     this.router.get('/time',  (req, res, next) => {
+
+      let m = moment().utcOffset(-420, true).local();
+
       var data = {
         srvrT: moment().format(),
-        nowTm:  moment().local().utcOffset(-420, true).format(),
-        isDST: moment().utcOffset(-420, true).isDST(),
+        nowTm:  m.format(),
+        isDST: m.isDST(),
         lastTime: this.time ? this.time : "not set",
         dayBoundary: this.time ? getDateBoundary(this.time) : "not set"
       };
