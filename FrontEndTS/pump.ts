@@ -120,8 +120,6 @@ interface HistoryUpate {
       },
       title: {
         display: false,
-        text: 'Realtime Monitor',
-        fontSize: 20
       },
       scales: {
         xAxes: [{
@@ -200,11 +198,8 @@ interface HistoryUpate {
         scales: {
           xAxes: [{
             type: 'time',
-            // barPercentage: 0.9,
-            //categoryPercentage: 0.8,
-            // gridLines: {
-            //   offsetGridLines: false,
-            // },
+            // barPercentage: 0.95,
+            // categoryPercentage: 0.7,
             time: {
               unit: 'day', // 'month'
               stepSize: 1,

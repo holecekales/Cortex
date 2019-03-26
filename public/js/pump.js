@@ -92,8 +92,6 @@ var Pump = (function () {
             },
             title: {
                 display: false,
-                text: 'Realtime Monitor',
-                fontSize: 20
             },
             scales: {
                 xAxes: [{
@@ -160,11 +158,8 @@ var Pump = (function () {
                 scales: {
                     xAxes: [{
                             type: 'time',
-                            // barPercentage: 0.9,
-                            //categoryPercentage: 0.8,
-                            // gridLines: {
-                            //   offsetGridLines: false,
-                            // },
+                            // barPercentage: 0.95,
+                            // categoryPercentage: 0.7,
                             time: {
                                 unit: 'day',
                                 stepSize: 1,
