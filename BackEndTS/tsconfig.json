@@ -6,7 +6,7 @@
         "sourceMap": false,
         "watch": true,
         "outDir": "../service/",
-        "lib": [ "es5", "es6", "dom" ]
+        "lib": ["es2016", "dom"] //or es6 instead of es2016(es7)
     },
     "exclude": [
         "node_modules"
