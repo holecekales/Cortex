@@ -45,15 +45,15 @@ var Pump = (function () {
         this.router = express.Router();
         // see what we can get from the time
         this.router.get('/time', function (req, res, next) {
-            var m = moment.unix(_this.time); // this will not work with PST since it is not taking care of DST
-            var s = moment();
+            var lt = moment.unix(_this.time); // this will not work with PST since it is not taking care of DST
+            var hi = moment.unix(_this.history.length > 0 ? _this.history[_this.history.length - 1].period : 0);
             var data = {
-                ver: 13,
-                svrBoundary: moment.unix(DayBoundary_1.getDateBoundary(s.unix())).format("MM/DD hh:mm"),
-                lastTime: _this.time ? _this.time : "not set",
-                lastTimeTm: m.tz('America/Los_Angeles').format('ha:mm z'),
-                isDST: m.isDST(),
-                dayBoundary: _this.time ? DayBoundary_1.getDateBoundary(_this.time) : "not set",
+                ver: 14,
+                histLast: _this.history.length > 0 ? _this.history[_this.history.length - 1].period : 0,
+                histTime: hi.tz('America/Los_Angeles').format('MM/DD'),
+                ltUnix: _this.time ? _this.time : "not set",
+                ltTime: lt.tz('America/Los_Angeles').format('MM/DD hh:mm:ss'),
+                ltBoundary: _this.time ? DayBoundary_1.getDateBoundary(_this.time) : "not set",
             };
             res.status(200).json(data);
         });

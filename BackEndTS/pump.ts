@@ -60,16 +60,16 @@ class Pump {
     // see what we can get from the time
     this.router.get('/time',  (req, res, next) => {
 
-      let m = moment.unix(this.time); // this will not work with PST since it is not taking care of DST
-      let s = moment();
+      let lt = moment.unix(this.time); // this will not work with PST since it is not taking care of DST
+      let hi = moment.unix(this.history.length > 0 ? this.history[this.history.length-1].period : 0);
 
       var data = {
-        ver:   13,
-        svrBoundary: moment.unix(getDateBoundary(s.unix())).format("MM/DD hh:mm"),
-        lastTime: this.time ? this.time : "not set",
-        lastTimeTm:  m.tz('America/Los_Angeles').format('ha:mm z'),
-        isDST: m.isDST(),
-        dayBoundary: this.time ? getDateBoundary(this.time) : "not set",
+        ver:   14,        
+        histLast:     this.history.length > 0 ? this.history[this.history.length-1].period : 0,
+        histTime:     hi.tz('America/Los_Angeles').format('MM/DD'),        
+        ltUnix:       this.time ? this.time : "not set",
+        ltTime:       lt.tz('America/Los_Angeles').format('MM/DD hh:mm:ss'),        
+        ltBoundary:   this.time ? getDateBoundary(this.time) : "not set",
       };
       res.status(200).json(data);
     });
