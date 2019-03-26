@@ -10,7 +10,6 @@
   "author": "ales",
   "license": "MIT",
   "dependencies": {
-    "@types/moment-timezone": "^0.5.12",
     "express": "~4.13.4",
     "http": "0.0.0",
     "moment": "^2.18.1",
@@ -22,7 +21,8 @@
   },
   "devDependencies": {
     "@types/core-js": "^0.9.43",
-    "@types/node": "^8.0.28",
+    "@types/moment-timezone": "^0.5.12",
+    "@types/node": "^8.10.45",
     "@types/promise": "^7.1.30"
   }
 }
