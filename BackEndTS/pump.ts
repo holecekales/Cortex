@@ -27,7 +27,7 @@ class Pump {
   // in memory data retention
   // should be kept in sync between the client and the service
   // is define in the frontend pump.ts for the front end
-  readonly retentionTime: number = 2 * 60 * 60;          // 2 hours in seconds
+  readonly retentionTime: number = 2 * 60 * 60;     // 2 hours in seconds
   readonly maxLen: number = this.retentionTime / 2; // 3600
 
   // variables used to calculate pump cadence and keep
@@ -93,6 +93,9 @@ class Pump {
       let p = this;
       ws.on('message', function (msg) {
         p.rcvData(msg);
+      });
+      ws.on('error',  (err) => {
+        console.log("socket error: ", err);
       });
     });
 

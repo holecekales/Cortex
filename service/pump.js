@@ -76,6 +76,9 @@ var Pump = (function () {
             ws.on('message', function (msg) {
                 p.rcvData(msg);
             });
+            ws.on('error', function (err) {
+                console.log("socket error: ", err);
+            });
         });
         // this is only for internal debugging
         // (Hacky) Workaround for environment variable for debugging
