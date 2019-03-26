@@ -191,7 +191,7 @@ class Pump {
     let eventDay: number = getDateBoundary(time); 
 
     // did we move 24 hours (in seconds) forward?
-    if (eventDay > (period + 24 * 60 * 60)) {
+    if (eventDay > period) {
       console.log(">>> Starting new period:", eventDay, "<<<")
       // we're in the next day store the stats and reset counter
       this.history.push({ period: eventDay, count: 1 });
