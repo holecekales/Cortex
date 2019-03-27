@@ -242,9 +242,7 @@ interface HistoryUpate {
         }
       }
     });
-
     this.historyChart.canvas.parentNode.style.height = '60px';
-
   }
 
   
@@ -256,7 +254,7 @@ interface HistoryUpate {
     this.initChart();
     this.getBaseData();
     this.updateWatchdog = window.setInterval(() => { this.luTile(); }, 1000);
-    let valTail = document.querySelector("#three");
+    let valTail = document.querySelector("#seven");
     valTail.addEventListener('click', (event) =>{
       this.switchUnits();     
     });
@@ -475,7 +473,7 @@ interface HistoryUpate {
   // -------------------------------------------------------------------------
   // Update pumpOutTile
   // -------------------------------------------------------------------------
-  updatePumpOutTile (pumpsPerDay : number)
+  dailyTotalTile (pumpsPerDay : number)
   {
     let liters: number    = this.getVolume(pumpsPerDay);
     let gallons: number   = this.getVolume(pumpsPerDay);
@@ -505,7 +503,7 @@ interface HistoryUpate {
 
       // calculate how many gallons a day 
       let pumpsPerDay = (60 / cadence) * 24;
-      this.updatePumpOutTile(pumpsPerDay);
+      this.dailyTotalTile(pumpsPerDay);
     }
   }
 
@@ -613,6 +611,12 @@ interface HistoryUpate {
       this.historyChart.options.scales.xAxes[0].time.unit = 'day';
     else  
       this.historyChart.options.scales.xAxes[0].time.unit = 'month';
+
+    if(len > 0)
+    {  
+      let pumpsPerDay = hist[len-1].count;
+      this.dailyTotalTile(pumpsPerDay);
+    }
 
     this.historyChart.update();
   }

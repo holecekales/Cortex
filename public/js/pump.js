@@ -214,7 +214,7 @@ var Pump = (function () {
         this.initChart();
         this.getBaseData();
         this.updateWatchdog = window.setInterval(function () { _this.luTile(); }, 1000);
-        var valTail = document.querySelector("#three");
+        var valTail = document.querySelector("#seven");
         valTail.addEventListener('click', function (event) {
             _this.switchUnits();
         });
@@ -386,7 +386,7 @@ var Pump = (function () {
     // -------------------------------------------------------------------------
     // Update pumpOutTile
     // -------------------------------------------------------------------------
-    Pump.prototype.updatePumpOutTile = function (pumpsPerDay) {
+    Pump.prototype.dailyTotalTile = function (pumpsPerDay) {
         var liters = this.getVolume(pumpsPerDay);
         var gallons = this.getVolume(pumpsPerDay);
         // i am using floor, since the bucket is not cylinder anyway
@@ -409,7 +409,7 @@ var Pump = (function () {
             tileValue.innerText = (cadence).toString();
             // calculate how many gallons a day 
             var pumpsPerDay = (60 / cadence) * 24;
-            this.updatePumpOutTile(pumpsPerDay);
+            this.dailyTotalTile(pumpsPerDay);
         }
     };
     // -------------------------------------------------------------------------
@@ -501,6 +501,10 @@ var Pump = (function () {
             this.historyChart.options.scales.xAxes[0].time.unit = 'day';
         else
             this.historyChart.options.scales.xAxes[0].time.unit = 'month';
+        if (len > 0) {
+            var pumpsPerDay = hist[len - 1].count;
+            this.dailyTotalTile(pumpsPerDay);
+        }
         this.historyChart.update();
     };
     // -------------------------------------------------------------------------

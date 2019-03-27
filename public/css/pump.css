@@ -29,7 +29,7 @@
 }
 
 #three {
-  grid-column:  1 / 3;
+  grid-column:  1 / 1;
   grid-row:     2 / 2;
 }
 
@@ -48,6 +48,13 @@
   grid-row:     4 / 5;
  
 }
+
+#seven {
+  grid-column:  2 / 2;
+  grid-row:     2 / 2;
+ 
+}
+
 
 .noTxtSelect   {
 -moz-user-select: none;       /* Firefox */
@@ -237,4 +244,15 @@ user-select: none;            /* standard  */
 
 .tile.chartGray .label {
   color: #868686;
+}
+
+/* ------------------ */
+/* Purple Tile           */
+/* ------------------ */
+.tile.purple .widget {
+  background: linear-gradient(to bottom right, #750270, #df49fa);
+}
+
+.tile.purple .label {
+  color: #8d0386;
 }
