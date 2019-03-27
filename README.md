@@ -2,13 +2,10 @@
 
 ## Todo:
 * Some kind of total of something?
-* Make Gallons/m^3 on the tile 
-* Day total + prediction and yearly total
 * Add weather 
   - Temperature
   - Percipitation
 * Look at CSS animation for indicating change
-* add switch between different unit systems
 * What is the way to reload node stuff automatically?
 * What is the proper way to pass environment variable (and on Azure)
 
