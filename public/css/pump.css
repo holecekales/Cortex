@@ -178,7 +178,7 @@ user-select: none;            /* standard  */
 /* Green Tile         */
 /* ------------------ */
 .tile.green .widget {
-  background: linear-gradient(to bottom right, #609931, #87bc27);
+  background: linear-gradient(to bottom right, #48963e, #a7e239);
 }
 
 .tile.green .label {
@@ -255,4 +255,15 @@ user-select: none;            /* standard  */
 
 .tile.purple .label {
   color: #8d0386;
+}
+
+/* ------------------ */
+/* lightblue           */
+/* ------------------ */
+.tile.lightblue .widget {
+  background: linear-gradient(to bottom right, #3f92ad, #ADD8E6);
+}
+
+.tile.lightblue .label {
+  color: #3f92ad;
 }
