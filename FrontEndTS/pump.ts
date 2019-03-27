@@ -156,17 +156,26 @@ interface HistoryUpate {
 
         },
         ]
+      },
+      tooltips: {
+        // Disable the on-canvas tooltip
+        enabled: false,
+      },
+      elements: {
+        point: {
+          radius: 0,
+          hitRadius: 0
+        },
+        line: {
+          borderWidth: 1
+        },
+
       }
     }
 
     //Get the context of the canvas element we want to select
-
     Chart.defaults.global.animation.duration = 0;
-    Chart.defaults.global.elements.point.radius = 0;
-    Chart.defaults.global.elements.point.hitRadius = 3;
-    Chart.defaults.global.elements.line.borderWidth = 1;
-
-
+    
     this.chart = new Chart("myChart", {
       type: 'line',
       data: data,
@@ -198,8 +207,8 @@ interface HistoryUpate {
         scales: {
           xAxes: [{
             type: 'time',
-            // barPercentage: 0.95,
-            // categoryPercentage: 0.7,
+            barPercentage: 0.95,
+            categoryPercentage: 0.7,
             time: {
               unit: 'day', // 'month'
               stepSize: 1,
@@ -215,6 +224,19 @@ interface HistoryUpate {
               suggestedMax: 20
             }
           }]
+        },
+        tooltips: {
+          // Disable the on-canvas tooltip
+          enabled: true,
+          mode: 'index',
+          callbacks: {
+            label: function(tooltipItem, data) {
+              return tooltipItem.yLabel + " == 25 cm" ;
+            },
+            title: function(tooltipItem, data) {
+              return moment(tooltipItem[0].xLabel, "MM/DD/YYYY").format("MMMM D") ;
+            } 
+          }
         }
       }
     });
@@ -515,6 +537,10 @@ interface HistoryUpate {
     }
 
     // set the units for the chart dynamicaly - keep it interesting
+    if(len > 30 && len < 90)
+    {
+      this.historyChart.options.scales.xAxes[0].time.stepSize = 2;
+    }
     if(len < 90)
       this.historyChart.options.scales.xAxes[0].time.unit = 'day';
     else  
