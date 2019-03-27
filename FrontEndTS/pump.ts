@@ -230,8 +230,8 @@ interface HistoryUpate {
           enabled: true,
           mode: 'index',
           callbacks: {
-            label: function(tooltipItem, data) {
-              return tooltipItem.yLabel + " == 25 cm" ;
+            label: (tooltipItem, data) => {
+              return tooltipItem.yLabel + " => " + Math.round(this.getVolume(tooltipItem.yLabel, "m")* 100) / 100  + " m^3" ;
             },
             title: function(tooltipItem, data) {
               return moment(tooltipItem[0].xLabel, "MM/DD/YYYY").format("MMMM D") ;
@@ -417,6 +417,27 @@ interface HistoryUpate {
   // -------------------------------------------------------------------------
   // Update cadence tile with the right number
   // -------------------------------------------------------------------------
+  getVolume(pumpCount: number, units:string = "m") {
+    const pumpDepth: number = 0.10; // in meters
+    const bucketR: number = 0.43 / 2;  // in meters
+    const volume: number = bucketR * bucketR * pumpDepth * 3.14; // in m^3
+    
+    // liters
+    if(units == "l")
+      return volume * pumpCount * 1000;
+
+    // gallons
+    if(units == "g")
+      return volume * pumpCount * 264.172;
+ 
+    // just return cube meters
+    return volume * pumpCount;
+  }
+
+
+  // -------------------------------------------------------------------------
+  // Update cadence tile with the right number
+  // -------------------------------------------------------------------------
   updateCadenceTile(cadence: number) {
 
     // update cadence only if we have successfuly calculated
@@ -430,9 +451,9 @@ interface HistoryUpate {
       let pumpsPerDay = (60 / cadence) * 24;
       const pumpDepth: number = 0.10; // in meters
       const bucketR: number = 0.43 / 2;  // in meters
-      const volume: number = bucketR * bucketR * pumpDepth * 3.14; // in m^3
-      let liters: number = volume * 1000 * pumpsPerDay;
-      let gallons: number = volume * 264.172 * pumpsPerDay;
+      const volume: number  = bucketR * bucketR * pumpDepth * 3.14; // in m^3
+      let liters: number    = this.getVolume(pumpsPerDay, "l");
+      let gallons: number   = this.getVolume(pumpsPerDay, "g");;
 
       // i am using floor, since the bucket is not cylinder anyway
       let litPerDayValue = document.getElementById("litersPerDay");

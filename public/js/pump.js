@@ -69,6 +69,7 @@ var Pump = (function () {
     // Init Chart function
     // -------------------------------------------------------------------------
     Pump.prototype.initChart = function () {
+        var _this = this;
         var data = {
             labels: this.timeData,
             datasets: [
@@ -192,7 +193,7 @@ var Pump = (function () {
                     mode: 'index',
                     callbacks: {
                         label: function (tooltipItem, data) {
-                            return tooltipItem.yLabel + " == 25 cm";
+                            return tooltipItem.yLabel + " => " + Math.round(_this.getVolume(tooltipItem.yLabel, "m") * 100) / 100 + " m^3";
                         },
                         title: function (tooltipItem, data) {
                             return moment(tooltipItem[0].xLabel, "MM/DD/YYYY").format("MMMM D");
@@ -341,6 +342,23 @@ var Pump = (function () {
     // -------------------------------------------------------------------------
     // Update cadence tile with the right number
     // -------------------------------------------------------------------------
+    Pump.prototype.getVolume = function (pumpCount, units) {
+        if (units === void 0) { units = "m"; }
+        var pumpDepth = 0.10; // in meters
+        var bucketR = 0.43 / 2; // in meters
+        var volume = bucketR * bucketR * pumpDepth * 3.14; // in m^3
+        // liters
+        if (units == "l")
+            return volume * pumpCount * 1000;
+        // gallons
+        if (units == "g")
+            return volume * pumpCount * 264.172;
+        // just return cube meters
+        return volume * pumpCount;
+    };
+    // -------------------------------------------------------------------------
+    // Update cadence tile with the right number
+    // -------------------------------------------------------------------------
     Pump.prototype.updateCadenceTile = function (cadence) {
         // update cadence only if we have successfuly calculated
         // we have to have at least 2x empty the bucket (pumping)
@@ -353,8 +371,9 @@ var Pump = (function () {
             var pumpDepth = 0.10; // in meters
             var bucketR = 0.43 / 2; // in meters
             var volume = bucketR * bucketR * pumpDepth * 3.14; // in m^3
-            var liters = volume * 1000 * pumpsPerDay;
-            var gallons = volume * 264.172 * pumpsPerDay;
+            var liters = this.getVolume(pumpsPerDay, "l");
+            var gallons = this.getVolume(pumpsPerDay, "g");
+            ;
             // i am using floor, since the bucket is not cylinder anyway
             var litPerDayValue = document.getElementById("litersPerDay");
             litPerDayValue.innerText = (Math.floor(liters)).toString();
