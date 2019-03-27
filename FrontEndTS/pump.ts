@@ -31,9 +31,9 @@ interface HistoryUpate {
 
 
   // history chart
-
   private historyCount = [];
   private historyChart = null;
+  private total365 = 0;
 
 
   // pump monitoring
@@ -478,6 +478,9 @@ interface HistoryUpate {
     return Math.round(volume * pumpCount * 1000) / 1000 ;
   }
 
+  // -------------------------------------------------------------------------
+  // update daily estimate
+  // -------------------------------------------------------------------------
   updateDailyEstimate(pumpsPerDay : number)
   {
     let volume: number    = this.getVolume(pumpsPerDay);
@@ -490,6 +493,17 @@ interface HistoryUpate {
   // -------------------------------------------------------------------------
   // Update pumpOutTile
   // -------------------------------------------------------------------------
+  updateTotal365(val : number) {
+    let totalSpan = document.querySelector("#total365");
+    let totalHidden = document.querySelector("#total365Hidden");
+    let str  = "Total: " + val + " " + this.getUnitDesctiption(true); 
+    totalSpan.innerHTML = str; 
+    totalHidden.innerHTML = str;
+  }
+
+  // -------------------------------------------------------------------------
+  // Update pumpOutTile
+  // -------------------------------------------------------------------------
   updateDailyTotalTile (pumpsPerDay : number)
   {
     let gallons: number   = this.getVolume(pumpsPerDay);
@@ -497,6 +511,7 @@ interface HistoryUpate {
     galPerDayValue.innerText = gallons.toString();
     let unitsDiv = document.querySelector("#gallonsPerDay + .units");
     unitsDiv.innerHTML = this.getUnitDesctiption(false); 
+    this.updateTotal365(this.getVolume(this.total365));
   }
 
   // -------------------------------------------------------------------------
@@ -599,6 +614,7 @@ interface HistoryUpate {
       this.historyCount[len - 1].y = event.count;
     }
 
+    this.total365 += event.count;
     this.updateDailyTotalTile(event.count);
 
     this.historyChart.update();
@@ -610,9 +626,9 @@ interface HistoryUpate {
   populateHistory(hist: Array<HistoryUpate>) {
 
     let len = hist.length;
-
     for (let i = 0; i < len; i++) {
       this.historyCount.push({ x: hist[i].period * 1000, y: hist[i].count });
+      this.total365 += hist[i].count;
     }
 
     // set the units for the chart dynamicaly - keep it interesting

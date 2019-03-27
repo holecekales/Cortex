@@ -20,6 +20,7 @@ var Pump = (function () {
         // history chart
         this.historyCount = [];
         this.historyChart = null;
+        this.total365 = 0;
         // pump monitoring
         this.lastUpdateTime = 0;
         this.updateWatchdog = 0;
@@ -390,6 +391,9 @@ var Pump = (function () {
         // just return cube meters
         return Math.round(volume * pumpCount * 1000) / 1000;
     };
+    // -------------------------------------------------------------------------
+    // update daily estimate
+    // -------------------------------------------------------------------------
     Pump.prototype.updateDailyEstimate = function (pumpsPerDay) {
         var volume = this.getVolume(pumpsPerDay);
         var litPerDayValue = document.getElementById("dailyEstimate");
@@ -400,12 +404,23 @@ var Pump = (function () {
     // -------------------------------------------------------------------------
     // Update pumpOutTile
     // -------------------------------------------------------------------------
+    Pump.prototype.updateTotal365 = function (val) {
+        var totalSpan = document.querySelector("#total365");
+        var totalHidden = document.querySelector("#total365Hidden");
+        var str = "Total: " + val + " " + this.getUnitDesctiption(true);
+        totalSpan.innerHTML = str;
+        totalHidden.innerHTML = str;
+    };
+    // -------------------------------------------------------------------------
+    // Update pumpOutTile
+    // -------------------------------------------------------------------------
     Pump.prototype.updateDailyTotalTile = function (pumpsPerDay) {
         var gallons = this.getVolume(pumpsPerDay);
         var galPerDayValue = document.getElementById("gallonsPerDay");
         galPerDayValue.innerText = gallons.toString();
         var unitsDiv = document.querySelector("#gallonsPerDay + .units");
         unitsDiv.innerHTML = this.getUnitDesctiption(false);
+        this.updateTotal365(this.getVolume(this.total365));
     };
     // -------------------------------------------------------------------------
     // Update cadence tile with the right number
@@ -493,6 +508,7 @@ var Pump = (function () {
             // which is normally 1
             this.historyCount[len - 1].y = event.count;
         }
+        this.total365 += event.count;
         this.updateDailyTotalTile(event.count);
         this.historyChart.update();
     };
@@ -503,6 +519,7 @@ var Pump = (function () {
         var len = hist.length;
         for (var i = 0; i < len; i++) {
             this.historyCount.push({ x: hist[i].period * 1000, y: hist[i].count });
+            this.total365 += hist[i].count;
         }
         // set the units for the chart dynamicaly - keep it interesting
         if (len > 30 && len < 90) {
