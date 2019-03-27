@@ -214,6 +214,7 @@ var Pump = (function () {
         this.initChart();
         this.getBaseData();
         this.updateWatchdog = window.setInterval(function () { _this.luTile(); }, 1000);
+        // register the unit switcher
         var valTail = document.querySelector("#seven");
         valTail.addEventListener('click', function (event) {
             _this.switchUnits();
@@ -350,10 +351,16 @@ var Pump = (function () {
     Pump.prototype.switchUnits = function () {
         this.unitSelector = (this.unitSelector + 1) % 2;
         // call some updates
+        var len = this.historyCount.length;
+        if (len > 0) {
+            this.updateDailyTotalTile(this.historyCount[len - 1].y);
+        }
         var tileValue = document.getElementById("cadenceValue");
-        // update the text in the tile
-        var cadence = parseInt(tileValue.innerText);
-        this.updateCadenceTile(cadence);
+        if (tileValue) {
+            // update the text in the tile
+            var cadence = parseInt(tileValue.innerText);
+            this.updateCadenceTile(cadence);
+        }
     };
     Pump.prototype.getActiveUnits = function () {
         switch (this.unitSelector) {
@@ -370,7 +377,7 @@ var Pump = (function () {
         return "Meter" + (textOnly ? "^3" : "<sup>3</sup>");
     };
     // -------------------------------------------------------------------------
-    // Update cadence tile with the right number
+    // getVolume
     // -------------------------------------------------------------------------
     Pump.prototype.getVolume = function (pumpCount) {
         var pumpDepth = 0.10; // in meters
@@ -383,15 +390,18 @@ var Pump = (function () {
         // just return cube meters
         return Math.round(volume * pumpCount * 1000) / 1000;
     };
+    Pump.prototype.updateDailyEstimate = function (pumpsPerDay) {
+        var volume = this.getVolume(pumpsPerDay);
+        var litPerDayValue = document.getElementById("dailyEstimate");
+        litPerDayValue.innerText = volume.toString();
+        var unitsDiv = document.querySelector("#dailyEstimate + .units");
+        unitsDiv.innerHTML = this.getUnitDesctiption(false);
+    };
     // -------------------------------------------------------------------------
     // Update pumpOutTile
     // -------------------------------------------------------------------------
-    Pump.prototype.dailyTotalTile = function (pumpsPerDay) {
-        var liters = this.getVolume(pumpsPerDay);
+    Pump.prototype.updateDailyTotalTile = function (pumpsPerDay) {
         var gallons = this.getVolume(pumpsPerDay);
-        // i am using floor, since the bucket is not cylinder anyway
-        var litPerDayValue = document.getElementById("litersPerDay");
-        litPerDayValue.innerText = liters.toString();
         var galPerDayValue = document.getElementById("gallonsPerDay");
         galPerDayValue.innerText = gallons.toString();
         var unitsDiv = document.querySelector("#gallonsPerDay + .units");
@@ -409,7 +419,7 @@ var Pump = (function () {
             tileValue.innerText = (cadence).toString();
             // calculate how many gallons a day 
             var pumpsPerDay = (60 / cadence) * 24;
-            this.dailyTotalTile(pumpsPerDay);
+            this.updateDailyEstimate(pumpsPerDay);
         }
     };
     // -------------------------------------------------------------------------
@@ -483,6 +493,7 @@ var Pump = (function () {
             // which is normally 1
             this.historyCount[len - 1].y = event.count;
         }
+        this.updateDailyTotalTile(event.count);
         this.historyChart.update();
     };
     // -------------------------------------------------------------------------
@@ -503,7 +514,7 @@ var Pump = (function () {
             this.historyChart.options.scales.xAxes[0].time.unit = 'month';
         if (len > 0) {
             var pumpsPerDay = hist[len - 1].count;
-            this.dailyTotalTile(pumpsPerDay);
+            this.updateDailyTotalTile(pumpsPerDay);
         }
         this.historyChart.update();
     };

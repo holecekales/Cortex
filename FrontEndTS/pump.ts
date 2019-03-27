@@ -254,6 +254,8 @@ interface HistoryUpate {
     this.initChart();
     this.getBaseData();
     this.updateWatchdog = window.setInterval(() => { this.luTile(); }, 1000);
+    
+    // register the unit switcher
     let valTail = document.querySelector("#seven");
     valTail.addEventListener('click', (event) =>{
       this.switchUnits();     
@@ -426,10 +428,17 @@ interface HistoryUpate {
   {
     this.unitSelector  =  (this.unitSelector + 1) % 2;
     // call some updates
+    let len = this.historyCount.length;
+    if(len > 0) {
+      this.updateDailyTotalTile(this.historyCount[len-1].y);
+    }
     let tileValue = document.getElementById("cadenceValue");
-    // update the text in the tile
-    let cadence = parseInt(tileValue.innerText); 
-    this.updateCadenceTile(cadence);
+    if(tileValue)
+    {
+      // update the text in the tile
+      let cadence = parseInt(tileValue.innerText); 
+      this.updateCadenceTile(cadence);
+    }
   }
 
   getActiveUnits() 
@@ -453,7 +462,7 @@ interface HistoryUpate {
   } 
 
   // -------------------------------------------------------------------------
-  // Update cadence tile with the right number
+  // getVolume
   // -------------------------------------------------------------------------
   getVolume(pumpCount: number) {
     const pumpDepth: number = 0.10; // in meters
@@ -469,24 +478,25 @@ interface HistoryUpate {
     return Math.round(volume * pumpCount * 1000) / 1000 ;
   }
 
+  updateDailyEstimate(pumpsPerDay : number)
+  {
+    let volume: number    = this.getVolume(pumpsPerDay);
+    let litPerDayValue = document.getElementById("dailyEstimate");
+    litPerDayValue.innerText = volume.toString();
+    let unitsDiv = document.querySelector("#dailyEstimate + .units");
+    unitsDiv.innerHTML = this.getUnitDesctiption(false); 
+  }
 
   // -------------------------------------------------------------------------
   // Update pumpOutTile
   // -------------------------------------------------------------------------
-  dailyTotalTile (pumpsPerDay : number)
+  updateDailyTotalTile (pumpsPerDay : number)
   {
-    let liters: number    = this.getVolume(pumpsPerDay);
     let gallons: number   = this.getVolume(pumpsPerDay);
-
-    // i am using floor, since the bucket is not cylinder anyway
-    let litPerDayValue = document.getElementById("litersPerDay");
-    litPerDayValue.innerText = liters.toString();
-
     let galPerDayValue = document.getElementById("gallonsPerDay");
     galPerDayValue.innerText = gallons.toString();
     let unitsDiv = document.querySelector("#gallonsPerDay + .units");
     unitsDiv.innerHTML = this.getUnitDesctiption(false); 
-
   }
 
   // -------------------------------------------------------------------------
@@ -503,7 +513,7 @@ interface HistoryUpate {
 
       // calculate how many gallons a day 
       let pumpsPerDay = (60 / cadence) * 24;
-      this.dailyTotalTile(pumpsPerDay);
+      this.updateDailyEstimate(pumpsPerDay);
     }
   }
 
@@ -588,6 +598,9 @@ interface HistoryUpate {
       // which is normally 1
       this.historyCount[len - 1].y = event.count;
     }
+
+    this.updateDailyTotalTile(event.count);
+
     this.historyChart.update();
   }
 
@@ -615,7 +628,7 @@ interface HistoryUpate {
     if(len > 0)
     {  
       let pumpsPerDay = hist[len-1].count;
-      this.dailyTotalTile(pumpsPerDay);
+      this.updateDailyTotalTile(pumpsPerDay);
     }
 
     this.historyChart.update();
