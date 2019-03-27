@@ -256,10 +256,16 @@ interface HistoryUpate {
     this.updateWatchdog = window.setInterval(() => { this.luTile(); }, 1000);
     
     // register the unit switcher
-    let valTail = document.querySelector("#seven");
-    valTail.addEventListener('click', (event) =>{
+    let elem = document.querySelector("#seven");
+    elem.addEventListener('click', (event) =>{
       this.switchUnits();     
     });
+    
+    elem = document.querySelector("#three");
+    elem.addEventListener('click', (event) =>{
+      this.switchUnits();     
+    });
+
   }
 
   // -------------------------------------------------------------------------

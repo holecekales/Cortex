@@ -216,8 +216,12 @@ var Pump = (function () {
         this.getBaseData();
         this.updateWatchdog = window.setInterval(function () { _this.luTile(); }, 1000);
         // register the unit switcher
-        var valTail = document.querySelector("#seven");
-        valTail.addEventListener('click', function (event) {
+        var elem = document.querySelector("#seven");
+        elem.addEventListener('click', function (event) {
+            _this.switchUnits();
+        });
+        elem = document.querySelector("#three");
+        elem.addEventListener('click', function (event) {
             _this.switchUnits();
         });
     };
