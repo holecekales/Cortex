@@ -9,6 +9,7 @@ The simple app that helps me monitor it on running as a node app on [Azure](http
 * Add weather 
   - Temperature
   - Percipitation
+* Send weather updates to the client and chart
 
 ## Learn about: 
 * Look at CSS animation for indicating change
