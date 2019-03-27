@@ -5,11 +5,10 @@ Needed to install sump pump under my house. Since i don't want to get my basemen
 The simple app that helps me monitor it on running as a node app on [Azure](http://homecortex.azurewebsites.net)
 
 ## Todo:
-* Some kind of total of something?
+* Load the API Key for the darksky from a file so it is not in github
 * Add weather 
   - Temperature
   - Percipitation
-
 
 ## Learn about: 
 * Look at CSS animation for indicating change
@@ -18,9 +17,8 @@ The simple app that helps me monitor it on running as a node app on [Azure](http
 
 **Critical Fixes**
 * I need to get a cert for WSS? (https and wss)
-* Load the API Key for the darksky from a file so it is not in github
 * Let's make sure that to catalog the password and API key somewhere
-* UPgrade node
+* Upgrade node
 * Figure out how the dependencies work and see if we can update them all
 
 **Backend error handling**
