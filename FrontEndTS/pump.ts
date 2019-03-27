@@ -260,7 +260,7 @@ interface HistoryUpate {
     elem.addEventListener('click', (event) =>{
       this.switchUnits();     
     });
-    
+
     elem = document.querySelector("#three");
     elem.addEventListener('click', (event) =>{
       this.switchUnits();     
@@ -517,6 +517,7 @@ interface HistoryUpate {
     galPerDayValue.innerText = gallons.toString();
     let unitsDiv = document.querySelector("#gallonsPerDay + .units");
     unitsDiv.innerHTML = this.getUnitDesctiption(false); 
+    // also update the 365 total
     this.updateTotal365(this.getVolume(this.total365));
   }
 

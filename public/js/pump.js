@@ -424,6 +424,7 @@ var Pump = (function () {
         galPerDayValue.innerText = gallons.toString();
         var unitsDiv = document.querySelector("#gallonsPerDay + .units");
         unitsDiv.innerHTML = this.getUnitDesctiption(false);
+        // also update the 365 total
         this.updateTotal365(this.getVolume(this.total365));
     };
     // -------------------------------------------------------------------------
