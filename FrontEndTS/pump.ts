@@ -49,6 +49,8 @@ interface HistoryUpate {
   private diagramReady: boolean = false;
   private lastLevel: number = 0.1;
 
+  private unitSelector : number = 0;
+
   constructor() { };
 
   // -------------------------------------------------------------------------
@@ -231,10 +233,10 @@ interface HistoryUpate {
           mode: 'index',
           callbacks: {
             label: (tooltipItem, data) => {
-              return tooltipItem.yLabel + " => " + Math.round(this.getVolume(tooltipItem.yLabel, "m")* 100) / 100  + " m^3" ;
+              return tooltipItem.yLabel + " => " + this.getVolume(tooltipItem.yLabel) + " " + this.getUnitDesctiption(true);
             },
             title: function(tooltipItem, data) {
-              return moment(tooltipItem[0].xLabel, "MM/DD/YYYY").format("MMMM D") ;
+              return moment(tooltipItem[0].xLabel, "MMM DD YYYY").format("MMMM D") ;
             } 
           }
         }
@@ -245,6 +247,7 @@ interface HistoryUpate {
 
   }
 
+  
   // -------------------------------------------------------------------------
   // init
   // -------------------------------------------------------------------------
@@ -253,6 +256,10 @@ interface HistoryUpate {
     this.initChart();
     this.getBaseData();
     this.updateWatchdog = window.setInterval(() => { this.luTile(); }, 1000);
+    let valTail = document.querySelector("#three");
+    valTail.addEventListener('click', (event) =>{
+      this.switchUnits();     
+    });
   }
 
   // -------------------------------------------------------------------------
@@ -413,27 +420,76 @@ interface HistoryUpate {
     let unitElem = <HTMLElement>document.querySelector("#lastUpdateTile .units");
     unitElem.innerText = u;
   }
+  
+  // -------------------------------------------------------------------------
+  // switchUnits (si/m3/l)
+  // -------------------------------------------------------------------------
+  switchUnits()
+  {
+    this.unitSelector  =  (this.unitSelector + 1) % 2;
+    // call some updates
+    let tileValue = document.getElementById("cadenceValue");
+    // update the text in the tile
+    let cadence = parseInt(tileValue.innerText); 
+    this.updateCadenceTile(cadence);
+  }
+
+  getActiveUnits() 
+  {
+    switch(this.unitSelector)
+    {
+      case 0: return "l";
+      case 1: return "g";
+    }
+
+    return "m";
+  }
+
+  getUnitDesctiption(textOnly : boolean) {
+    switch(this.unitSelector)
+    {
+      case 0: return "Liters";
+      case 1: return "Gallons";
+    }
+    return "Meter" + (textOnly ? "^3" : "<sup>3</sup>");
+  } 
 
   // -------------------------------------------------------------------------
   // Update cadence tile with the right number
   // -------------------------------------------------------------------------
-  getVolume(pumpCount: number, units:string = "m") {
+  getVolume(pumpCount: number) {
     const pumpDepth: number = 0.10; // in meters
     const bucketR: number = 0.43 / 2;  // in meters
     const volume: number = bucketR * bucketR * pumpDepth * 3.14; // in m^3
     
-    // liters
-    if(units == "l")
-      return volume * pumpCount * 1000;
+    switch(this.unitSelector) {
+      case 0: return Math.floor(volume * pumpCount * 1000);       // liters 
+      case 1: return Math.floor(volume * pumpCount * 264.172);    // gallons
+    }
 
-    // gallons
-    if(units == "g")
-      return volume * pumpCount * 264.172;
- 
     // just return cube meters
-    return volume * pumpCount;
+    return Math.round(volume * pumpCount * 1000) / 1000 ;
   }
 
+
+  // -------------------------------------------------------------------------
+  // Update pumpOutTile
+  // -------------------------------------------------------------------------
+  updatePumpOutTile (pumpsPerDay : number)
+  {
+    let liters: number    = this.getVolume(pumpsPerDay);
+    let gallons: number   = this.getVolume(pumpsPerDay);
+
+    // i am using floor, since the bucket is not cylinder anyway
+    let litPerDayValue = document.getElementById("litersPerDay");
+    litPerDayValue.innerText = liters.toString();
+
+    let galPerDayValue = document.getElementById("gallonsPerDay");
+    galPerDayValue.innerText = gallons.toString();
+    let unitsDiv = document.querySelector("#gallonsPerDay + .units");
+    unitsDiv.innerHTML = this.getUnitDesctiption(false); 
+
+  }
 
   // -------------------------------------------------------------------------
   // Update cadence tile with the right number
@@ -449,23 +505,14 @@ interface HistoryUpate {
 
       // calculate how many gallons a day 
       let pumpsPerDay = (60 / cadence) * 24;
-      const pumpDepth: number = 0.10; // in meters
-      const bucketR: number = 0.43 / 2;  // in meters
-      const volume: number  = bucketR * bucketR * pumpDepth * 3.14; // in m^3
-      let liters: number    = this.getVolume(pumpsPerDay, "l");
-      let gallons: number   = this.getVolume(pumpsPerDay, "g");;
-
-      // i am using floor, since the bucket is not cylinder anyway
-      let litPerDayValue = document.getElementById("litersPerDay");
-      litPerDayValue.innerText = (Math.floor(liters)).toString();
-
-      let galPerDayValue = document.getElementById("gallonsPerDay");
-      galPerDayValue.innerText = (Math.floor(gallons)).toString();
+      this.updatePumpOutTile(pumpsPerDay);
     }
   }
 
-  updateMonTitle(time : number)
-  {
+  // -------------------------------------------------------------------------
+  // update the time of the last pumpout in the monitoring tile
+  // -------------------------------------------------------------------------
+  updateMonTitle(time : number) {
     let title = <HTMLElement>document.querySelector('#updateTime > span');
     title.innerText = moment.unix(time).format('HH:mm');
   }
