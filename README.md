@@ -16,7 +16,7 @@ The simple app that helps me monitor it on running as a node app on [Azure](http
 * What is the proper way to pass environment variable (and on Azure)
 
 **Critical Fixes**
-* I need to get a cert for WSS? (https and wss)
+* I need to get a cert for WSS? (https and wss) or see if we can upgrade the socket
 * Let's make sure that to catalog the password and API key somewhere
 * Upgrade node
 * Figure out how the dependencies work and see if we can update them all
@@ -27,11 +27,12 @@ The simple app that helps me monitor it on running as a node app on [Azure](http
   Can i get this going for the socket?
 
 **Firmware update needed**
-* Get device alarm going
-* Get better reconnection mechanics for the device
+* Get buzzer  going
 * Get reset going (if needed)
-* Reduce the frequency of updates?
 * Get some LED indication of the state
+  - connected
+  - connecting
+  - connction failed
 
 **HW section**
 * Pump - install auxiliary pump?
