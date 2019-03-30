@@ -272,8 +272,7 @@ class Pump {
 
     fs.writeFile('appState.json', JSON.stringify(state), 'utf8', (err) => {
       if (err) {
-        console.error('State save failed at', moment().format('YYYY-MM-DD H:mm'));
-        // i don't know if i want to throw here - it will tear the service down??
+        console.error('State save failed at', moment().format('YYYY-MM-DD H:mm'), "with error", err);
       }
     });
   }
@@ -336,7 +335,7 @@ class Pump {
 
             // for debugging purposes only - so we can display the log message
             let addEventCount = Math.round((now - (this.time + ins)) / ins);
-            console.log("Onload: Synthetically adding", addEventCount, "events.");
+            console.log("Synthetically adding", addEventCount + 0, "events.");
 
             // catch up with the down time, using the previous statistics
             // if lastInterval is set, means that prevPumpTime must be set as well!
@@ -345,6 +344,13 @@ class Pump {
               this.recordEvent(t);
             }
           }
+          else{
+            // just for debugging purposes.
+            // we could re-calculete the iterval from the samples.  
+            console.log("Time offset =", now-this.time, "s.");
+            console.log("Interval 0. No events can be added!");
+          }
+          
           // if there is a risk of significantly skewing the samples
           // require lastInterval 
           let timeDiff = now - this.time;
@@ -354,7 +360,7 @@ class Pump {
           if (timeDiff > Math.max(this.interval * 60, 600)) {
             this.time = 0;
             this.interval = 0;
-            console.log("Onload: time and interval stale -> reset");
+            console.log("Time and interval stale -> reset");
           }
 
           // fixing up a file!
@@ -362,7 +368,7 @@ class Pump {
           for (let x=0; x < this.history.length; x++)
           {
             let sod = getDateBoundary(this.history[x].period);
-            console.log(x, moment.unix(this.history[x].period).format("MM/DD HH:mm:ss"), this.history[x].count);
+            // console.log(x, moment.unix(this.history[x].period).format("MM/DD HH:mm:ss"), this.history[x].count);
             if(this.history[x].period  != sod)
             {
               console.error("Period not at SOD. idx=", x, ":", this.history[x].period, sod /*, "<- fixed"*/);

@@ -236,7 +236,7 @@ var Pump = (function () {
         };
         fs.writeFile('appState.json', JSON.stringify(state), 'utf8', function (err) {
             if (err) {
-                console.error('State save failed at', moment().format('YYYY-MM-DD H:mm'));
+                console.error('State save failed at', moment().format('YYYY-MM-DD H:mm'), "with error", err);
             }
         });
     };
@@ -286,13 +286,19 @@ var Pump = (function () {
                         var ins = this.interval * 60; // interval in seconds (unix time)
                         // for debugging purposes only - so we can display the log message
                         var addEventCount = Math.round((now - (this.time + ins)) / ins);
-                        console.log("Onload: Synthetically adding", addEventCount, "events.");
+                        console.log("Synthetically adding", addEventCount + 0, "events.");
                         // catch up with the down time, using the previous statistics
                         // if lastInterval is set, means that prevPumpTime must be set as well!
                         for (var t = (this.time + ins); t < now; t += ins) {
                             console.log("Adding event at time: ", t);
                             this.recordEvent(t);
                         }
+                    }
+                    else {
+                        // just for debugging purposes.
+                        // we could re-calculete the iterval from the samples.  
+                        console.log("Time offset =", now - this.time, "s.");
+                        console.log("Interval 0. No events can be added!");
                     }
                     // if there is a risk of significantly skewing the samples
                     // require lastInterval 
@@ -303,12 +309,12 @@ var Pump = (function () {
                     if (timeDiff > Math.max(this.interval * 60, 600)) {
                         this.time = 0;
                         this.interval = 0;
-                        console.log("Onload: time and interval stale -> reset");
+                        console.log("Time and interval stale -> reset");
                     }
                     // fixing up a file!
                     for (var x = 0; x < this.history.length; x++) {
                         var sod = DayBoundary_1.getDateBoundary(this.history[x].period);
-                        console.log(x, moment.unix(this.history[x].period).format("MM/DD HH:mm:ss"), this.history[x].count);
+                        // console.log(x, moment.unix(this.history[x].period).format("MM/DD HH:mm:ss"), this.history[x].count);
                         if (this.history[x].period != sod) {
                             console.error("Period not at SOD. idx=", x, ":", this.history[x].period, sod /*, "<- fixed"*/);
                         }
