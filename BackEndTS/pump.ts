@@ -340,8 +340,8 @@ class Pump {
             let ins = this.interval * 60; // interval in seconds (unix time)
 
             // for debugging purposes only - so we can display the log message
-            let addEventCount = Math.round((now - (this.time + ins)) / ins);
-            console.log("Synthetically adding", addEventCount + 0, "events.");
+            let addEventCount = Math.max(Math.round((now - (this.time + ins)) / ins), 0);
+            console.log("Synthetically adding", addEventCount, "events.");
 
             // catch up with the down time, using the previous statistics
             // if lastInterval is set, means that prevPumpTime must be set as well!
