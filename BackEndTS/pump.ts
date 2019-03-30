@@ -97,6 +97,9 @@ class Pump {
       ws.on('error',  (err) => {
         console.log("socket error: ", err);
       });
+      ws.on('close', (code, reason) => {
+        console.log("Socket closed with code=", code, "reason: ", reason);
+      });
     });
 
     // this is only for internal debugging
@@ -116,6 +119,9 @@ class Pump {
       this.proxysocket.on('error', (err) => {
         console.error(err);
         this.proxysocket.terminate();
+      });
+      this.proxysocket.on('close', (code, reason) => {
+        console.log("Socket closed with code=", code, "reason: ", reason);
       });
     }
   }

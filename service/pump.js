@@ -79,6 +79,9 @@ var Pump = (function () {
             ws.on('error', function (err) {
                 console.log("socket error: ", err);
             });
+            ws.on('close', function (code, reason) {
+                console.log("Socket closed with code=", code, "reason: ", reason);
+            });
         });
         // this is only for internal debugging
         // (Hacky) Workaround for environment variable for debugging
@@ -97,6 +100,9 @@ var Pump = (function () {
             this.proxysocket.on('error', function (err) {
                 console.error(err);
                 _this.proxysocket.terminate();
+            });
+            this.proxysocket.on('close', function (code, reason) {
+                console.log("Socket closed with code=", code, "reason: ", reason);
             });
         }
     }
