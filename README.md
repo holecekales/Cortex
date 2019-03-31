@@ -11,6 +11,54 @@ The simple app that helps me monitor it on running as a node app on [Azure](http
   - Percipitation
 * Send weather updates to the client and chart
 
+
+## Weather Stations
+For monitoring the weather around my house, I am using [APRS (Automatic Position Reporting System)](http://www.aprs.org/aprs.html).
+
+### Good resources:
+1. http://findu.com
+2. https://aprs.fi
+3. [National Weather Service](https://www.weather.gov/)
+4. [Citizen Weather Observer Program](http://wxqa.com/)
+5. [APRS 1.01 specification](http://www.aprs.org/doc/APRS101.PDF)
+6. [APRS wx spec](http://aprs.org/aprs11/spec-wx.txt)
+7. [APRS wx spec new](http://aprs.org/aprs12/weather-new.txt)
+8. [APRSWXNet - learn by example](https://weather.gladstonefamily.net/aprswxnet.html)
+9. [Mini WX Station](https://github.com/IU5HKU/MiniWXStation)
+
+[Here](http://www.findu.com/cgi-bin/wxnear.cgi?zip=98033) are the APRS weather stations currnetly operating near our house (ordered by distance) 
+
+| Call | Distance |
+|:------|----------:|
+|[KE7JL](http://www.findu.com/cgi-bin/wxpage.cgi?call=KE7JL)	  |0.7
+|[KB7HFS](http://www.findu.com/cgi-bin/wxpage.cgi?call=KB7HFS)	|1.3
+|[DW3422](http://www.findu.com/cgi-bin/wxpage.cgi?call=DW3422)	|1.7
+|[CW5022](http://www.findu.com/cgi-bin/wxpage.cgi?call=CW5022)	|1.9
+|[DW6133](http://www.findu.com/cgi-bin/wxpage.cgi?call=DW6133)	|2.5
+|[DW4490](http://www.findu.com/cgi-bin/wxpage.cgi?call=DW4490)	|3.1
+|[EW9877](http://www.findu.com/cgi-bin/wxpage.cgi?call=EW9877)	|3.2
+|[EW7765](http://www.findu.com/cgi-bin/wxpage.cgi?call=EW7765)	|3.3
+|[CW3186](http://www.findu.com/cgi-bin/wxpage.cgi?call=CW3186)	|4.2
+|[EW6795](http://www.findu.com/cgi-bin/wxpage.cgi?call=EW6795)	|4.3
+|[CW0325](http://www.findu.com/cgi-bin/wxpage.cgi?call=CW0325)	|4.4
+|[CW1943](http://www.findu.com/cgi-bin/wxpage.cgi?call=CW1943)	|4.6
+|[FW4756](http://www.findu.com/cgi-bin/wxpage.cgi?call=FW4756)	|5.1
+|[DW0368](http://www.findu.com/cgi-bin/wxpage.cgi?call=DW0368)	|5.2
+|[FW4154](http://www.findu.com/cgi-bin/wxpage.cgi?call=FW4154)	|5.3
+|[CW7386](http://www.findu.com/cgi-bin/wxpage.cgi?call=CW7386)	|5.5
+|[N0XXQ](http://www.findu.com/cgi-bin/wxpage.cgi?call=N0XXQ)	  |5.6
+|[EW2957](http://www.findu.com/cgi-bin/wxpage.cgi?call=EW2957)	|5.8
+|[EW8003](http://www.findu.com/cgi-bin/wxpage.cgi?call=EW8003)	|6.1
+|[CW6259](http://www.findu.com/cgi-bin/wxpage.cgi?call=CW6259)	|6.1
+
+<img src="public/images/wxStationMap.png" width="300px">
+
+[Live map of all the weather stations](https://aprs.fi/#!lat=47.684013&lng=-122.212113)
+
+
+[National Weather Service](https://forecast.weather.gov/MapClick.php?lat=47.67341030000006&lon=-122.20023339999995) forcast for Kirkland, which uses [CW5022](http://www.findu.com/cgi-bin/wxpage.cgi?call=CW5022)	
+
+
 ## Learn about: 
 * Look at CSS animation for indicating change
 * What is the way to reload node stuff automatically?
