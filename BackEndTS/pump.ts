@@ -1,4 +1,5 @@
 var express = require('express');
+var https = require('https');
 
 const WSSocket = require('ws');
 var fs = require('fs');
@@ -124,6 +125,29 @@ class Pump {
         console.log("Socket closed with code=", code, "reason: ", reason);
       });
     }
+
+    this.getwxData();
+  }
+
+
+  // ------------------------------------------------------------
+  // recieve new reading from the device
+  // ------------------------------------------------------------
+  getwxData()
+  {
+    const url = "https://jsonplaceholder.typicode.com/posts/1";
+
+    https.get(url, res => {
+      res.setEncoding("utf8");
+      let body = "";
+      res.on("data", data => {
+        body += data;
+      });
+      res.on("end", () => {
+        body = JSON.parse(body);
+        console.log(body);
+      });
+    });
   }
 
   // ------------------------------------------------------------
