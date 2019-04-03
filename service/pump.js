@@ -1,6 +1,6 @@
 "use strict";
 var express = require('express');
-var https = require('http');
+var https = require('https');
 var WSSocket = require('ws');
 var fs = require('fs');
 var moment = require('moment-timezone');
@@ -106,21 +106,18 @@ var Pump = (function () {
                 console.log("Socket closed with code=", code, "reason: ", reason);
             });
         }
-        
-        // this.getwxData();
+        this.getwxData();
     }
     // ------------------------------------------------------------
     // recieve new reading from the device
     // ------------------------------------------------------------
     Pump.prototype.getwxData = function () {
-
         // goto http://www.findu.com/cgi-bin/rawwx.cgi?call=CW5002&start=1&length=1 to get the weather data
         var options = {
             host: 'www.findu.com',
             path: '/cgi-bin/rawwx.cgi?call=CW5002&start=1&length=1',
             headers: { 'User-Agent': 'Mozilla/5.0' }
-        } ;
- 
+        };
         https.get(options, function (res) {
             res.setEncoding("utf8");
             var body = "";
@@ -128,7 +125,6 @@ var Pump = (function () {
                 body += data;
             });
             res.on("end", function () {
-                // body = JSON.parse(body);
                 console.log(body);
             });
         });

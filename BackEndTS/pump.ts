@@ -59,18 +59,18 @@ class Pump {
     this.router = express.Router();
 
     // see what we can get from the time
-    this.router.get('/time',  (req, res, next) => {
+    this.router.get('/time', (req, res, next) => {
 
       let lt = moment.unix(this.time); // this will not work with PST since it is not taking care of DST
-      let hi = moment.unix(this.history.length > 0 ? this.history[this.history.length-1].period : 0);
+      let hi = moment.unix(this.history.length > 0 ? this.history[this.history.length - 1].period : 0);
 
       var data = {
-        ver:   14,        
-        histLast:     this.history.length > 0 ? this.history[this.history.length-1].period : 0,
-        histTime:     hi.tz('America/Los_Angeles').format('MM/DD'),        
-        ltUnix:       this.time ? this.time : "not set",
-        ltTime:       lt.tz('America/Los_Angeles').format('MM/DD hh:mm:ss'),        
-        ltBoundary:   this.time ? getDateBoundary(this.time) : "not set",
+        ver: 14,
+        histLast: this.history.length > 0 ? this.history[this.history.length - 1].period : 0,
+        histTime: hi.tz('America/Los_Angeles').format('MM/DD'),
+        ltUnix: this.time ? this.time : "not set",
+        ltTime: lt.tz('America/Los_Angeles').format('MM/DD hh:mm:ss'),
+        ltBoundary: this.time ? getDateBoundary(this.time) : "not set",
       };
       res.status(200).json(data);
     });
@@ -95,7 +95,7 @@ class Pump {
       ws.on('message', function (msg) {
         p.rcvData(msg);
       });
-      ws.on('error',  (err) => {
+      ws.on('error', (err) => {
         console.log("socket error: ", err);
       });
       ws.on('close', (code, reason) => {
@@ -133,18 +133,21 @@ class Pump {
   // ------------------------------------------------------------
   // recieve new reading from the device
   // ------------------------------------------------------------
-  getwxData()
-  {
-    const url = "https://jsonplaceholder.typicode.com/posts/1";
+  getwxData() {
+    // goto http://www.findu.com/cgi-bin/rawwx.cgi?call=CW5002&start=1&length=1 to get the weather data
+    var options = {
+      host: 'www.findu.com',
+      path: '/cgi-bin/rawwx.cgi?call=CW5002&start=1&length=1',
+      headers: { 'User-Agent': 'Mozilla/5.0' }
+    };
 
-    https.get(url, res => {
+    https.get(options, function (res) {
       res.setEncoding("utf8");
-      let body = "";
-      res.on("data", data => {
+      var body = "";
+      res.on("data", function (data) {
         body += data;
       });
-      res.on("end", () => {
-        body = JSON.parse(body);
+      res.on("end", function () {
         console.log(body);
       });
     });
@@ -221,7 +224,7 @@ class Pump {
     let period = len == 0 ? 0 : this.history[len - 1].period;
 
     // snap the sample time to a day boundary
-    let eventDay: number = getDateBoundary(time); 
+    let eventDay: number = getDateBoundary(time);
 
     // did we move 24 hours (in seconds) forward?
     if (eventDay > period) {
@@ -374,13 +377,13 @@ class Pump {
               this.recordEvent(t);
             }
           }
-          else{
+          else {
             // just for debugging purposes.
             // we could re-calculete the iterval from the samples.  
-            console.log("Time offset =", now-this.time, "s.");
+            console.log("Time offset =", now - this.time, "s.");
             console.log("Interval 0. No events can be added!");
           }
-          
+
           // if there is a risk of significantly skewing the samples
           // require lastInterval 
           let timeDiff = now - this.time;
@@ -395,12 +398,10 @@ class Pump {
 
           // fixing up a file!
 
-          for (let x=0; x < this.history.length; x++)
-          {
+          for (let x = 0; x < this.history.length; x++) {
             let sod = getDateBoundary(this.history[x].period);
             // console.log(x, moment.unix(this.history[x].period).format("MM/DD HH:mm:ss"), this.history[x].count);
-            if(this.history[x].period  != sod)
-            {
+            if (this.history[x].period != sod) {
               console.error("Period not at SOD. idx=", x, ":", this.history[x].period, sod /*, "<- fixed"*/);
               // this.history[x].period = sod; 
             }
