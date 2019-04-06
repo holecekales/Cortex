@@ -1,30 +1,58 @@
+
+// -------------------------------------------------------
+// wxRecord
+// -------------------------------------------------------
+export class wxRecord {
+  // time
+  timestamp : number;     // unix time
+  // location
+  latitude: number;       // decimal latitude
+  longitude : number;     // decimal longitude 
+  // wind
+  windDir : number;       // degrees
+  windSpeed : number;     // m/s
+  windGust: number;        // m/s
+  // percipitation
+  rain1h: number;         // mm
+  rain24h : number;       // mm
+  rainMidnight : number;  // mm
+  rainRaw : number;       // 
+  snow : number;          // mm
+  // atmospherics
+  temp : number;          // degrees celsius 
+  humidity : number;      // percentage
+  pressure : number;      // pressure mbar (pascal / 100)
+  // sunlight
+  luminosity : number;    // 
+
+  constructor() { }
+}
+
+// -------------------------------------------------------
+// wxParser - parses one record and returns wxRecord
+// -------------------------------------------------------
 export class wxParser {
-  private packet:string = '';
-  private wxInfo : any = {}
-
-  // -------------------------------------------------------
-  // constructor
-  // -------------------------------------------------------
-  constructor(packet:string) {
-    this.packet = packet;
-    this.parse();
-  }
-
+ 
   // -------------------------------------------------------
   // parse - root parser function
   // -------------------------------------------------------
-  private parse() {
-    let msg = this.packet.split('@');
+  static parse(packet:string) : wxRecord {
+    
+    let wxInfo : wxRecord = new wxRecord();
+
+    let msg = packet.split('@');
     let body : string = msg[1];
-    body = this.getTimeStamp(body);
-    body = this.getLocation(body);
-    body = this.getWeather(body);
+    body = this.getTimeStamp(body, wxInfo);
+    body = this.getLocation(body, wxInfo);
+    body = this.getWeather(body, wxInfo);
+
+    return wxInfo;
   }
 
   // -------------------------------------------------------
   // getTimeStamp - parses out the timestamp from the packet
   // -------------------------------------------------------
-  getTimeStamp(body : string) :string {
+  private static getTimeStamp(body : string, wxInfo : wxRecord) :string {
     // regexp to create 5 groups
     // (DD)(hh)(mm)(z)(the rest of the string)
     let re = new RegExp(/^(\d{2})(\d{2})(\d{2})(.)(.*$)/);
@@ -40,7 +68,7 @@ export class wxParser {
                           parseInt(match[2]), // hh
                           parseInt(match[3]), // mm
                           0) / 1000;          // ss
-        this.wxInfo.timestamp = ts;
+        wxInfo.timestamp = ts;
         // return the last group (the remainder of the body)
         return match[5];
       }      
@@ -52,7 +80,7 @@ export class wxParser {
   // -------------------------------------------------------
   // getLocation - parses out the location of the station
   // -------------------------------------------------------
-  getLocation(body : string) :string {
+  private static getLocation(body : string, wxInfo : wxRecord) :string {
     // match (DD)([MM ])(.)(MM)(NS) and then the same thing for lon 
     let re = new RegExp(/^(\d{2})([0-9 ]{2}\.[0-9 ]{2})([NnSs])(?:[\/])(\d{3})([0-9 ]{2}\.[0-9 ]{2})([EeWw])(.*)$/);
     let match = re.exec(body);
@@ -66,16 +94,16 @@ export class wxParser {
       let ew     = match[6];
 
       // convert coordinates to decimal
-      this.wxInfo.latitude  = latDeg + latMin / 60.0;
-      this.wxInfo.longitude = lonDeg + lonMin / 60.0;
+      wxInfo.latitude  = latDeg + latMin / 60.0;
+      wxInfo.longitude = lonDeg + lonMin / 60.0;
 
       // if we're down south we need to negate
       if(ns.toLowerCase() == 's')
-        this.wxInfo.latitude *= -1;
+        wxInfo.latitude *= -1;
       
       // if we're out west we need to negate
       if(ew.toLowerCase() == 'w')
-        this.wxInfo.longitude *= -1;
+        wxInfo.longitude *= -1;
      
       // return the rest of the packet
       return match[7];
@@ -87,7 +115,7 @@ export class wxParser {
   // -------------------------------------------------------
   // weatherDecoder - decode ex info
   // -------------------------------------------------------
-  weatherDecoder(param : string)
+  private static weatherDecoder(param : string, wxInfo : wxRecord)
   {
     const mphTometerps : number = 0.44704;
     const inchTomm : number = 0.254 // 1/100in to mm
@@ -101,43 +129,43 @@ export class wxParser {
 
     switch(param[0]) {
       case "_": // wind direction
-        this.wxInfo.windDir = parseInt(param.substring(1));
+        wxInfo.windDir = parseInt(param.substring(1));
       break;
       case "/": // wind speed
-        this.wxInfo.windSpeed = parseInt(param.substring(1)) * mphTometerps;
+        wxInfo.windSpeed = parseInt(param.substring(1)) * mphTometerps;
       break;
       case "t": 
-        this.wxInfo.temp = (parseFloat(param.substring(1)) - 32) / 1.8;
+        wxInfo.temp = (parseFloat(param.substring(1)) - 32) / 1.8;
       break;
       case "g": // wind gusts
-        this.wxInfo.windGust = parseInt(param.substring(1)) * mphTometerps;
+        wxInfo.windGust = parseInt(param.substring(1)) * mphTometerps;
       break;
       case "r": // rain 1 hour
-        this.wxInfo.rain1h = parseInt(param.substring(1)) * inchTomm;
+        wxInfo.rain1h = parseInt(param.substring(1)) * inchTomm;
       break;
       case "p": // rain last 24 hours
-        this.wxInfo.rain24h = parseInt(param.substring(1)) * inchTomm;
+        wxInfo.rain24h = parseInt(param.substring(1)) * inchTomm;
       break;
       case "P": // rain since midnight
-        this.wxInfo.rainMidnight = parseInt(param.substring(1)) * inchTomm;
+        wxInfo.rainMidnight = parseInt(param.substring(1)) * inchTomm;
       break;
       case "h": // humidity
-        this.wxInfo.humidity = parseInt(param.substring(1)) * mphTometerps;
+        wxInfo.humidity = parseInt(param.substring(1));
       break;
       case "b": // pressure
-        this.wxInfo.pressure = parseFloat(param.substring(1)) / 10.0;
+        wxInfo.pressure = parseFloat(param.substring(1)) / 10.0;
       break;
       case "l": // luminosity
-        this.wxInfo.luminosity = parseInt(param.substring(1)) + 1000;
+        wxInfo.luminosity = parseInt(param.substring(1)) + 1000;
       break;
       case "L": // luminosity
-        this.wxInfo.luminosity = parseInt(param.substring(1));
+        wxInfo.luminosity = parseInt(param.substring(1));
       break;
       case "s": // snow
-        this.wxInfo.snow = parseFloat(param.substring(1)) * 25.4;
+        wxInfo.snow = parseFloat(param.substring(1)) * 25.4;
       break;
       case "#": // rainRaw
-        this.wxInfo.rainRaw = parseInt(param.substring(1));
+        wxInfo.rainRaw = parseInt(param.substring(1));
       break;
       default:
         console.error("Unsupported wx information!");
@@ -149,12 +177,12 @@ export class wxParser {
   // -------------------------------------------------------
   // getWeather - parse out the weather infromation
   // -------------------------------------------------------
-  getWeather(body : string) :string {
+  private static getWeather(body : string, wxInfo : wxRecord) :string {
     let e = /([_\/cSgtrpPlLs#](\d{3}|\.{3})|t-\d{2}|h(\d{2}|\.{2})|b(\d{5}|\.{5})|s(\.\d{2}|\d\.\d|\.{3}))/g
     let last = -1;
     let match : Array<string>;
     while((match = e.exec(body)) != null) {
-      this.weatherDecoder(match[0]);
+      this.weatherDecoder(match[0], wxInfo);
       last = e.lastIndex;
     }
 

@@ -1,14 +1,14 @@
 var http = require('http');
-import { wxParser } from "./wxparser";
+import { wxParser, wxRecord } from "./wxparser";
 
 // -----------------------------------------------------------
 // load and parse weather from findu.com from a give station
 // -----------------------------------------------------------
 export class wxLoader {
 
-  constructor() {
+  private record : Array<wxRecord> = [];
 
-  }
+  constructor() {}
 
   get(station : string) {
      // goto http://www.findu.com/cgi-bin/rawwx.cgi?call=CW5002&start=1&length=1 to get the weather data
@@ -33,11 +33,14 @@ export class wxLoader {
     });
   }
 
-  private process(page : string)
+  process(page : string)
   {
     page = page.replace(/(<.*\s?.*>)/gm, "");
     let match = page.match(/(^\S+)+/gm);
-    let wx = new wxParser(match[0]);
+
+    match.forEach(
+      (rec) =>{ this.record.push(wxParser.parse(rec));}
+    );
   }
 
 

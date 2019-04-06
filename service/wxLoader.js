@@ -6,6 +6,7 @@ var wxparser_1 = require("./wxparser");
 // -----------------------------------------------------------
 var wxLoader = (function () {
     function wxLoader() {
+        this.record = [];
     }
     wxLoader.prototype.get = function (station) {
         // goto http://www.findu.com/cgi-bin/rawwx.cgi?call=CW5002&start=1&length=1 to get the weather data
@@ -28,10 +29,12 @@ var wxLoader = (function () {
         });
     };
     wxLoader.prototype.process = function (page) {
+        var _this = this;
         page = page.replace(/(<.*\s?.*>)/gm, "");
         var match = page.match(/(^\S+)+/gm);
-        var wx = new wxparser_1.wxParser(match[0]);
+        match.forEach(function (rec) { _this.record.push(wxparser_1.wxParser.parse(rec)); });
     };
     return wxLoader;
 }());
 exports.wxLoader = wxLoader;
+//# sourceMappingURL=wxLoader.js.map

@@ -41,3 +41,4 @@ function getDateBoundary(unixTime) {
     return moment.unix(unixTime).tz('America/Los_Angeles').startOf('day').unix();
 }
 exports.getDateBoundary = getDateBoundary;
+//# sourceMappingURL=DayBoundary.js.map

@@ -367,3 +367,4 @@ var Pump = (function () {
     return Pump;
 }());
 module.exports = function (server) { return new Pump(server); };
+//# sourceMappingURL=pump.js.map

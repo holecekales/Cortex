@@ -1,28 +1,35 @@
 "use strict";
+// -------------------------------------------------------
+// wxRecord
+// -------------------------------------------------------
+var wxRecord = (function () {
+    function wxRecord() {
+    }
+    return wxRecord;
+}());
+exports.wxRecord = wxRecord;
+// -------------------------------------------------------
+// wxParser - parses one record and returns wxRecord
+// -------------------------------------------------------
 var wxParser = (function () {
-    // -------------------------------------------------------
-    // constructor
-    // -------------------------------------------------------
-    function wxParser(packet) {
-        this.packet = '';
-        this.wxInfo = {};
-        this.packet = packet;
-        this.parse();
+    function wxParser() {
     }
     // -------------------------------------------------------
     // parse - root parser function
     // -------------------------------------------------------
-    wxParser.prototype.parse = function () {
-        var msg = this.packet.split('@');
+    wxParser.parse = function (packet) {
+        var wxInfo = new wxRecord();
+        var msg = packet.split('@');
         var body = msg[1];
-        body = this.getTimeStamp(body);
-        body = this.getLocation(body);
-        body = this.getWeather(body);
+        body = this.getTimeStamp(body, wxInfo);
+        body = this.getLocation(body, wxInfo);
+        body = this.getWeather(body, wxInfo);
+        return wxInfo;
     };
     // -------------------------------------------------------
     // getTimeStamp - parses out the timestamp from the packet
     // -------------------------------------------------------
-    wxParser.prototype.getTimeStamp = function (body) {
+    wxParser.getTimeStamp = function (body, wxInfo) {
         // regexp to create 5 groups
         // (DD)(hh)(mm)(z)(the rest of the string)
         var re = new RegExp(/^(\d{2})(\d{2})(\d{2})(.)(.*$)/);
@@ -36,7 +43,7 @@ var wxParser = (function () {
                 parseInt(match[2]), // hh
                 parseInt(match[3]), // mm
                 0) / 1000; // ss
-                this.wxInfo.timestamp = ts;
+                wxInfo.timestamp = ts;
                 // return the last group (the remainder of the body)
                 return match[5];
             }
@@ -47,7 +54,7 @@ var wxParser = (function () {
     // -------------------------------------------------------
     // getLocation - parses out the location of the station
     // -------------------------------------------------------
-    wxParser.prototype.getLocation = function (body) {
+    wxParser.getLocation = function (body, wxInfo) {
         // match (DD)([MM ])(.)(MM)(NS) and then the same thing for lon 
         var re = new RegExp(/^(\d{2})([0-9 ]{2}\.[0-9 ]{2})([NnSs])(?:[\/])(\d{3})([0-9 ]{2}\.[0-9 ]{2})([EeWw])(.*)$/);
         var match = re.exec(body);
@@ -60,14 +67,14 @@ var wxParser = (function () {
             var lonMin = parseFloat(match[5]);
             var ew = match[6];
             // convert coordinates to decimal
-            this.wxInfo.latitude = latDeg + latMin / 60.0;
-            this.wxInfo.longitude = lonDeg + lonMin / 60.0;
+            wxInfo.latitude = latDeg + latMin / 60.0;
+            wxInfo.longitude = lonDeg + lonMin / 60.0;
             // if we're down south we need to negate
             if (ns.toLowerCase() == 's')
-                this.wxInfo.latitude *= -1;
+                wxInfo.latitude *= -1;
             // if we're out west we need to negate
             if (ew.toLowerCase() == 'w')
-                this.wxInfo.longitude *= -1;
+                wxInfo.longitude *= -1;
             // return the rest of the packet
             return match[7];
         }
@@ -77,7 +84,7 @@ var wxParser = (function () {
     // -------------------------------------------------------
     // weatherDecoder - decode ex info
     // -------------------------------------------------------
-    wxParser.prototype.weatherDecoder = function (param) {
+    wxParser.weatherDecoder = function (param, wxInfo) {
         var mphTometerps = 0.44704;
         var inchTomm = 0.254; // 1/100in to mm
         console.log(param);
@@ -87,43 +94,43 @@ var wxParser = (function () {
             return;
         switch (param[0]) {
             case "_":
-                this.wxInfo.windDir = parseInt(param.substring(1));
+                wxInfo.windDir = parseInt(param.substring(1));
                 break;
             case "/":
-                this.wxInfo.windSpeed = parseInt(param.substring(1)) * mphTometerps;
+                wxInfo.windSpeed = parseInt(param.substring(1)) * mphTometerps;
                 break;
             case "t":
-                this.wxInfo.temp = (parseFloat(param.substring(1)) - 32) / 1.8;
+                wxInfo.temp = (parseFloat(param.substring(1)) - 32) / 1.8;
                 break;
             case "g":
-                this.wxInfo.windGust = parseInt(param.substring(1)) * mphTometerps;
+                wxInfo.windGust = parseInt(param.substring(1)) * mphTometerps;
                 break;
             case "r":
-                this.wxInfo.rain1h = parseInt(param.substring(1)) * inchTomm;
+                wxInfo.rain1h = parseInt(param.substring(1)) * inchTomm;
                 break;
             case "p":
-                this.wxInfo.rain24h = parseInt(param.substring(1)) * inchTomm;
+                wxInfo.rain24h = parseInt(param.substring(1)) * inchTomm;
                 break;
             case "P":
-                this.wxInfo.rainMidnight = parseInt(param.substring(1)) * inchTomm;
+                wxInfo.rainMidnight = parseInt(param.substring(1)) * inchTomm;
                 break;
             case "h":
-                this.wxInfo.humidity = parseInt(param.substring(1)) * mphTometerps;
+                wxInfo.humidity = parseInt(param.substring(1));
                 break;
             case "b":
-                this.wxInfo.pressure = parseFloat(param.substring(1)) / 10.0;
+                wxInfo.pressure = parseFloat(param.substring(1)) / 10.0;
                 break;
             case "l":
-                this.wxInfo.luminosity = parseInt(param.substring(1)) + 1000;
+                wxInfo.luminosity = parseInt(param.substring(1)) + 1000;
                 break;
             case "L":
-                this.wxInfo.luminosity = parseInt(param.substring(1));
+                wxInfo.luminosity = parseInt(param.substring(1));
                 break;
             case "s":
-                this.wxInfo.snow = parseFloat(param.substring(1)) * 25.4;
+                wxInfo.snow = parseFloat(param.substring(1)) * 25.4;
                 break;
             case "#":
-                this.wxInfo.rainRaw = parseInt(param.substring(1));
+                wxInfo.rainRaw = parseInt(param.substring(1));
                 break;
             default:
                 console.error("Unsupported wx information!");
@@ -133,12 +140,12 @@ var wxParser = (function () {
     // -------------------------------------------------------
     // getWeather - parse out the weather infromation
     // -------------------------------------------------------
-    wxParser.prototype.getWeather = function (body) {
+    wxParser.getWeather = function (body, wxInfo) {
         var e = /([_\/cSgtrpPlLs#](\d{3}|\.{3})|t-\d{2}|h(\d{2}|\.{2})|b(\d{5}|\.{5})|s(\.\d{2}|\d\.\d|\.{3}))/g;
         var last = -1;
         var match;
         while ((match = e.exec(body)) != null) {
-            this.weatherDecoder(match[0]);
+            this.weatherDecoder(match[0], wxInfo);
             last = e.lastIndex;
         }
         if (last == -1) {
@@ -149,3 +156,4 @@ var wxParser = (function () {
     return wxParser;
 }());
 exports.wxParser = wxParser;
+//# sourceMappingURL=wxparser.js.map
