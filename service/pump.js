@@ -6,6 +6,7 @@ var fs = require('fs');
 var moment = require('moment-timezone');
 var util_1 = require('util');
 var DayBoundary_1 = require('./DayBoundary');
+var wxLoader_1 = require('./wxLoader');
 // $$$ Remove the API key!!!
 // https://api.darksky.net/forecast/<APIKey>/47.684830594, -122.18833258,1549756800?exclude=hourly, currently
 // ------------------------------------------------------------------------------------
@@ -39,6 +40,7 @@ var Pump = (function () {
         // holds API key for https://darksky.net/dev
         // is provided during the config state of the service
         this.weatherKey = undefined;
+        this.weather = undefined;
         // read the previous state from disk 
         // (hopefully it is still relevant)
         this.readStateFromDisk();
@@ -106,29 +108,9 @@ var Pump = (function () {
                 console.log("Socket closed with code=", code, "reason: ", reason);
             });
         }
-        this.getwxData();
+        this.weather = new wxLoader_1.wxLoader();
+        this.weather.get('CW5022');
     }
-    // ------------------------------------------------------------
-    // recieve new reading from the device
-    // ------------------------------------------------------------
-    Pump.prototype.getwxData = function () {
-        // goto http://www.findu.com/cgi-bin/rawwx.cgi?call=CW5002&start=1&length=1 to get the weather data
-        var options = {
-            host: 'www.findu.com',
-            path: '/cgi-bin/rawwx.cgi?call=CW5002&start=1&length=1',
-            headers: { 'User-Agent': 'Mozilla/5.0' }
-        };
-        https.get(options, function (res) {
-            res.setEncoding("utf8");
-            var body = "";
-            res.on("data", function (data) {
-                body += data;
-            });
-            res.on("end", function () {
-                console.log(body);
-            });
-        });
-    };
     // ------------------------------------------------------------
     // recieve new reading from the device
     // ------------------------------------------------------------

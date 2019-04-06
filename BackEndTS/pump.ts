@@ -9,6 +9,8 @@ import { isUndefined } from 'util';
 
 import { getDateBoundary } from './DayBoundary';
 
+import { wxLoader } from './wxLoader';
+
 // $$$ Remove the API key!!!
 // https://api.darksky.net/forecast/<APIKey>/47.684830594, -122.18833258,1549756800?exclude=hourly, currently
 
@@ -46,6 +48,7 @@ class Pump {
   // holds API key for https://darksky.net/dev
   // is provided during the config state of the service
   private weatherKey = undefined;
+  private weather = undefined;
 
   // ------------------------------------------------------------
   // construct the Pump object
@@ -126,31 +129,8 @@ class Pump {
       });
     }
 
-    this.getwxData();
-  }
-
-
-  // ------------------------------------------------------------
-  // recieve new reading from the device
-  // ------------------------------------------------------------
-  getwxData() {
-    // goto http://www.findu.com/cgi-bin/rawwx.cgi?call=CW5002&start=1&length=1 to get the weather data
-    var options = {
-      host: 'www.findu.com',
-      path: '/cgi-bin/rawwx.cgi?call=CW5002&start=1&length=1',
-      headers: { 'User-Agent': 'Mozilla/5.0' }
-    };
-
-    https.get(options, function (res) {
-      res.setEncoding("utf8");
-      var body = "";
-      res.on("data", function (data) {
-        body += data;
-      });
-      res.on("end", function () {
-        console.log(body);
-      });
-    });
+    this.weather = new wxLoader(); 
+    this.weather.get('CW5022');
   }
 
   // ------------------------------------------------------------
