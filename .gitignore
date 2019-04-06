@@ -3,6 +3,7 @@ logs/
 log.txt
 .vscode/
 npm-debug.log
+service/*.map
 
 datafile.db
 data.json
