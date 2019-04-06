@@ -67,7 +67,7 @@ class Pump {
       let lt = moment.unix(this.time); // this will not work with PST since it is not taking care of DST
       let hi = moment.unix(this.history.length > 0 ? this.history[this.history.length - 1].period : 0);
 
-      var data = {
+      let data = {
         ver: 14,
         histLast: this.history.length > 0 ? this.history[this.history.length - 1].period : 0,
         histTime: hi.tz('America/Los_Angeles').format('MM/DD'),
