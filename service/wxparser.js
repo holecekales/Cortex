@@ -2,44 +2,41 @@
 // -------------------------------------------------------
 // wxRecord
 // -------------------------------------------------------
-var wxRecord = (function () {
-    function wxRecord() {
+class wxRecord {
+    constructor() {
     }
-    return wxRecord;
-}());
+}
 exports.wxRecord = wxRecord;
 // -------------------------------------------------------
 // wxParser - parses one record and returns wxRecord
 // -------------------------------------------------------
-var wxParser = (function () {
-    function wxParser() {
-    }
+class wxParser {
     // -------------------------------------------------------
     // parse - root parser function
     // -------------------------------------------------------
-    wxParser.parse = function (packet) {
-        var wxInfo = new wxRecord();
-        var msg = packet.split('@');
-        var body = msg[1];
+    static parse(packet) {
+        let wxInfo = new wxRecord();
+        let msg = packet.split('@');
+        let body = msg[1];
         body = this.getTimeStamp(body, wxInfo);
         body = this.getLocation(body, wxInfo);
         body = this.getWeather(body, wxInfo);
         return wxInfo;
-    };
+    }
     // -------------------------------------------------------
     // getTimeStamp - parses out the timestamp from the packet
     // -------------------------------------------------------
-    wxParser.getTimeStamp = function (body, wxInfo) {
+    static getTimeStamp(body, wxInfo) {
         // regexp to create 5 groups
         // (DD)(hh)(mm)(z)(the rest of the string)
-        var re = new RegExp(/^(\d{2})(\d{2})(\d{2})(.)(.*$)/);
-        var match = re.exec(body);
+        let re = new RegExp(/^(\d{2})(\d{2})(\d{2})(.)(.*$)/);
+        let match = re.exec(body);
         // if we found a match.
         if (match) {
-            var now = new Date();
+            let now = new Date();
             if (match[4] == 'z') {
                 // convert this into UTC Unix timestamp
-                var ts = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), parseInt(match[1]), // DD
+                let ts = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), parseInt(match[1]), // DD
                 parseInt(match[2]), // hh
                 parseInt(match[3]), // mm
                 0) / 1000; // ss
@@ -50,22 +47,22 @@ var wxParser = (function () {
         }
         console.error("Unsupported time format!");
         return ""; // error and return empty
-    };
+    }
     // -------------------------------------------------------
     // getLocation - parses out the location of the station
     // -------------------------------------------------------
-    wxParser.getLocation = function (body, wxInfo) {
+    static getLocation(body, wxInfo) {
         // match (DD)([MM ])(.)(MM)(NS) and then the same thing for lon 
-        var re = new RegExp(/^(\d{2})([0-9 ]{2}\.[0-9 ]{2})([NnSs])(?:[\/])(\d{3})([0-9 ]{2}\.[0-9 ]{2})([EeWw])(.*)$/);
-        var match = re.exec(body);
+        let re = new RegExp(/^(\d{2})([0-9 ]{2}\.[0-9 ]{2})([NnSs])(?:[\/])(\d{3})([0-9 ]{2}\.[0-9 ]{2})([EeWw])(.*)$/);
+        let match = re.exec(body);
         if (match) {
             // extract the numbers
-            var latDeg = parseInt(match[1]);
-            var latMin = parseFloat(match[2]);
-            var ns = match[3];
-            var lonDeg = parseInt(match[4]);
-            var lonMin = parseFloat(match[5]);
-            var ew = match[6];
+            let latDeg = parseInt(match[1]);
+            let latMin = parseFloat(match[2]);
+            let ns = match[3];
+            let lonDeg = parseInt(match[4]);
+            let lonMin = parseFloat(match[5]);
+            let ew = match[6];
             // convert coordinates to decimal
             wxInfo.latitude = latDeg + latMin / 60.0;
             wxInfo.longitude = lonDeg + lonMin / 60.0;
@@ -80,13 +77,13 @@ var wxParser = (function () {
         }
         console.error("Unsupported location format!");
         return "";
-    };
+    }
     // -------------------------------------------------------
     // weatherDecoder - decode ex info
     // -------------------------------------------------------
-    wxParser.weatherDecoder = function (param, wxInfo) {
-        var mphTometerps = 0.44704;
-        var inchTomm = 0.254; // 1/100in to mm
+    static weatherDecoder(param, wxInfo) {
+        const mphTometerps = 0.44704;
+        const inchTomm = 0.254; // 1/100in to mm
         //console.log(param);
         // make sure that this is not param 
         // with undefined value
@@ -136,14 +133,14 @@ var wxParser = (function () {
                 console.error("Unsupported wx information!");
                 break;
         }
-    };
+    }
     // -------------------------------------------------------
     // getWeather - parse out the weather infromation
     // -------------------------------------------------------
-    wxParser.getWeather = function (body, wxInfo) {
-        var e = /([_\/cSgtrpPlLs#](\d{3}|\.{3})|t-\d{2}|h(\d{2}|\.{2})|b(\d{5}|\.{5})|s(\.\d{2}|\d\.\d|\.{3}))/g;
-        var last = -1;
-        var match;
+    static getWeather(body, wxInfo) {
+        let e = /([_\/cSgtrpPlLs#](\d{3}|\.{3})|t-\d{2}|h(\d{2}|\.{2})|b(\d{5}|\.{5})|s(\.\d{2}|\d\.\d|\.{3}))/g;
+        let last = -1;
+        let match;
         while ((match = e.exec(body)) != null) {
             this.weatherDecoder(match[0], wxInfo);
             last = e.lastIndex;
@@ -152,8 +149,7 @@ var wxParser = (function () {
             console.error("Unsuported weather format!");
         }
         return body.substr(last);
-    };
-    return wxParser;
-}());
+    }
+}
 exports.wxParser = wxParser;
 //# sourceMappingURL=wxparser.js.map

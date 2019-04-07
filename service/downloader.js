@@ -19,23 +19,23 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 function urlGet(options) {
     return __awaiter(this, void 0, void 0, function* () {
         // return new pending promise
-        return new Promise(function (resolve, reject) {
+        return new Promise((resolve, reject) => {
             // select http or https module, depending on reqested url
-            var lib = options.host.startsWith('https') ? require('https') : require('http');
-            var request = lib.get(options, function (response) {
+            const lib = options.host.startsWith('https') ? require('https') : require('http');
+            const request = lib.get(options, (response) => {
                 // handle http errors
                 if (response.statusCode < 200 || response.statusCode > 299) {
                     reject(new Error('Failed to load page, status code: ' + response.statusCode));
                 }
                 // temporary data holder
-                var body = [];
+                const body = [];
                 // on every content chunk, push it to the data array
-                response.on('data', function (chunk) { return body.push(chunk); });
+                response.on('data', (chunk) => body.push(chunk));
                 // we are done, resolve promise with those joined chunks
-                response.on('end', function () { return resolve(body.join('')); });
+                response.on('end', () => resolve(body.join('')));
             });
             // handle connection errors of the request
-            request.on('error', function (err) { return reject(err); });
+            request.on('error', (err) => reject(err));
         });
     });
 }

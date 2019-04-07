@@ -104,7 +104,7 @@ export class wxLoader {
       this.minTemp = Math.round(this.minTemp * 10) / 10;
       this.maxTemp = Math.round(this.maxTemp * 10) / 10;
     }
-    this.rain = this.record.length > 0 ? this.record[len-1].rainMidnight : 0;
+    this.rain = this.record.length > 0 ? Math.round(this.record[len-1].rainMidnight * 10)/10 : 0;
     this.recalc = false;
     // this.dump();
   }

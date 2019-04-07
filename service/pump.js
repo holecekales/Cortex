@@ -1,21 +1,20 @@
 "use strict";
 var express = require('express');
 var https = require('https');
-var WSSocket = require('ws');
+const WSSocket = require('ws');
 var fs = require('fs');
-var moment = require('moment-timezone');
-var util_1 = require('util');
-var DayBoundary_1 = require('./DayBoundary');
-var weather_1 = require('./weather');
+const moment = require('moment-timezone');
+const util_1 = require('util');
+const DayBoundary_1 = require('./DayBoundary');
+const weather_1 = require('./weather');
 // ------------------------------------------------------------------------------------
 // Pump
 // ------------------------------------------------------------------------------------
-var Pump = (function () {
+class Pump {
     // ------------------------------------------------------------
     // construct the Pump object
     // ------------------------------------------------------------
-    function Pump(server) {
-        var _this = this;
+    constructor(server) {
         this.fileVersion = '1.0';
         this.socket = null;
         this.proxysocket = null;
@@ -45,42 +44,42 @@ var Pump = (function () {
         // create and defined routes
         this.router = express.Router();
         // see what we can get from the time
-        this.router.get('/time', function (req, res, next) {
-            var lt = moment.unix(_this.time); // this will not work with PST since it is not taking care of DST
-            var hi = moment.unix(_this.history.length > 0 ? _this.history[_this.history.length - 1].period : 0);
-            var data = {
+        this.router.get('/time', (req, res, next) => {
+            let lt = moment.unix(this.time); // this will not work with PST since it is not taking care of DST
+            let hi = moment.unix(this.history.length > 0 ? this.history[this.history.length - 1].period : 0);
+            let data = {
                 ver: 14,
-                histLast: _this.history.length > 0 ? _this.history[_this.history.length - 1].period : 0,
+                histLast: this.history.length > 0 ? this.history[this.history.length - 1].period : 0,
                 histTime: hi.tz('America/Los_Angeles').format('MM/DD'),
-                ltUnix: _this.time ? _this.time : "not set",
+                ltUnix: this.time ? this.time : "not set",
                 ltTime: lt.tz('America/Los_Angeles').format('MM/DD hh:mm:ss'),
-                ltBoundary: _this.time ? DayBoundary_1.getDateBoundary(_this.time) : "not set",
+                ltBoundary: this.time ? DayBoundary_1.getDateBoundary(this.time) : "not set",
             };
             res.status(200).json(data);
         });
         // if someone calls us return all data in the last
         // 2 hours
-        this.router.use('/', function (req, res, next) {
-            var pumpInfo = {
-                cadence: _this.interval,
-                time: _this.time,
-                history: _this.history,
-                sampleData: _this.sampleData,
+        this.router.use('/', (req, res, next) => {
+            let pumpInfo = {
+                cadence: this.interval,
+                time: this.time,
+                history: this.history,
+                sampleData: this.sampleData,
             };
             res.status(200).json(pumpInfo);
         });
         // create socket
         this.socket = new WSSocket.Server(server);
-        this.socket.on('connection', function (ws, req) {
+        this.socket.on('connection', (ws, req) => {
             console.log('socket connection: ' + ws.protocol);
-            var p = _this;
+            let p = this;
             ws.on('message', function (msg) {
                 p.rcvData(msg);
             });
-            ws.on('error', function (err) {
+            ws.on('error', (err) => {
                 console.log("socket error: ", err);
             });
-            ws.on('close', function (code, reason) {
+            ws.on('close', (code, reason) => {
                 console.log("Socket closed with code=", code, "reason: ", reason);
             });
         });
@@ -90,19 +89,19 @@ var Pump = (function () {
         if (process.env.COMPUTERNAME == "BLUEBIRD") {
             console.log("DEBUGGING ON BLUEBIRD");
             this.proxysocket = new WSSocket('ws://homecortex.azurewebsites.net', 'chart-protocol');
-            this.proxysocket.on('message', function (data) {
+            this.proxysocket.on('message', (data) => {
                 console.log(data);
-                var msg = JSON.parse(data);
-                _this.rcvData(JSON.stringify(msg.reading));
+                let msg = JSON.parse(data);
+                this.rcvData(JSON.stringify(msg.reading));
             });
             this.proxysocket.on('open', function open() {
                 console.log("homecoretex opened");
             });
-            this.proxysocket.on('error', function (err) {
+            this.proxysocket.on('error', (err) => {
                 console.error(err);
-                _this.proxysocket.terminate();
+                this.proxysocket.terminate();
             });
-            this.proxysocket.on('close', function (code, reason) {
+            this.proxysocket.on('close', (code, reason) => {
                 console.log("Socket closed with code=", code, "reason: ", reason);
             });
         }
@@ -110,9 +109,9 @@ var Pump = (function () {
     // ------------------------------------------------------------
     // recieve new reading from the device
     // ------------------------------------------------------------
-    Pump.prototype.rcvData = function (data) {
+    rcvData(data) {
         try {
-            var obj = JSON.parse(data);
+            let obj = JSON.parse(data);
             if (obj.m == "d") {
                 delete obj.m; // the source was device and we'll now get rid of it.
                 obj.l = 55 - obj.l; // the bucket is 55cm deep -> converstion from device
@@ -132,9 +131,9 @@ var Pump = (function () {
                 if (this.sampleData.length > this.maxLen)
                     this.sampleData.shift(); // keep only a 2 days worth of data (sending every 2s)
                 // we will use this to determine day roll over.
-                var histLength = this.history.length;
+                let histLength = this.history.length;
                 // data packet
-                var packet = {
+                let packet = {
                     reading: obj,
                     histUpdate: undefined,
                     time: this.time,
@@ -159,15 +158,15 @@ var Pump = (function () {
             console.log(data);
             console.error(err);
         }
-    };
+    }
     // ------------------------------------------------------------
     // recordEvent - record pumpEvent into the history 
     // ------------------------------------------------------------
-    Pump.prototype.recordEvent = function (time) {
-        var len = this.history.length;
-        var period = len == 0 ? 0 : this.history[len - 1].period;
+    recordEvent(time) {
+        let len = this.history.length;
+        let period = len == 0 ? 0 : this.history[len - 1].period;
         // snap  to a day boundary in PST
-        var eventDay = DayBoundary_1.getDateBoundary(time);
+        let eventDay = DayBoundary_1.getDateBoundary(time);
         // did we move 24 hours (in seconds) forward?
         if (eventDay > period) {
             console.log(">>> Starting new period:", eventDay, "<<<");
@@ -189,25 +188,25 @@ var Pump = (function () {
             this.history[len - 1].temp = this.weather.temp();
             this.history[len - 1].rain = this.weather.rain();
         }
-    };
+    }
     // -----------------------------------------------------------------------------
     // updateMetrics - calculates metrics:
     // * how often is pump pumping
     // * calcualte averages
     // -----------------------------------------------------------------------------
-    Pump.prototype.updateMetrics = function () {
-        var len = this.sampleData.length;
+    updateMetrics() {
+        let len = this.sampleData.length;
         // calculate if the pump kicked in - we need 15 values for the filter
         if (len >= 15) {
-            var rangeFirst = len - 15;
+            let rangeFirst = len - 15;
             // 24 is the level where we typically start pumping
             // if we're at that level (or higher) and if we saw a dip going down, 
             // let's see if we went through pumping
             if (this.sampleData[rangeFirst].l >= 24 && this.sampleData[rangeFirst + 1].l < this.sampleData[rangeFirst].l) {
-                var minRangeLevel = 30;
-                var maxRangeLevel = 0;
+                let minRangeLevel = 30;
+                let maxRangeLevel = 0;
                 // calculate min and max over our range
-                for (var i = rangeFirst; i < len; i++) {
+                for (let i = rangeFirst; i < len; i++) {
                     minRangeLevel = Math.min(minRangeLevel, this.sampleData[i].l);
                     maxRangeLevel = Math.max(maxRangeLevel, this.sampleData[i].l);
                 }
@@ -215,7 +214,7 @@ var Pump = (function () {
                 // than the pump is pumping and we need to update metrics + record the event
                 if (minRangeLevel <= 16 && maxRangeLevel >= 24) {
                     // this is the time of the last device report (unix time)
-                    var time = this.sampleData[len - 1].t;
+                    let time = this.sampleData[len - 1].t;
                     // this may be the first one we're seeing.
                     if (this.time > 0) {
                         // The interval is in minutes. The time on the reports is Unix time 
@@ -231,13 +230,13 @@ var Pump = (function () {
             }
         }
         return false;
-    };
+    }
     // ------------------------------------------------------------
     // write the state of the object to disk, just in case 
     // the service needs to be restarted
     // ------------------------------------------------------------
-    Pump.prototype.writeStateToDisk = function () {
-        var state = {
+    writeStateToDisk() {
+        let state = {
             version: this.fileVersion,
             current: {
                 time: this.time,
@@ -246,27 +245,27 @@ var Pump = (function () {
             history: this.history,
             sampleData: this.sampleData
         };
-        fs.writeFile('appState.json', JSON.stringify(state), 'utf8', function (err) {
+        fs.writeFile('appState.json', JSON.stringify(state), 'utf8', (err) => {
             if (err) {
                 console.error('State save failed at', moment().format('YYYY-MM-DD H:mm'), "with error", err);
             }
         });
-    };
+    }
     // ------------------------------------------------------------
     // evaluate if the file is compatible with runtime
     // ------------------------------------------------------------
-    Pump.prototype.isCompatible = function (v) {
+    isCompatible(v) {
         return v == this.fileVersion;
-    };
+    }
     // ------------------------------------------------------------
     // read the state from the disk so we can restore the operation 
     // ------------------------------------------------------------
-    Pump.prototype.readStateFromDisk = function () {
+    readStateFromDisk() {
         if (fs.existsSync('appState.json')) {
             try {
                 // let config: any = JSON.parse(fs.readFileSync('appConfig.json', 'utf8'));
                 // this.weatherKey = config.weatherKey;
-                var state = JSON.parse(fs.readFileSync('appState.json', 'utf8'));
+                let state = JSON.parse(fs.readFileSync('appState.json', 'utf8'));
                 // check the version of the file if is not the same
                 // then get ignore the contents
                 if (this.isCompatible(state.version)) {
@@ -277,15 +276,15 @@ var Pump = (function () {
                     // this should be really obtained from the device 
                     // or at least from the time service. 
                     // hope the servers have the right time on them
-                    var now = moment().unix();
+                    let now = moment().unix();
                     // through out old data, since they are no more useful
                     // we want to display and track only the last 2 hours.
-                    var len = this.sampleData.length;
-                    var i = 0;
+                    let len = this.sampleData.length;
+                    let i = 0;
                     // find the point in the array when we're older than
                     // 2 hours (log2 would be better)
-                    var sent = 7200; // sentinel for 2 hours in seconds
-                    var delItems = false;
+                    const sent = 7200; // sentinel for 2 hours in seconds
+                    let delItems = false;
                     while ((i < len) && ((now - this.sampleData[i].t) > sent)) {
                         i++;
                         delItems = true;
@@ -295,9 +294,9 @@ var Pump = (function () {
                         this.sampleData.splice(0, Math.min(i + 1, len));
                     }
                     if (this.interval > 0) {
-                        var ins = this.interval * 60; // interval in seconds (unix time)
+                        let ins = this.interval * 60; // interval in seconds (unix time)
                         // for debugging purposes only - so we can display the log message
-                        var addEventCount = Math.max(Math.round((now - (this.time + ins)) / ins), 0);
+                        let addEventCount = Math.max(Math.round((now - (this.time + ins)) / ins), 0);
                         console.log("Synthetically adding", addEventCount, "events.");
                         // catch up with the down time, using the previous statistics
                         // if lastInterval is set, means that prevPumpTime must be set as well!
@@ -315,7 +314,7 @@ var Pump = (function () {
                     }
                     // if there is a risk of significantly skewing the samples
                     // require lastInterval 
-                    var timeDiff = now - this.time;
+                    let timeDiff = now - this.time;
                     // 600 == 10 minutes - which is would be very short pump period
                     // but if we have lastInterval already computed - we should use that
                     // if we have nothing - we have to start over
@@ -325,8 +324,8 @@ var Pump = (function () {
                         console.log("Time and interval stale -> reset");
                     }
                     // fixing up a file!
-                    for (var x = 0; x < this.history.length; x++) {
-                        var sod = DayBoundary_1.getDateBoundary(this.history[x].period);
+                    for (let x = 0; x < this.history.length; x++) {
+                        let sod = DayBoundary_1.getDateBoundary(this.history[x].period);
                         // console.log(x, moment.unix(this.history[x].period).format("MM/DD HH:mm:ss"), this.history[x].count);
                         if (this.history[x].period != sod) {
                             console.error("Period not at SOD. idx=", x, ":", this.history[x].period, sod /*, "<- fixed"*/);
@@ -341,12 +340,12 @@ var Pump = (function () {
         else {
             console.warn('State file does not exist!');
         }
-    };
+    }
     // ------------------------------------------------------------
     // broadcast to all of the clients (browsers)  
     // all clients are listening for updates on chart-protocol
     // ------------------------------------------------------------
-    Pump.prototype.broadcast = function (data, protocol) {
+    broadcast(data, protocol) {
         this.socket.clients.forEach(function each(client) {
             if (client.readyState === WSSocket.OPEN) {
                 try {
@@ -360,13 +359,12 @@ var Pump = (function () {
                 }
             }
         });
-    };
+    }
     ;
     // ------------------------------------------------------------
     // return the express router back to the app  
     // ------------------------------------------------------------
-    Pump.prototype.routes = function () { return this.router; };
-    return Pump;
-}());
-module.exports = function (server) { return new Pump(server); };
+    routes() { return this.router; }
+}
+module.exports = (server) => { return new Pump(server); };
 //# sourceMappingURL=pump.js.map

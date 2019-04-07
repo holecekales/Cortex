@@ -1,9 +1,9 @@
 "use strict";
-var moment = require('moment-timezone');
+const moment = require('moment-timezone');
 // calc the timezone offset without the day light saving 
 function stdTimezoneOffset(m) {
-    var jan = moment([m.year(), 0, 1]);
-    var jul = moment([m.year(), 6, 1]);
+    let jan = moment([m.year(), 0, 1]);
+    let jul = moment([m.year(), 6, 1]);
     return Math.max(-jan.utcOffset(), -jul.utcOffset());
 }
 // determine if we're in day light saving zone
@@ -32,8 +32,8 @@ function isDst(unixTime) {
 function pstOff(unixTime) {
     // let dst = moment.utc().utcOffset(-420).local().isDST();
     // convert to pacific time (since this is where the sensor is)
-    var dst = isDst(unixTime);
-    var mPstOffset = dst ? -7 : -8;
+    let dst = isDst(unixTime);
+    let mPstOffset = dst ? -7 : -8;
     return mPstOffset * 60;
 }
 function getDateBoundary(unixTime) {
