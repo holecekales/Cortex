@@ -111,11 +111,8 @@ interface HistoryUpate {
         {
           label: 'Water Level',
           yAxisID: 'waterlevel',
-          borderColor: "rgba(24, 120, 240, 1)",
-          pointBoarderColor: "rgba(24, 120, 240, 1)",
-          backgroundColor: "rgba(24, 120, 240, 0.4)",
-          pointHoverBackgroundColor: "rgba(24, 120, 240, 1)",
-          pointHoverBorderColor: "rgba(24, 120, 240, 1)",
+          borderColor: "rgba(130, 130, 130, 0.8)",
+          backgroundColor: "rgba(120, 120, 120, 0.4)",
           data: this.level,
           lineTension: 0
         }
@@ -217,7 +214,7 @@ interface HistoryUpate {
           xAxes: [{
             type: 'time',
             barPercentage: 0.95,
-            categoryPercentage: 0.7,
+            categoryPercentage: 0.8,
             time: {
               unit: 'day', // 'month'
               stepSize: 1,
@@ -289,7 +286,7 @@ interface HistoryUpate {
           xAxes: [{
             type: 'time',
             barPercentage: 0.95,
-            categoryPercentage: 0.7,
+            categoryPercentage: 0.8,
             time: {
               unit: 'day', // 'month'
               stepSize: 1,
@@ -318,7 +315,7 @@ interface HistoryUpate {
           }]
         },
         tooltips :{
-          enabled: true;
+          enabled: true,
           intersect: false,
           mode: 'index',
           callbacks: {
