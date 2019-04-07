@@ -255,7 +255,7 @@ interface HistoryUpate {
       datasets: [
         {
           label: "Rainfall",
-          backgroundColor: "rgba(24, 120, 250, 0.6)",
+          backgroundColor: "rgba(24, 120, 250, 0.4)",
           data: this.rainData,
           yAxisID: "rain"
         },
@@ -268,7 +268,7 @@ interface HistoryUpate {
           pointHoverRadius: 0,
           lineTension: 0.4,
           fill: false,
-          borderColor: "rgba(149, 67, 255, 0.75)",
+          borderColor: "rgba(180, 67, 255, 0.9)",
           borderWidth: 2
         }
       ]
