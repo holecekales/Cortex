@@ -106,7 +106,7 @@ export class wxLoader {
     }
     this.rain = this.record.length > 0 ? this.record[len-1].rainMidnight : 0;
     this.recalc = false;
-    this.dump();
+    // this.dump();
   }
 
   dump()

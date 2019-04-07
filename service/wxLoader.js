@@ -104,7 +104,7 @@ var wxLoader = (function () {
         }
         this.rain = this.record.length > 0 ? this.record[len - 1].rainMidnight : 0;
         this.recalc = false;
-        this.dump();
+        // this.dump();
     };
     wxLoader.prototype.dump = function () {
         var last = this.record.length - 1;
