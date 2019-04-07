@@ -51,7 +51,7 @@ class Pump {
 
     // initialize weather. 
     // Since this is async we will start there
-    this.weather.init();
+    this.weather.init(30);
 
     // read the previous state from disk 
     // (hopefully it is still relevant)

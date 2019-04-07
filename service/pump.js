@@ -38,7 +38,7 @@ var Pump = (function () {
         this.weather = new weather_1.Weather("CW5022"); // KE7JL <- closest to the house
         // initialize weather. 
         // Since this is async we will start there
-        this.weather.init();
+        this.weather.init(30);
         // read the previous state from disk 
         // (hopefully it is still relevant)
         this.readStateFromDisk();

@@ -23,15 +23,16 @@ var Weather = (function () {
     // --------------------------------------------------------
     // filter to timestamp
     // --------------------------------------------------------
-    Weather.prototype.init = function () {
+    Weather.prototype.init = function (pollPeriod) {
         return __awaiter(this, void 0, void 0, function* () {
+            if (pollPeriod === void 0) { pollPeriod = 30; }
             var now = moment().unix();
             var mn = DayBoundary_1.getDateBoundary(now);
             // how long since midnight
             var diff = Math.min(Math.round((now - mn) / 3600), 24);
             yield this.getUpdate(diff);
             console.log("Polling for weather updates");
-            this.startPolling();
+            this.startPolling(pollPeriod);
         });
     };
     // --------------------------------------------------------
@@ -46,7 +47,6 @@ var Weather = (function () {
     // --------------------------------------------------------
     Weather.prototype.startPolling = function (timeout) {
         var _this = this;
-        if (timeout === void 0) { timeout = 30; }
         // every 15 minutes get weather update (30*60*1000)
         this.timerId = setInterval(function () { _this.getUpdate(); }, timeout * 60 * 1000);
     };

@@ -17,14 +17,14 @@ export class Weather {
     // --------------------------------------------------------
   // filter to timestamp
   // --------------------------------------------------------
-  async init() {
+  async init(pollPeriod : number = 30) {
     let now : number = moment().unix();
     let mn : number  = getDateBoundary(now);
     // how long since midnight
     let diff = Math.min(Math.round((now - mn)/3600), 24);
     await this.getUpdate(diff);
     console.log("Polling for weather updates");
-    this.startPolling();
+    this.startPolling(pollPeriod);
   }
 
   // --------------------------------------------------------
@@ -39,7 +39,7 @@ export class Weather {
   // start and stop polling for weather updates
   // the default polling interval is 30 minutes
   // --------------------------------------------------------
-  startPolling(timeout:number = 30) {
+  startPolling(timeout:number) {
      // every 15 minutes get weather update (30*60*1000)
      this.timerId = setInterval(() => {this.getUpdate()}, timeout*60*1000);
   }
