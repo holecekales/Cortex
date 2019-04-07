@@ -310,6 +310,10 @@ var Pump = (function () {
         elem.addEventListener('click', function (event) {
             _this.switchUnits();
         });
+        elem = document.querySelector("#total365");
+        elem.addEventListener('click', function (event) {
+            _this.switchUnits();
+        });
     };
     // -------------------------------------------------------------------------
     // close the session()

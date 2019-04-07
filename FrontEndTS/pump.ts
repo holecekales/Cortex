@@ -359,6 +359,11 @@ interface HistoryUpate {
       this.switchUnits();     
     });
 
+    elem = document.querySelector("#total365");
+    elem.addEventListener('click', (event) =>{
+      this.switchUnits();     
+    });
+
   }
 
   // -------------------------------------------------------------------------
