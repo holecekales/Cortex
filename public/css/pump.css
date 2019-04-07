@@ -11,7 +11,7 @@
   /* define the dashboard grid with its sizes */
   display: grid;
   grid-template-columns: repeat(4, 186px);
-  grid-template-rows:    repeat(5, 153px);
+  grid-template-rows:    repeat(6, 153px);
 }
 
 
@@ -52,17 +52,21 @@
 #seven {
   grid-column:  2 / 2;
   grid-row:     2 / 2;
- 
+}
+
+#eight {
+  grid-column:  1 / 5;
+  grid-row:     5 / 6;
 }
 
 
 .noTxtSelect   {
--moz-user-select: none;       /* Firefox */
--ms-user-select: none;        /* Internet Explorer */
--khtml-user-select: none;     /* KHTML browsers (e.g. Konqueror) */
--webkit-user-select: none;    /* Chrome, Safari, and Opera */
--webkit-touch-callout: none;  /* Disable Android and iOS callouts*/
-user-select: none;            /* standard  */ 
+  -moz-user-select: none;       /* Firefox */
+  -ms-user-select: none;        /* Internet Explorer */
+  -khtml-user-select: none;     /* KHTML browsers (e.g. Konqueror) */
+  -webkit-user-select: none;    /* Chrome, Safari, and Opera */
+  -webkit-touch-callout: none;  /* Disable Android and iOS callouts*/
+  user-select: none;            /* standard  */ 
 }
 
 
@@ -168,6 +172,10 @@ user-select: none;            /* standard  */
 
 #myChart2 {
   padding-top: 7px;
+}
+#wxChart {
+  padding-top: 7px;
+  max-width: 730px;
 }
 
 /**********************/

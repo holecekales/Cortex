@@ -9,6 +9,8 @@ let moment: any;
 interface HistoryUpate {
   period: number;
   count: number;
+  temp: number;
+  rain: number;
 };
 
 // -------------------------------------------------------------------------
@@ -35,6 +37,11 @@ interface HistoryUpate {
   private historyChart = null;
   private total365 = 0;
 
+  // weather chart
+  private timeLine = [];
+  private rainData = [];
+  private tempData = [];
+  private wxChart  = null;
 
   // pump monitoring
   private lastUpdateTime = 0;
@@ -243,6 +250,95 @@ interface HistoryUpate {
       }
     });
     this.historyChart.canvas.parentNode.style.height = '60px';
+
+    // >>>>>>>>> setup weather chart <<<<<<<<<<<<<<
+
+    let wxChardata = {
+      labels: this.timeLine,
+      datasets: [
+        {
+          label: "Rainfall",
+          backgroundColor: "rgba(24, 120, 250, 0.6)",
+          data: this.rainData,
+          yAxisID: "rain"
+        },
+        {
+          label: "Temperature",
+          data: this.tempData,
+          type: 'line',
+          yAxisID: "temp",
+          pointRadius: 0,
+          pointHoverRadius: 0,
+          lineTension: 0.4,
+          fill: false,
+          borderColor: "rgba(149, 67, 255, 0.75)",
+          borderWidth: 2
+        }
+      ]
+    }
+
+    let wxChartOptions = {
+      type: 'bar',
+      data: wxChardata,
+      options: {
+        maintainAspectRatio: false,
+        legend: {
+          display: false
+        },
+        scales: {
+          xAxes: [{
+            type: 'time',
+            barPercentage: 0.95,
+            categoryPercentage: 0.7,
+            time: {
+              unit: 'day', // 'month'
+              stepSize: 1,
+              displayFormats: {
+                month: 'MMM',
+                day: 'M/D'
+              }
+            }
+          }],
+          yAxes: [{
+            position: "right",
+            id: "rain",
+            ticks: {
+              suggestedMin: 0,
+              suggestedMax: 5 
+            }
+          
+          },
+          {
+            position: "left",
+            id: "temp",
+            ticks: {
+              suggestedMin: 0,
+              suggestedMax: 20
+            }
+          }]
+        },
+        tooltips :{
+          enabled: true;
+          intersect: false,
+          mode: 'index',
+          callbacks: {
+            label: (tooltipItem, data) => {
+              let label : string =  data.datasets[tooltipItem.datasetIndex].label + ": " + tooltipItem.yLabel + " ["
+              if(tooltipItem.datasetIndex == 0) {
+                label += 'mm]';
+              }
+              else {
+                label += '\u00B0C]';
+              }
+              return label;
+            }
+          }
+        },
+        }
+      }
+    
+    this.wxChart = new Chart("wxChart", wxChartOptions);
+    this.wxChart.canvas.parentNode.style.height = '60px';
   }
 
   
@@ -614,17 +710,23 @@ interface HistoryUpate {
     // is different than the last day in the array then insert new record
     if (len == 0 || this.historyCount[len - 1].x < d) {
       this.historyCount.push({ x: d, y: event.count });
+      this.rainData.push(d);
+      this.rainData.push(event.rain === undefined ? 0 : event.rain);
+      this.tempData.push(event.temp === undefined ? 0 : event.temp);
     }
     else {
       // update the value of the last record by the increment
       // which is normally 1
       this.historyCount[len - 1].y = event.count;
+      this.rainData[len - 1] = event.rain;
+      this.tempData[len - 1] = event.temp;
     }
 
     this.total365 += event.count;
     this.updateDailyTotalTile(event.count);
 
     this.historyChart.update();
+    this.wxChart.update();
   }
 
   // -------------------------------------------------------------------------
@@ -635,6 +737,13 @@ interface HistoryUpate {
     let len = hist.length;
     for (let i = 0; i < len; i++) {
       this.historyCount.push({ x: hist[i].period * 1000, y: hist[i].count });
+      
+      // getting weather data ready
+      this.timeLine.push(hist[i].period * 1000);
+      this.rainData.push(hist[i].rain === undefined ? 0 : hist[i].rain);
+      this.tempData.push(hist[i].temp === undefined ? 0 : hist[i].temp);
+      
+      // calculate total
       this.total365 += hist[i].count;
     }
 
@@ -642,11 +751,16 @@ interface HistoryUpate {
     if(len > 30 && len < 90)
     {
       this.historyChart.options.scales.xAxes[0].time.stepSize = 2;
+      this.wxChart.options.scales.xAxes[0].time.stepSize = 2;
     }
-    if(len < 90)
+    if(len < 90) {
       this.historyChart.options.scales.xAxes[0].time.unit = 'day';
-    else  
+      this.wxChart.options.scales.xAxes[0].time.unit = 'day';
+    }
+    else {  
       this.historyChart.options.scales.xAxes[0].time.unit = 'month';
+      this.wxChart.options.scales.xAxes[0].time.unit = 'month';
+    }
 
     if(len > 0)
     {  
@@ -655,6 +769,7 @@ interface HistoryUpate {
     }
 
     this.historyChart.update();
+    this.wxChart.update();
   }
   // -------------------------------------------------------------------------
   // getBaseData
