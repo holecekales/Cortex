@@ -24,6 +24,7 @@ class wxLoader {
         this.maxTemp = 0;
         this.temp = 0;
         this.rain = 0;
+        this.some = 0;
     }
     // -----------------------------------------------------------
     // get update for given station

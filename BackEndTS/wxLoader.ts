@@ -14,6 +14,7 @@ export class wxLoader {
   maxTemp : number = 0;
   temp    : number = 0;
   rain    : number = 0;
+  some    : number = 0;
 
   // -----------------------------------------------------------
   // constructor
