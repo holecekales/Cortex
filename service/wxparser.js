@@ -87,7 +87,7 @@ var wxParser = (function () {
     wxParser.weatherDecoder = function (param, wxInfo) {
         var mphTometerps = 0.44704;
         var inchTomm = 0.254; // 1/100in to mm
-        console.log(param);
+        //console.log(param);
         // make sure that this is not param 
         // with undefined value
         if (/\.{2,}$/.test(param.substr(1)))

@@ -120,7 +120,7 @@ export class wxParser {
     const mphTometerps : number = 0.44704;
     const inchTomm : number = 0.254 // 1/100in to mm
 
-    console.log(param);
+    //console.log(param);
 
     // make sure that this is not param 
     // with undefined value

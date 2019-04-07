@@ -10,10 +10,7 @@ import { isUndefined } from 'util';
 import { getDateBoundary } from './DayBoundary';
 
 import { wxLoader } from './wxLoader';
-
-// $$$ Remove the API key!!!
-// https://api.darksky.net/forecast/<APIKey>/47.684830594, -122.18833258,1549756800?exclude=hourly, currently
-
+import { Weather } from './weather';
 // ------------------------------------------------------------------------------------
 // Pump
 // ------------------------------------------------------------------------------------
@@ -45,15 +42,17 @@ class Pump {
   // main purpose - drawing diagrams
   private sampleData = [];
 
-  // holds API key for https://darksky.net/dev
-  // is provided during the config state of the service
-  private weatherKey = undefined;
-  private weather = undefined;
+  private weather : Weather = new Weather("CW5022");  // KE7JL <- closest to the house
 
   // ------------------------------------------------------------
   // construct the Pump object
   // ------------------------------------------------------------
   constructor(server) {
+
+    // initialize weather. 
+    // Since this is async we will start there
+    this.weather.init();
+
     // read the previous state from disk 
     // (hopefully it is still relevant)
     this.readStateFromDisk();
@@ -128,9 +127,6 @@ class Pump {
         console.log("Socket closed with code=", code, "reason: ", reason);
       });
     }
-
-    this.weather = new wxLoader(); 
-    this.weather.get('CW5022');
   }
 
   // ------------------------------------------------------------
@@ -180,7 +176,7 @@ class Pump {
           packet.time = this.time;
           packet.interval = this.interval;
         }
-
+        
         // broadcast to all the clients (browsers)
         this.broadcast(JSON.stringify(packet), 'chart-protocol');
 
@@ -203,24 +199,31 @@ class Pump {
     let len = this.history.length;
     let period = len == 0 ? 0 : this.history[len - 1].period;
 
-    // snap the sample time to a day boundary
+    // snap  to a day boundary in PST
     let eventDay: number = getDateBoundary(time);
 
     // did we move 24 hours (in seconds) forward?
     if (eventDay > period) {
       console.log(">>> Starting new period:", eventDay, "<<<")
       // we're in the next day store the stats and reset counter
-      this.history.push({ period: eventDay, count: 1 });
+      // and update the weather record in the history
+      this.history.push({ period: eventDay, count: 1, temp: this.weather.temp(), rain: this.weather.rain() });
       if (this.history.length > 365) {
         // keep data for rolling 365 days
         this.history.shift();
       }
+
+      this.weather.timeFilter(eventDay);
+
     }
     else {
       if (this.history[len - 1].period != eventDay) {
         console.error("Mismatch of event and accumulation period:", this.history[len - 1].period, eventDay);
       }
       this.history[len - 1].count += 1;
+      // update the weather record in the history
+      this.history[len - 1].temp  =  this.weather.temp();
+      this.history[len - 1].rain  =  this.weather.rain();
     }
   }
 
@@ -305,8 +308,8 @@ class Pump {
     if (fs.existsSync('appState.json')) {
       try {
 
-        let config: any = JSON.parse(fs.readFileSync('appConfig.json', 'utf8'));
-        this.weatherKey = config.weatherKey;
+        // let config: any = JSON.parse(fs.readFileSync('appConfig.json', 'utf8'));
+        // this.weatherKey = config.weatherKey;
 
         let state: any = JSON.parse(fs.readFileSync('appState.json', 'utf8'));
 
@@ -360,7 +363,8 @@ class Pump {
           else {
             // just for debugging purposes.
             // we could re-calculete the iterval from the samples.  
-            console.log("Time offset =", now - this.time, "s.");
+            console.log("Time from last stored time =", now - this.time, "s.");
+            console.log("Invalid at 600s");
             console.log("Interval 0. No events can be added!");
           }
 
@@ -415,7 +419,6 @@ class Pump {
       }
     });
   };
-
 
   // ------------------------------------------------------------
   // return the express router back to the app  
