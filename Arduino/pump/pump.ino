@@ -24,6 +24,7 @@
 #include <TimeLib.h>
 
 #include <Hash.h>
+// #include <Tone.h>
 
 const char *ssid = SSID;		// wifi creds (uff) - all bad
 const char *password = PASSWORD;		
@@ -36,7 +37,7 @@ IPAddress timeSRV;
 // PIN DEFINITION
 #define TRIG 05
 #define ECHO 04
-#define ALRM 16
+// #define ALRM 16
 
 // NTP Servers:
 static const char srvName[] = "us.pool.ntp.org";
@@ -167,9 +168,11 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
 	{
 	case WStype_DISCONNECTED:
 		USE_SERIAL.printf("[WSc] Disconnected!\n");
+		digitalWrite(D4, LOW);   
 		break;
 	case WStype_CONNECTED:
 	{
+		digitalWrite(D4, HIGH);   
 		USE_SERIAL.printf("[WSc] Connected to url: %s\n", payload);
 		// send message to server when Connected
 		webSocket.sendTXT("{\"m\": \"i\", \"v\": \"connected\"}");
@@ -195,11 +198,14 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
 void setup()
 {
 
-	pinMode(ALRM, OUTPUT);
-	digitalWrite(ALRM, LOW);
+	// pinMode(ALRM, OUTPUT);
+	// digitalWrite(ALRM, LOW);
 
 	USE_SERIAL.begin(115200);
-	USE_SERIAL.setDebugOutput(false);
+	// USE_SERIAL.setDebugOutput(1);
+
+	pinMode(LED_BUILTIN, OUTPUT);     // Initialize the LED_BUILTIN pin as an output
+	digitalWrite(LED_BUILTIN, LOW);   
 
 	USE_SERIAL.println("Starting....");
 	delay(200);
@@ -226,6 +232,9 @@ void setup()
 	setSyncProvider(getNTPTime);
 	setSyncInterval(3600); // re-sync time every hour
 
+	pinMode(D4, OUTPUT);     // Initialize the LED_BUILTIN pin as an output
+	digitalWrite(D4, LOW);   
+
 	// server address, port and URL
 	webSocket.begin(cortex, port, "/", "arduino");
 
@@ -233,7 +242,9 @@ void setup()
 	webSocket.onEvent(webSocketEvent);
 
 	// try ever 5000 again if connection has failed
-	webSocket.setReconnectInterval(5000);
+	webSocket.setReconnectInterval(15000);
+
+	digitalWrite(LED_BUILTIN, HIGH);   
 }
 
 // ------------------------------------------------------------------------------------------
@@ -285,16 +296,13 @@ void uploadSensors()
 void evalAlarm()
 {
 	return;
-	const int alarmCheckFrequency = 2000;
+	const int alarmCheckFrequency = 30000;
 	static long lastAlarmCheck = 0;
-
-	if (lastAlarmCheck > millis())
-		lastAlarmCheck = millis();
 
 	if ((millis() - lastAlarmCheck) > alarmCheckFrequency)
 	{
-		int val = digitalRead(ALRM);
-		digitalWrite(ALRM, (val == LOW ? HIGH : LOW));
+		// check for some alarm condition. If satisfied
+		// turn the buzzer on 	
 		lastAlarmCheck = millis(); // reset the timer
 	}
 }
