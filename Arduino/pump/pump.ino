@@ -1,7 +1,15 @@
 /*
  * Pump.ino
  * 
- * Wiring:
+ * Wiring for HC-SR04
+ *  
+ *  ESP8266 | HC-SR04
+ *  GPIO05  | Trig
+ *  GPIO04  | Echo
+ *  5v      | VCC
+ *  GND     | GND
+ * 
+ * Wiring for VL53L0X (Laser)
  *  
  *  ESP8266 | HC-SR04
  *  GPIO05  | Trig
@@ -12,22 +20,26 @@
  */
 
 #include <Arduino.h>
+#include <EEPROM.h>
+
+
+#include "Adafruit_VL53L0X.h"
 
 #include <ESP8266WiFi.h>
 #include <ESP8266WiFiMulti.h>
 #include <WifiUDP.h>
 
-#include <WebSocketsClient.h>
+#include "WebSocketsClient.h"
 
 #include <NewPing.h>
 
 #include <TimeLib.h>
 
 #include <Hash.h>
-// #include <Tone.h>
 
-const char *ssid = SSID;		// wifi creds (uff) - all bad
-const char *password = PASSWORD;		
+// const char *ssid = SSID;		// wifi creds (uff) - all bad
+// const char *password = PASSWORD;		
+const int eepromAddr = 0;
 const char *cortex = "homecortex.azurewebsites.net";		// address of the brain
 const int port = 80; // 8080
 
@@ -67,6 +79,7 @@ ESP8266WiFiMulti WiFiMulti;
 WebSocketsClient webSocket;
 
 NewPing sonar(TRIG, ECHO, 60); // NewPing setup of pins and maximum distance.
+Adafruit_VL53L0X lox = Adafruit_VL53L0X();
 
 #define USE_SERIAL Serial
 
@@ -192,6 +205,13 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
 	}
 }
 
+// WiFi data
+struct { 
+	char SSID[16] = "";
+	char PWD[16]  = "";
+} wifiCreds;
+
+
 // ------------------------------------------------------------------------------------------
 // setup()
 // ------------------------------------------------------------------------------------------
@@ -202,23 +222,29 @@ void setup()
 	// digitalWrite(ALRM, LOW);
 
 	USE_SERIAL.begin(115200);
-	// USE_SERIAL.setDebugOutput(1);
+	while(!USE_SERIAL){};
+	delay(1000);
+	USE_SERIAL.println("");
 
-	pinMode(LED_BUILTIN, OUTPUT);     // Initialize the LED_BUILTIN pin as an output
+	// Initialize the LED_BUILTIN pin as an output
+	pinMode(LED_BUILTIN, OUTPUT);     
 	digitalWrite(LED_BUILTIN, LOW);   
 
-	USE_SERIAL.println("Starting....");
-	delay(200);
-	USE_SERIAL.println("Initializing...");
+	USE_SERIAL.println("Get Wifi Data from EEPROM...");
+  EEPROM.begin(512);
+  // read bytes (i.e. sizeof(data) from "EEPROM"),
+  // in reality, reads from byte-array cache
+  // cast bytes into structure called data
+  EEPROM.get(eepromAddr,wifiCreds);
+  Serial.println("WiFi SSID:"+String(wifiCreds.SSID)+", PWD:"+String(wifiCreds.PWD));
 	delay(200);
 	USE_SERIAL.print("Connecting >: ");
-	USE_SERIAL.print(ssid);
-	WiFiMulti.addAP(ssid, password);
+	WiFiMulti.addAP(wifiCreds.SSID, wifiCreds.PWD);
 
 	while (WiFi.status() != WL_CONNECTED)
 	{
 		delay(600);
-		USE_SERIAL.print("...");
+		USE_SERIAL.print("..");
 	}
 	USE_SERIAL.println(" Connected");
 	USE_SERIAL.print("IP address: ");
@@ -244,6 +270,13 @@ void setup()
 	// try ever 5000 again if connection has failed
 	webSocket.setReconnectInterval(15000);
 
+  // start the sensor
+  // Serial.println("Adafruit VL53L0X test");
+  // if (!lox.begin()) {
+  //   Serial.println(F("Failed to boot VL53L0X"));
+  //   while(1);
+  // }
+
 	digitalWrite(LED_BUILTIN, HIGH);   
 }
 
@@ -252,14 +285,28 @@ void setup()
 // ------------------------------------------------------------------------------------------
 long readDistance()
 {
-	unsigned long duration = sonar.ping_median(5); // Send ping, get distance in cm and print result (0 = outside set distance range)
-	long dist = NewPing::convert_cm(duration);
+	// unsigned long duration = sonar.ping_median(5); // Send ping, get distance in cm and print result (0 = outside set distance range)
+	// long dist = NewPing::convert_cm(duration);
+
+	return 0;
+
+  VL53L0X_RangingMeasurementData_t measure;
+    
+  Serial.print("Reading a measurement... ");
+  lox.rangingTest(&measure, false); // pass in 'true' to get debug data printout!
+
+  if (measure.RangeStatus != 4) {  // phase failures have incorrect data
+    Serial.print("Distance (mm): "); Serial.println(measure.RangeMilliMeter);
+  } else {
+    Serial.println(" out of range ");
+  }
 
 	// USE_SERIAL.print("Ping: ");
 	// USE_SERIAL.print(dist);
 	// USE_SERIAL.println("cm");
 
-	return dist;
+  return measure.RangeMilliMeter / 10;
+	// return dist;
 }
 
 // ------------------------------------------------------------------------------------------
