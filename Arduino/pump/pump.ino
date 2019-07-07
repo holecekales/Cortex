@@ -36,7 +36,8 @@
 
 #include <TimeLib.h>
 
-#include <Hash.h>
+// #include <Hash.h>
+#include "buzzer.h"
 
 const int eepromAddr = 0;
 const char *cortex = "localhost"; //"homecortex.azurewebsites.net";		// address of the brain
@@ -211,6 +212,8 @@ struct {
 } wifiCreds;
 
 
+
+
 // ------------------------------------------------------------------------------------------
 // setup()
 // ------------------------------------------------------------------------------------------
@@ -259,13 +262,6 @@ void setup()
 
 	pinMode(D4, OUTPUT);     // Initialize the LED_BUILTIN pin as an output
 
-	// wink
-	digitalWrite(D4, LOW);  
-	delay(500);
-	digitalWrite(D4, HIGH);    
-	delay(500);
-	digitalWrite(D4, LOW);  
-
   // start the sensor
   // Serial.println("Adafruit VL53L0X test");
   // if (!lox.begin()) {
@@ -273,7 +269,15 @@ void setup()
   //   while(1);
   // }
 
+	// wink
+	digitalWrite(D4, LOW);  
+	delay(500);
+	digitalWrite(D4, HIGH);    
+	delay(500);
+	digitalWrite(D4, LOW); 
 	digitalWrite(LED_BUILTIN, HIGH);   
+
+	PLAY(music);
 }
 
 // ------------------------------------------------------------------------------------------
@@ -346,13 +350,7 @@ void evalAlarm()
 	if(setAlarm > 100)
 		setAlarm = 100;
 
-
-	if ((millis() - lastAlarmCheck) > alarmCheckFrequency)
-	{
-		// check for some alarm condition. If satisfied
-		// turn the buzzer on 	
-		lastAlarmCheck = millis(); // reset the timer
-	}
+	PLAY(alarm);
 }
 
 HTTPClient http;
