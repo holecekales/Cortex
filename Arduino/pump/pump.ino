@@ -28,6 +28,7 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WiFiMulti.h>
 #include <WifiUDP.h>
+#include <ESP8266HTTPClient.h>
 
 #include "WebSocketsClient.h"
 
@@ -37,11 +38,9 @@
 
 #include <Hash.h>
 
-// const char *ssid = SSID;		// wifi creds (uff) - all bad
-// const char *password = PASSWORD;		
 const int eepromAddr = 0;
-const char *cortex = "homecortex.azurewebsites.net";		// address of the brain
-const int port = 80; // 8080
+const char *cortex = "localhost"; //"homecortex.azurewebsites.net";		// address of the brain
+const int port = 8080; // 80
 
 unsigned int localPort = 123; //Set local port listen to UDP
 IPAddress timeSRV;
@@ -76,7 +75,7 @@ long howOften = 2000;					 //How often to take reading in milliseconds
 unsigned long lastReading = 0; //Keep track of when the last reading was taken
 
 ESP8266WiFiMulti WiFiMulti;
-WebSocketsClient webSocket;
+// WebSocketsClient webSocket;
 
 NewPing sonar(TRIG, ECHO, 60); // NewPing setup of pins and maximum distance.
 Adafruit_VL53L0X lox = Adafruit_VL53L0X();
@@ -188,7 +187,7 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
 		digitalWrite(D4, HIGH);   
 		USE_SERIAL.printf("[WSc] Connected to url: %s\n", payload);
 		// send message to server when Connected
-		webSocket.sendTXT("{\"m\": \"i\", \"v\": \"connected\"}");
+		// webSocket.sendTXT("{\"m\": \"i\", \"v\": \"connected\"}");
 	}
 	break;
 	case WStype_TEXT:
@@ -259,16 +258,13 @@ void setup()
 	setSyncInterval(3600); // re-sync time every hour
 
 	pinMode(D4, OUTPUT);     // Initialize the LED_BUILTIN pin as an output
-	digitalWrite(D4, LOW);   
 
-	// server address, port and URL
-	webSocket.begin(cortex, port, "/", "arduino");
-
-	// event handler
-	webSocket.onEvent(webSocketEvent);
-
-	// try ever 5000 again if connection has failed
-	webSocket.setReconnectInterval(15000);
+	// wink
+	digitalWrite(D4, LOW);  
+	delay(500);
+	digitalWrite(D4, HIGH);    
+	delay(500);
+	digitalWrite(D4, LOW);  
 
   // start the sensor
   // Serial.println("Adafruit VL53L0X test");
@@ -329,22 +325,27 @@ void uploadSensors()
 			long level = readDistance();
 			long state = 0;
 			// digitalClockDisplay();
-			sprintf(buffer, msgFormat, level, state, now());
-			webSocket.sendTXT(buffer);
+			sprintf(buffer, msgFormat, 0, level, state, now());
+			// webSocket.sendTXT(buffer);
 		}
 
 		lastReading = millis(); // reset the timer
 	}
 }
 
+int setAlarm = 0;
 // ------------------------------------------------------------------------------------------
 // evalAlarm()
 // ------------------------------------------------------------------------------------------
 void evalAlarm()
 {
-	return;
-	const int alarmCheckFrequency = 30000;
-	static long lastAlarmCheck = 0;
+	if(setAlarm < 100)
+		return;
+
+	// keep the alarm set
+	if(setAlarm > 100)
+		setAlarm = 100;
+
 
 	if ((millis() - lastAlarmCheck) > alarmCheckFrequency)
 	{
@@ -354,12 +355,57 @@ void evalAlarm()
 	}
 }
 
+HTTPClient http;
+
+// ------------------------------------------------------------------------------------------
+// postData()
+// ------------------------------------------------------------------------------------------
+void postData() 
+{
+	const int postFrequency = 5000;
+	static long lastPost = 0;
+
+	const char *msgFormat = "l=%d&t=%d";
+	char buffer[50];
+
+	if ((millis() - lastPost) > postFrequency)
+	{
+		// check for some alarm condition. If satisfied
+		// turn the buzzer on 	
+		int level = random(0,50);
+		int state = 0;
+		
+		http.begin("http://10.0.0.104:8080/api/pump");
+
+		http.addHeader("Content-Type", "application/x-www-form-urlencoded");		//application/json
+		sprintf(buffer, msgFormat, level, now());
+
+		Serial.print("message: ");
+		Serial.println(buffer);
+		
+		int httpCode = http.POST(buffer);
+		if(httpCode == 200)
+			setAlarm = 0;
+		else 
+			setAlarm += 1;
+
+		// when debugging the server response
+		// String payload = http.getString();
+		// Serial.println(httpCode);
+		// Serial.println(payload);
+		// Serial.println("HTTP Done");
+
+		http.end();
+		lastPost = millis(); // reset the timer
+	}
+}
+
+
 // ------------------------------------------------------------------------------------------
 // loop()
 // ------------------------------------------------------------------------------------------
 void loop()
 {
-	webSocket.loop();
-	uploadSensors();
+	postData();
 	evalAlarm();
 }
