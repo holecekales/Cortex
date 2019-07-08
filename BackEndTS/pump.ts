@@ -97,6 +97,7 @@ class Pump {
       });
       req.on('end', () => {
         let obj = parse(body);
+        // console.log("Raw Sensor Data", obj );
         // $$$ this is some serious hacking.
         obj['m'] = "d";
         this.rcvData(JSON.stringify(obj));
@@ -154,7 +155,9 @@ class Pump {
 
       if (obj.m == "d") {
         delete obj.m; // the source was device and we'll now get rid of it.
-        obj.l = 55 - obj.l; // the bucket is 55cm deep -> converstion from device
+        // meassuring from 280mm (tube) + 60mm (brick) 
+        // (and there also seems to be some error on the sensor??)
+        obj.l = 35 - obj.l; 
       }
 
       if (isUndefined(obj.s) === false) {
@@ -249,6 +252,10 @@ class Pump {
   // * calcualte averages
   // -----------------------------------------------------------------------------
   updateMetrics(): boolean {
+
+    const  maxLevel  = 24;
+    const  minLevel  = 16;
+
     let len: number = this.sampleData.length;
     // calculate if the pump kicked in - we need 15 values for the filter
     if (len >= 15) {
@@ -256,7 +263,7 @@ class Pump {
       // 24 is the level where we typically start pumping
       // if we're at that level (or higher) and if we saw a dip going down, 
       // let's see if we went through pumping
-      if (this.sampleData[rangeFirst].l >= 24 && this.sampleData[rangeFirst + 1].l < this.sampleData[rangeFirst].l) {
+      if (this.sampleData[rangeFirst].l >= maxLevel && this.sampleData[rangeFirst + 1].l < this.sampleData[rangeFirst].l) {
         let minRangeLevel = 30;
         let maxRangeLevel = 0;
         // calculate min and max over our range
@@ -264,9 +271,9 @@ class Pump {
           minRangeLevel = Math.min(minRangeLevel, this.sampleData[i].l);
           maxRangeLevel = Math.max(maxRangeLevel, this.sampleData[i].l);
         }
-        // if within this range the values exceeded max (24) and min (16)
+        // if within this range the values exceeded max (maxLevel) and min (minLevel)
         // than the pump is pumping and we need to update metrics + record the event
-        if (minRangeLevel <= 16 && maxRangeLevel >= 24) {
+        if (minRangeLevel <= minLevel && maxRangeLevel >= maxLevel) {
           // this is the time of the last device report (unix time)
           let time = this.sampleData[len - 1].t;
 
