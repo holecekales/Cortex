@@ -34,8 +34,8 @@
 const int eepromAddr = 0;
 
 const char* localhost = "http://10.0.0.104:8080/api/pump";
-const char *cortex = localhost; //"homecortex.azurewebsites.net/api/pump";		// address of the brain
-const int port = 8080; // 80
+const char *cortex = "http://homecortex.azurewebsites.net/api/pump";		// address of the brain
+// const int port = 8080; // 80
 
 unsigned int localPort = 123; //Set local port listen to UDP
 IPAddress timeSRV;
