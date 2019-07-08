@@ -438,8 +438,8 @@ interface HistoryUpate {
   // -------------------------------------------------------------------------
   luTile() {
     // timeouts for green and yellow tile
-    const g = 4;  // i can miss 2 cycles to be green
-    const y = 10; // i can miss 5 cycles to be yello
+    const g = 10;  // i can miss 2 cycles to be green
+    const y = 20; // i can miss 5 cycles to be yello
     // otherwise i turn red 
 
     // get the DOM elements for the text and the tile

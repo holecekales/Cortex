@@ -369,8 +369,8 @@ var Pump = (function () {
     // -------------------------------------------------------------------------
     Pump.prototype.luTile = function () {
         // timeouts for green and yellow tile
-        var g = 4; // i can miss 2 cycles to be green
-        var y = 10; // i can miss 5 cycles to be yello
+        var g = 10; // i can miss 2 cycles to be green
+        var y = 20; // i can miss 5 cycles to be yello
         // otherwise i turn red 
         // get the DOM elements for the text and the tile
         var tile = document.getElementById("lastUpdateTile");
