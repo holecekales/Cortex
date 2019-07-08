@@ -5,6 +5,7 @@ const WSSocket = require('ws');
 var fs = require('fs');
 const moment = require('moment-timezone');
 const util_1 = require('util');
+const querystring_1 = require('querystring');
 const DayBoundary_1 = require('./DayBoundary');
 const weather_1 = require('./weather');
 // ------------------------------------------------------------------------------------
@@ -59,7 +60,7 @@ class Pump {
         });
         // if someone calls us return all data in the last
         // 2 hours
-        this.router.use('/', (req, res, next) => {
+        this.router.get('/', (req, res, next) => {
             let pumpInfo = {
                 cadence: this.interval,
                 time: this.time,
@@ -67,6 +68,16 @@ class Pump {
                 sampleData: this.sampleData,
             };
             res.status(200).json(pumpInfo);
+        });
+        this.router.post('/', (req, res, next) => {
+            let body = '';
+            req.on('data', chunk => {
+                body += chunk.toString(); // convert Buffer to string
+            });
+            req.on('end', () => {
+                console.log(querystring_1.parse(body));
+                res.end('ok');
+            });
         });
         // create socket
         this.socket = new WSSocket.Server(server);

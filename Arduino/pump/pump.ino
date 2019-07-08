@@ -233,22 +233,24 @@ void setup()
   // }
 	LED(BLU, false);
 
+	const bs=200;	// blink speed
+
 	// wink
 	LED(RED, true);
 	LED(BLU, true);
-	delay(800);
+	delay(bs);
 	LED(RED, false);
 	LED(BLU, false);
-	delay(800);
+	delay(bs);
 	LED(RED, true);
 	LED(BLU, true);
-	delay(800);
+	delay(bs);
 	LED(RED, false);
 	LED(BLU, false);
-	delay(800);
+	delay(bs);
 	LED(RED, true);
 	LED(BLU, true);
-	delay(800);
+	delay(bs);
 	LED(RED, false);
 	LED(BLU, false);
 
@@ -329,15 +331,15 @@ void postData()
 		if(httpCode == 200)
 		{
 			setAlarm = 0;
-			digitalWrite(D4, LOW); 
-			delay(100);
-			digitalWrite(D4, HIGH);    
+			// digitalWrite(D4, LOW); 
+			// delay(100);
+			// digitalWrite(D4, HIGH);    
 		}
 		else { 
 			setAlarm += 1;
-			digitalWrite(D0, LOW); 
+			LED(RED, true); 
 			delay(100);
-			digitalWrite(D0, HIGH); 
+			LED(RED, false); 
 		}
 
 		// when debugging the server response

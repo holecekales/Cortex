@@ -6,6 +6,7 @@ var fs = require('fs');
 
 import * as moment from 'moment-timezone';
 import { isUndefined } from 'util';
+import  { parse } from 'querystring';
 
 import { getDateBoundary } from './DayBoundary';
 
@@ -79,7 +80,7 @@ class Pump {
 
     // if someone calls us return all data in the last
     // 2 hours
-    this.router.use('/', (req, res, next) => {
+    this.router.get('/', (req, res, next) => {
       let pumpInfo: any = {
         cadence: this.interval,
         time: this.time,
@@ -87,6 +88,17 @@ class Pump {
         sampleData: this.sampleData,
       };
       res.status(200).json(pumpInfo);
+    });
+
+    this.router.post('/', (req, res, next) => {
+      let body = '';
+      req.on('data', chunk => {
+          body += chunk.toString(); // convert Buffer to string
+      });
+      req.on('end', () => {
+        console.log(parse(body));
+        res.end('ok');
+      }); 
     });
 
     // create socket
