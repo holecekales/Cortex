@@ -75,7 +75,10 @@ class Pump {
                 body += chunk.toString(); // convert Buffer to string
             });
             req.on('end', () => {
-                console.log(querystring_1.parse(body));
+                let obj = querystring_1.parse(body);
+                // $$$ this is some serious hacking.
+                obj['m'] = "d";
+                this.rcvData(JSON.stringify(obj));
                 res.end('ok');
             });
         });
