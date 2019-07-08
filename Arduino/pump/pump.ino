@@ -185,7 +185,6 @@ void setup()
 {
 	USE_SERIAL.begin(115200);
 	while(!USE_SERIAL){};
-	delay(1000);
 	USE_SERIAL.println("");
 
 	// Initialize the LED_BUILTIN pin as an output
