@@ -40,16 +40,16 @@
 #include "buzzer.h"
 
 const int eepromAddr = 0;
-const char *cortex = "localhost"; //"homecortex.azurewebsites.net";		// address of the brain
+
+const char* localhost = "http://10.0.0.104:8080/api/pump";
+const char *cortex = localhost; //"homecortex.azurewebsites.net/api/pump";		// address of the brain
 const int port = 8080; // 80
 
 unsigned int localPort = 123; //Set local port listen to UDP
 IPAddress timeSRV;
 
 // PIN DEFINITION
-#define TRIG 05
-#define ECHO 04
-// #define ALRM 16
+
 
 // NTP Servers:
 static const char srvName[] = "us.pool.ntp.org";
@@ -71,14 +71,8 @@ const int NTP_PACKET_SIZE = 48;			// NTP time stamp is in the first 48 bytes of 
 byte packetBuffer[NTP_PACKET_SIZE]; //buffer to hold incoming and outgoing packets
 WiFiUDP udp;												// Set to send and receive packets via UDP
 
-// Sensor timer
-long howOften = 2000;					 //How often to take reading in milliseconds
-unsigned long lastReading = 0; //Keep track of when the last reading was taken
-
 ESP8266WiFiMulti WiFiMulti;
-// WebSocketsClient webSocket;
 
-NewPing sonar(TRIG, ECHO, 60); // NewPing setup of pins and maximum distance.
 Adafruit_VL53L0X lox = Adafruit_VL53L0X();
 
 #define USE_SERIAL Serial
@@ -172,38 +166,6 @@ time_t getNTPTime()
 	USE_SERIAL.print("No packets recieved");
 	return 0;
 }
-// ------------------------------------------------------------------------------------------
-// webSocket event handler
-// ------------------------------------------------------------------------------------------
-void webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
-{
-	switch (type)
-	{
-	case WStype_DISCONNECTED:
-		USE_SERIAL.printf("[WSc] Disconnected!\n");
-		digitalWrite(D4, LOW);   
-		break;
-	case WStype_CONNECTED:
-	{
-		digitalWrite(D4, HIGH);   
-		USE_SERIAL.printf("[WSc] Connected to url: %s\n", payload);
-		// send message to server when Connected
-		// webSocket.sendTXT("{\"m\": \"i\", \"v\": \"connected\"}");
-	}
-	break;
-	case WStype_TEXT:
-		// USE_SERIAL.printf("[WSc] get text: %s\n", payload);
-		// send message to server
-		// webSocket.sendTXT("message here");
-		break;
-	case WStype_BIN:
-		USE_SERIAL.printf("[WSc] get binary length: %u\n", length);
-		hexdump(payload, length);
-		// send data to server
-		// webSocket.sendBIN(payload, length);
-		break;
-	}
-}
 
 // WiFi data
 struct { 
@@ -212,25 +174,26 @@ struct {
 } wifiCreds;
 
 
-
+#define RED D0
+#define BLU D4
+inline void LED(int pin, bool on = true) { digitalWrite(pin, on ? LOW : HIGH); }
 
 // ------------------------------------------------------------------------------------------
 // setup()
 // ------------------------------------------------------------------------------------------
 void setup()
 {
-
-	// pinMode(ALRM, OUTPUT);
-	// digitalWrite(ALRM, LOW);
-
 	USE_SERIAL.begin(115200);
 	while(!USE_SERIAL){};
 	delay(1000);
 	USE_SERIAL.println("");
 
 	// Initialize the LED_BUILTIN pin as an output
-	pinMode(LED_BUILTIN, OUTPUT);     
-	digitalWrite(LED_BUILTIN, LOW);   
+	pinMode(D0, OUTPUT); 
+	pinMode(D4, OUTPUT);     
+	
+	LED(RED, true);
+	LED(BLU, false);
 
 	USE_SERIAL.println("Get Wifi Data from EEPROM...");
   EEPROM.begin(512);
@@ -239,13 +202,12 @@ void setup()
   // cast bytes into structure called data
   EEPROM.get(eepromAddr,wifiCreds);
   Serial.println("WiFi SSID:"+String(wifiCreds.SSID)+", PWD:"+String(wifiCreds.PWD));
-	delay(200);
 	USE_SERIAL.print("Connecting >: ");
 	WiFiMulti.addAP(wifiCreds.SSID, wifiCreds.PWD);
 
 	while (WiFi.status() != WL_CONNECTED)
 	{
-		delay(600);
+		delay(500);
 		USE_SERIAL.print("..");
 	}
 	USE_SERIAL.println(" Connected");
@@ -259,8 +221,9 @@ void setup()
 
 	setSyncProvider(getNTPTime);
 	setSyncInterval(3600); // re-sync time every hour
-
-	pinMode(D4, OUTPUT);     // Initialize the LED_BUILTIN pin as an output
+	  
+	LED(RED, false);
+	LED(BLU, true);
 
   // start the sensor
   // Serial.println("Adafruit VL53L0X test");
@@ -268,14 +231,26 @@ void setup()
   //   Serial.println(F("Failed to boot VL53L0X"));
   //   while(1);
   // }
+	LED(BLU, false);
 
 	// wink
-	digitalWrite(D4, LOW);  
-	delay(500);
-	digitalWrite(D4, HIGH);    
-	delay(500);
-	digitalWrite(D4, LOW); 
-	digitalWrite(LED_BUILTIN, HIGH);   
+	LED(RED, true);
+	LED(BLU, true);
+	delay(800);
+	LED(RED, false);
+	LED(BLU, false);
+	delay(800);
+	LED(RED, true);
+	LED(BLU, true);
+	delay(800);
+	LED(RED, false);
+	LED(BLU, false);
+	delay(800);
+	LED(RED, true);
+	LED(BLU, true);
+	delay(800);
+	LED(RED, false);
+	LED(BLU, false);
 
 	PLAY(music);
 }
@@ -283,58 +258,30 @@ void setup()
 // ------------------------------------------------------------------------------------------
 // readSensors
 // ------------------------------------------------------------------------------------------
-long readDistance()
+int readDistance()
 {
-	// unsigned long duration = sonar.ping_median(5); // Send ping, get distance in cm and print result (0 = outside set distance range)
-	// long dist = NewPing::convert_cm(duration);
+	return random(0, 50);
 
-	return 0;
+	int dist = 0;
 
   VL53L0X_RangingMeasurementData_t measure;
     
-  Serial.print("Reading a measurement... ");
-  lox.rangingTest(&measure, false); // pass in 'true' to get debug data printout!
+  // Serial.print("Reading a measurement... ");
+  
+	lox.rangingTest(&measure, false); // pass in 'true' to get debug data printout!
 
   if (measure.RangeStatus != 4) {  // phase failures have incorrect data
-    Serial.print("Distance (mm): "); Serial.println(measure.RangeMilliMeter);
+    // Serial.print("Distance (mm): "); Serial.println(measure.RangeMilliMeter);
+		dist = measure.RangeMilliMeter / 10; 
   } else {
-    Serial.println(" out of range ");
+    // Serial.println(" out of range ");
   }
 
 	// USE_SERIAL.print("Ping: ");
 	// USE_SERIAL.print(dist);
 	// USE_SERIAL.println("cm");
 
-  return measure.RangeMilliMeter / 10;
-	// return dist;
-}
-
-// ------------------------------------------------------------------------------------------
-// uploadSensors()
-// ------------------------------------------------------------------------------------------
-// {"l":29.25,"s":1,"t":1505711860702}
-const char *msgFormat = "{\"m\":\"d\", \"l\":%d, \"s\":%d, \"t\":%d}";
-
-char buffer[256];
-
-void uploadSensors()
-{
-	if (lastReading > millis())
-		lastReading = millis();
-
-	if ((millis() - lastReading) > howOften)
-	{
-		if (timeStatus() != timeNotSet)
-		{
-			long level = readDistance();
-			long state = 0;
-			// digitalClockDisplay();
-			sprintf(buffer, msgFormat, 0, level, state, now());
-			// webSocket.sendTXT(buffer);
-		}
-
-		lastReading = millis(); // reset the timer
-	}
+	return dist;
 }
 
 int setAlarm = 0;
@@ -368,12 +315,9 @@ void postData()
 
 	if ((millis() - lastPost) > postFrequency)
 	{
-		// check for some alarm condition. If satisfied
-		// turn the buzzer on 	
-		int level = random(0,50);
-		int state = 0;
-		
-		http.begin("http://10.0.0.104:8080/api/pump");
+
+		int level = readDistance();
+		http.begin(cortex);
 
 		http.addHeader("Content-Type", "application/x-www-form-urlencoded");		//application/json
 		sprintf(buffer, msgFormat, level, now());
@@ -383,9 +327,18 @@ void postData()
 		
 		int httpCode = http.POST(buffer);
 		if(httpCode == 200)
+		{
 			setAlarm = 0;
-		else 
+			digitalWrite(D4, LOW); 
+			delay(100);
+			digitalWrite(D4, HIGH);    
+		}
+		else { 
 			setAlarm += 1;
+			digitalWrite(D0, LOW); 
+			delay(100);
+			digitalWrite(D0, HIGH); 
+		}
 
 		// when debugging the server response
 		// String payload = http.getString();
