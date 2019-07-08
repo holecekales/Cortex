@@ -88,7 +88,8 @@ class Pump {
             console.log('socket connection: ' + ws.protocol);
             let p = this;
             ws.on('message', function (msg) {
-                p.rcvData(msg);
+                console.log("socket msg: ", msg, ws.protocol);
+                // p.rcvData(msg);
             });
             ws.on('error', (err) => {
                 console.log("socket error: ", err);
