@@ -233,7 +233,7 @@ void setup()
   // }
 	LED(BLU, false);
 
-	const bs=200;	// blink speed
+	const int bs=200;	// blink speed
 
 	// wink
 	LED(RED, true);
