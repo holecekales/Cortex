@@ -1,14 +1,6 @@
 /*
  * Pump.ino
- * 
- * Wiring for HC-SR04
- *  
- *  ESP8266 | HC-SR04
- *  GPIO05  | Trig
- *  GPIO04  | Echo
- *  5v      | VCC
- *  GND     | GND
- * 
+ *
  * Wiring for VL53L0X (Laser)
  *  
  *  ESP8266 | HC-SR04
@@ -30,14 +22,14 @@
 #include <WifiUDP.h>
 #include <ESP8266HTTPClient.h>
 
-#include "WebSocketsClient.h"
-
-#include <NewPing.h>
-
+// getting time
 #include <TimeLib.h>
 
 // #include <Hash.h>
 #include "buzzer.h"
+
+#define USE_SENSOR 1
+
 
 const int eepromAddr = 0;
 
@@ -98,34 +90,6 @@ unsigned long sendNTPpacket(IPAddress &address) //Sending NTP req to the time se
 	udp.beginPacket(address, 123);
 	udp.write(packetBuffer, NTP_PACKET_SIZE);
 	udp.endPacket();
-}
-
-// ------------------------------------------------------------------------------------------
-// printDigits
-// ------------------------------------------------------------------------------------------
-void printDigits(int digits)
-{
-	Serial.print(":");
-	if (digits < 10)
-		Serial.print('0');
-	Serial.print(digits);
-}
-
-// ------------------------------------------------------------------------------------------
-// digitalClockDisplay
-// ------------------------------------------------------------------------------------------
-void digitalClockDisplay()
-{
-	USE_SERIAL.print(hour());
-	printDigits(minute());
-	printDigits(second());
-	USE_SERIAL.print(" ");
-	USE_SERIAL.print(month());
-	USE_SERIAL.print(".");
-	USE_SERIAL.print(day());
-	USE_SERIAL.print(".");
-	USE_SERIAL.print(year());
-	USE_SERIAL.println();
 }
 
 // ------------------------------------------------------------------------------------------
@@ -225,11 +189,14 @@ void setup()
 	LED(BLU, true);
 
   // start the sensor
-  // Serial.println("Adafruit VL53L0X test");
-  // if (!lox.begin()) {
-  //   Serial.println(F("Failed to boot VL53L0X"));
-  //   while(1);
-  // }
+	#if USE_SENSOR
+		Serial.println("Adafruit VL53L0X test");
+		if (!lox.begin()) {
+			Serial.println(F("Failed to boot VL53L0X"));
+			while(1);
+		}
+	#endif
+
 	LED(BLU, false);
 
 	const int bs=200;	// blink speed
@@ -261,8 +228,7 @@ void setup()
 // ------------------------------------------------------------------------------------------
 int readDistance()
 {
-	return random(0, 50);
-
+	#if USE_SENSOR
 	int dist = 0;
 
   VL53L0X_RangingMeasurementData_t measure;
@@ -281,8 +247,11 @@ int readDistance()
 	// USE_SERIAL.print("Ping: ");
 	// USE_SERIAL.print(dist);
 	// USE_SERIAL.println("cm");
-
 	return dist;
+	#endif
+
+	return random(0, 50);
+	
 }
 
 int setAlarm = 0;
