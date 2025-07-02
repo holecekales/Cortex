@@ -41,7 +41,7 @@ class wxLoader {
             options.path = options.path.replace(/<s>/, start.toString());
             options.path = options.path.replace(/<l>/, length.toString());
             try {
-                let page = yield downloader_1.urlGet(options).catch((err) => console.error(err));
+                const page = yield downloader_1.urlGet(options);
                 this.process(page);
             }
             catch (err) {
