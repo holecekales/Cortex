@@ -38,7 +38,7 @@ export class wxLoader {
     options.path = options.path.replace(/<l>/, length.toString());
 
     try {
-      let page : string = await urlGet(options).catch((err) => console.error(err)) as string;
+      const page: string = await urlGet(options);
       this.process(page);
     }
     catch(err) {
